@@ -1,4 +1,4 @@
-import {Effect, initEvent, Event, Node, NodeBody} from './Node';
+import {Effect, initEvent, Event, Node} from './Node';
 
 export interface State<C> {
   current: string[];
@@ -9,7 +9,7 @@ export default class Statechart<C, E extends Event> {
   private root: Node<C, E>;
   public initialState: State<C>;
 
-  constructor(context: C, body: NodeBody<C, E>) {
+  constructor(context: C, body: (n: Node<C, E>) => void) {
     this.root = new Node('__root__', body);
     this.initialState = {current: [], context};
   }

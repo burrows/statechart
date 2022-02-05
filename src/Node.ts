@@ -4,57 +4,84 @@ export interface Event {
   type: string;
 }
 
-export interface Effect<E extends Event> {
+export interface Effect<E> {
   run(send: (event: E) => void): Promise<E | undefined>;
 }
 
-export type NodeBody<C, E extends Event> = (s: Node<C, E>) => void;
-
-export type EnterHandler<C, E extends Event> = (
-  ctx: C,
-  evt: E,
-) => [C, Effect<E>[]];
-
-export type ExitHandler<C, E extends Event> = (
-  ctx: C,
-  evt: E,
-) => [C, Effect<E>[]];
-
-export type EventHandler<C, E extends Event> = (
-  ctx: C,
-  evt: E,
-) => [C, Effect<E>[], string[]];
-
-export type ConditionHandler<C, E> = (ctx: C, evt: E) => string[];
-
-export class Node<C, E extends Event> {
+export default class Node<C, E extends Event> {
   public name: string;
+  public parent?: Node<C, E>;
+  public children: Node<C, E>[];
+  private enterHandler?: (
+    ctx: C,
+    evt: E | typeof initEvent,
+  ) => [C, Effect<E>[]];
+  private exitHandler?: (ctx: C, evt: E) => [C, Effect<E>[]];
+  private handlers: Partial<
+    {
+      [T in E['type']]: (
+        ctx: C,
+        evt: Extract<E, {type: T}>,
+      ) => [C, Effect<E>[], string[]];
+    }
+  >;
 
-  constructor(name: string, body: NodeBody<C, E>) {
+  constructor(name: string, body?: (n: Node<C, E>) => void) {
     this.name = name;
-    body(this);
+    this.children = [];
+    this.handlers = {};
+    if (body) {
+      body(this);
+    }
   }
 
-  public state(name: string, body: NodeBody<C, E>): this {
+  state(name: string, body?: (n: Node<C, E>) => void): this {
+    const node = new Node(name, body);
+    node.parent = this;
+    this.children.push(node);
     return this;
   }
 
-  public enter(handler: EnterHandler<C, E | typeof initEvent>): this {
-    return this;
-  }
-
-  public exit(handler: ExitHandler<C, E>): this {
-    return this;
-  }
-
-  public on<T extends E['type']>(
-    event: T,
-    handler: EventHandler<C, Extract<E, {type: T}>>,
+  enter(
+    handler: (ctx: C, evt: E | typeof initEvent) => [C, Effect<E>[]],
   ): this {
+    this.enterHandler = handler;
     return this;
   }
 
-  public C(handler: ConditionHandler<C, E | typeof initEvent>): this {
+  exit(handler: (ctx: C, evt: E) => [C, Effect<E>[]]): this {
+    this.exitHandler = handler;
     return this;
+  }
+
+  on<T extends E['type']>(
+    type: T,
+    handler: (ctx: C, evt: Extract<E, {type: T}>) => [C, Effect<E>[], string[]],
+  ): this {
+    this.handlers[type] = handler;
+    return this;
+  }
+
+  C(handler: (ctx: C, evt: E | typeof initEvent) => string[]): this {
+    return this;
+  }
+
+  get root(): Node<C, E> {
+    return this.parent?.root || this;
+  }
+
+  get ancestors(): Node<C, E>[] {
+    return this.parent ? [this.parent].concat(this.parent.ancestors) : [];
+  }
+
+  get path(): string {
+    return (
+      '/' +
+      [this as Node<C, E>]
+        .concat(this.ancestors)
+        .map(n => n.name)
+        .reverse()
+        .join('/')
+    );
   }
 }
