@@ -1,4 +1,4 @@
-import {Effect, initEvent, Event, Node} from './Node';
+import Node, {Effect, initEvent, Event} from './Node';
 
 export interface State<C> {
   current: string[];

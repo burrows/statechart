@@ -11,7 +11,7 @@ export interface Effect<E> {
 export default class Node<C, E extends Event> {
   public name: string;
   public parent?: Node<C, E>;
-  public children: Node<C, E>[];
+  public children: {[name: string]: Node<C, E>};
   private enterHandler?: (
     ctx: C,
     evt: E | typeof initEvent,
@@ -28,7 +28,7 @@ export default class Node<C, E extends Event> {
 
   constructor(name: string, body?: (n: Node<C, E>) => void) {
     this.name = name;
-    this.children = [];
+    this.children = {};
     this.handlers = {};
     if (body) {
       body(this);
@@ -38,7 +38,7 @@ export default class Node<C, E extends Event> {
   state(name: string, body?: (n: Node<C, E>) => void): this {
     const node = new Node(name, body);
     node.parent = this;
-    this.children.push(node);
+    this.children[name] = node;
     return this;
   }
 
@@ -70,18 +70,52 @@ export default class Node<C, E extends Event> {
     return this.parent?.root || this;
   }
 
+  get isRoot(): boolean {
+    return !this.parent;
+  }
+
   get ancestors(): Node<C, E>[] {
     return this.parent ? [this.parent].concat(this.parent.ancestors) : [];
   }
 
   get path(): string {
+    if (this.isRoot) return '/';
+
     return (
       '/' +
       [this as Node<C, E>]
-        .concat(this.ancestors)
+        .concat(this.ancestors.slice(0, -1))
         .map(n => n.name)
         .reverse()
         .join('/')
     );
+  }
+
+  resolve(path: string | string[]): Node<C, E> | undefined {
+    const segments = Array.isArray(path) ? path : path.split('/');
+    let head = segments.shift();
+    let next: Node<C, E> | undefined;
+
+    if (head === undefined) return;
+
+    switch (head) {
+      case '':
+        next = this.root;
+        break;
+      case '.':
+        next = this;
+        break;
+      case '..':
+        next = this.parent;
+        break;
+      default:
+        next = this.children[head];
+    }
+
+    if (!next) {
+      return;
+    }
+
+    return segments.length === 0 ? next : next.resolve(segments);
   }
 }
