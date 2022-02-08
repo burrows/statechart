@@ -1,5 +1,3 @@
-export const initEvent = {type: '__init__'} as const;
-
 export interface Event {
   type: string;
 }
@@ -12,10 +10,8 @@ export default class Node<C, E extends Event> {
   public name: string;
   public parent?: Node<C, E>;
   public children: {[name: string]: Node<C, E>};
-  private enterHandler?: (
-    ctx: C,
-    evt: E | typeof initEvent,
-  ) => [C, Effect<E>[]];
+  public defaultChild?: string;
+  private enterHandler?: (ctx: C, evt: E) => [C, Effect<E>[]];
   private exitHandler?: (ctx: C, evt: E) => [C, Effect<E>[]];
   private handlers: Partial<
     {
@@ -25,6 +21,26 @@ export default class Node<C, E extends Event> {
       ) => [C, Effect<E>[], string[]];
     }
   >;
+
+  static pivot<C, E extends Event>(
+    n1: Node<C, E>,
+    n2: Node<C, E>,
+  ): Node<C, E> | undefined {
+    let pivot: Node<C, E> | undefined;
+    const nodes1 = n1.lineage;
+    const nodes2 = n2.lineage;
+    const len = nodes1.length < nodes2.length ? nodes1.length : nodes2.length;
+
+    for (let i = 0; i < len; i++) {
+      if (nodes1[i] === nodes2[i]) {
+        pivot = nodes1[i];
+      } else {
+        break;
+      }
+    }
+
+    return pivot;
+  }
 
   constructor(name: string, body?: (n: Node<C, E>) => void) {
     this.name = name;
@@ -39,12 +55,11 @@ export default class Node<C, E extends Event> {
     const node = new Node(name, body);
     node.parent = this;
     this.children[name] = node;
+    this.defaultChild = this.defaultChild || name;
     return this;
   }
 
-  enter(
-    handler: (ctx: C, evt: E | typeof initEvent) => [C, Effect<E>[]],
-  ): this {
+  enter(handler: (ctx: C, evt: E) => [C, Effect<E>[]]): this {
     this.enterHandler = handler;
     return this;
   }
@@ -62,7 +77,7 @@ export default class Node<C, E extends Event> {
     return this;
   }
 
-  C(handler: (ctx: C, evt: E | typeof initEvent) => string[]): this {
+  C(handler: (ctx: C, evt: E) => string[]): this {
     return this;
   }
 
@@ -74,19 +89,20 @@ export default class Node<C, E extends Event> {
     return !this.parent;
   }
 
-  get ancestors(): Node<C, E>[] {
-    return this.parent ? [this.parent].concat(this.parent.ancestors) : [];
+  get isLeaf(): boolean {
+    return Object.keys(this.children).length === 0;
+  }
+
+  get lineage(): Node<C, E>[] {
+    return this.parent ? this.parent.lineage.concat([this]) : [this];
   }
 
   get path(): string {
-    if (this.isRoot) return '/';
-
     return (
       '/' +
-      [this as Node<C, E>]
-        .concat(this.ancestors.slice(0, -1))
+      this.lineage
+        .slice(1)
         .map(n => n.name)
-        .reverse()
         .join('/')
     );
   }
@@ -117,5 +133,91 @@ export default class Node<C, E extends Event> {
     }
 
     return segments.length === 0 ? next : next.resolve(segments);
+  }
+
+  handle(ctx: C, evt: E): [C, Effect<E>[], Node<C, E>[]] {
+    const handler = this.handlers[evt.type as E['type']];
+    if (!handler) return [ctx, [], []];
+    const [c, es, ps] = handler(ctx, evt as Extract<E, {type: E['type']}>);
+    return [
+      c,
+      es,
+      ps.map(p => this.resolve(p)).filter(n => !!n) as Node<C, E>[],
+    ];
+  }
+
+  // Exit from the given `from` node to the receiver pivot node.
+  _pivotExit(ctx: C, evt: E, from: Node<C, E>): [C, Effect<E>[]] {
+    const effects: Effect<E>[] = [];
+    let n: Node<C, E> | undefined = from;
+
+    while (n && n !== this) {
+      if (n.exitHandler) {
+        const [c, es] = n.exitHandler(ctx, evt);
+        ctx = c;
+        effects.push(...es);
+      }
+      n = n.parent;
+    }
+
+    return [ctx, effects];
+  }
+
+  // Enter from the receiver pivot node to the given `to` nodes.
+  _pivotEnter(
+    ctx: C,
+    evt: E,
+    to: Node<C, E>[],
+  ): [C, Effect<E>[], Node<C, E>[]] {
+    const nodes: Node<C, E>[] = [];
+    const seen: Set<Node<C, E>> = new Set();
+    const effects: Effect<E>[] = [];
+
+    for (const node of to) {
+      let n: Node<C, E> | undefined = node.parent;
+      const ns: Node<C, E>[] = [];
+
+      while (n && n !== this) {
+        if (!seen.has(n)) {
+          seen.add(n);
+          ns.unshift(n);
+        }
+        n = n.parent;
+      }
+
+      for (const n of ns) {
+        if (n.enterHandler) {
+          const [c, es] = n.enterHandler(ctx, evt);
+          ctx = c;
+          effects.push(...es);
+        }
+      }
+
+      const [c, es, leafs] = node._enter(ctx, evt);
+      ctx = c;
+      effects.push(...es);
+      nodes.push(...leafs);
+    }
+
+    return [ctx, effects, nodes];
+  }
+
+  _enter(ctx: C, evt: E): [C, Effect<E>[], Node<C, E>[]] {
+    const effects: Effect<E>[] = [];
+
+    if (this.enterHandler) {
+      const [c, es] = this.enterHandler(ctx, evt);
+      ctx = c;
+      effects.push(...es);
+    }
+
+    if (this.isLeaf) {
+      return [ctx, effects, [this]];
+    }
+
+    const [c, es, ns] = this.children[this.defaultChild!]._enter(ctx, evt);
+    ctx = c;
+    effects.push(...es);
+    return [ctx, effects, ns];
   }
 }

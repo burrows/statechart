@@ -11,7 +11,8 @@
     "typescript": "^4.5.5"
   },
   "scripts": {
-    "test": "npx jest"
+    "test": "npx jest",
+    "build": "npx tsc"
   },
   "author": "",
   "license": "MIT"

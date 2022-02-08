@@ -16,8 +16,8 @@ describe('Node#root', () => {
   });
 });
 
-describe('Node#ancestors', () => {
-  it('returns a list of ancestor nodes', () => {
+describe('Node#lineage', () => {
+  it('returns a list of lineage nodes', () => {
     const a = new Node('a', s => {
       s.state('b', s => {
         s.state('c');
@@ -26,9 +26,9 @@ describe('Node#ancestors', () => {
     const b = a.children.b;
     const c = b.children.c;
 
-    expect(a.ancestors).toEqual([]);
-    expect(b.ancestors).toEqual([a]);
-    expect(c.ancestors).toEqual([b, a]);
+    expect(a.lineage).toEqual([a]);
+    expect(b.lineage).toEqual([a, b]);
+    expect(c.lineage).toEqual([a, b, c]);
   });
 });
 
