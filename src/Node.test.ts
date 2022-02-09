@@ -2,7 +2,7 @@ import Node from './Node';
 
 describe('Node#root', () => {
   it('returns the root node', () => {
-    const a = new Node('a', s => {
+    const a = new Node('a', {}, s => {
       s.state('b', s => {
         s.state('c');
       });
@@ -18,7 +18,7 @@ describe('Node#root', () => {
 
 describe('Node#lineage', () => {
   it('returns a list of lineage nodes', () => {
-    const a = new Node('a', s => {
+    const a = new Node('a', {}, s => {
       s.state('b', s => {
         s.state('c');
       });
@@ -34,7 +34,7 @@ describe('Node#lineage', () => {
 
 describe('Node#path', () => {
   it('returns the path to the node', () => {
-    const root = new Node('root', s => {
+    const root = new Node('root', {}, s => {
       s.state('a', s => {
         s.state('c');
       });
@@ -49,7 +49,7 @@ describe('Node#path', () => {
 });
 
 describe('Node#resolve', () => {
-  const root = new Node('root', s => {
+  const root = new Node('root', {}, s => {
     s.state('s', s => {
       s.state('s1', s => {
         s.state('s11');

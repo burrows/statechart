@@ -11,7 +11,7 @@ export default class Statechart<C, E extends Event> {
   private initialContext: C;
 
   constructor(context: C, body: (n: Node<C, E>) => void) {
-    this._root = new Node('__root__', body);
+    this._root = new Node('__root__', {}, body);
     this.initialContext = context;
   }
 

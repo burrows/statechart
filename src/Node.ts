@@ -6,8 +6,13 @@ export interface Effect<E> {
   run(send: (event: E) => void): Promise<E | undefined>;
 }
 
+export interface NodeOpts {
+  concurrent?: boolean;
+}
+
 export default class Node<C, E extends Event> {
   public name: string;
+  public opts: NodeOpts;
   public parent?: Node<C, E>;
   public children: {[name: string]: Node<C, E>};
   public defaultChild?: string;
@@ -43,17 +48,34 @@ export default class Node<C, E extends Event> {
     return pivot;
   }
 
-  constructor(name: string, body?: (n: Node<C, E>) => void) {
+  constructor(name: string, opts: NodeOpts, body?: (n: Node<C, E>) => void) {
     this.name = name;
+    this.opts = opts;
     this.children = {};
     this.handlers = {};
-    if (body) {
-      body(this);
-    }
+    if (body) body(this);
   }
 
-  state(name: string, body?: (n: Node<C, E>) => void): this {
-    const node = new Node(name, body);
+  state(name: string): this;
+  state(name: string, body: (n: Node<C, E>) => void): this;
+  state(name: string, opts: NodeOpts): this;
+  state(name: string, opts: NodeOpts, body: (n: Node<C, E>) => void): this;
+  state(name: string, ...args: any[]): this {
+    let opts: NodeOpts = {};
+    let body: ((n: Node<C, E>) => void) | undefined;
+
+    if (args[0] && args[1]) {
+      opts = args[0];
+      body = args[1];
+    } else if (args[0]) {
+      if (typeof args[0] === 'function') {
+        body = args[0];
+      } else {
+        opts = args[0];
+      }
+    }
+
+    const node = new Node(name, opts, body);
     node.parent = this;
     this.children[name] = node;
     this.defaultChild = this.defaultChild || name;
