@@ -1,3 +1,4 @@
+import Node from './Node';
 import Statechart from './Statechart';
 
 interface Ctx {
@@ -5,122 +6,41 @@ interface Ctx {
 }
 type Evt = {type: 'x'};
 
+const trace = (s: Node<Ctx, Evt>): void => {
+  s.enter(ctx => [
+    {...ctx, ops: [...ctx.ops, {type: 'enter', path: s.path}]},
+    [],
+  ]);
+  s.exit(ctx => [
+    {...ctx, ops: [...ctx.ops, {type: 'exit', path: s.path}]},
+    [],
+  ]);
+};
+
 const sc = new Statechart<Ctx, Evt>({ops: []}, s => {
-  s.enter(c => [{...c, ops: [...c.ops, {type: 'enter', path: s.path}]}, []]);
-  s.exit(c => [{...c, ops: [...c.ops, {type: 'exit', path: s.path}]}, []]);
+  trace(s);
 
   s.state('a', s => {
-    s.enter(c => [{...c, ops: [...c.ops, {type: 'enter', path: s.path}]}, []]);
-    s.exit(c => [{...c, ops: [...c.ops, {type: 'exit', path: s.path}]}, []]);
-
-    s.state('c', s => {
-      s.enter(c => [
-        {...c, ops: [...c.ops, {type: 'enter', path: s.path}]},
-        [],
-      ]);
-      s.exit(c => [{...c, ops: [...c.ops, {type: 'exit', path: s.path}]}, []]);
-    });
-
-    s.state('d', s => {
-      s.enter(c => [
-        {...c, ops: [...c.ops, {type: 'enter', path: s.path}]},
-        [],
-      ]);
-      s.exit(c => [{...c, ops: [...c.ops, {type: 'exit', path: s.path}]}, []]);
-    });
+    trace(s);
+    s.state('c', s => trace(s));
+    s.state('d', s => trace(s));
   });
 
   s.state('b', s => {
-    s.enter(c => [{...c, ops: [...c.ops, {type: 'enter', path: s.path}]}, []]);
-    s.exit(c => [{...c, ops: [...c.ops, {type: 'exit', path: s.path}]}, []]);
-
-    s.state('e', s => {
-      s.enter(c => [
-        {...c, ops: [...c.ops, {type: 'enter', path: s.path}]},
-        [],
-      ]);
-      s.exit(c => [{...c, ops: [...c.ops, {type: 'exit', path: s.path}]}, []]);
-    });
-
+    trace(s);
+    s.state('e', s => trace(s));
     s.state('f', s => {
-      s.enter(c => [
-        {...c, ops: [...c.ops, {type: 'enter', path: s.path}]},
-        [],
-      ]);
-      s.exit(c => [{...c, ops: [...c.ops, {type: 'exit', path: s.path}]}, []]);
-
-      s.state('g', s => {
-        s.enter(c => [
-          {...c, ops: [...c.ops, {type: 'enter', path: s.path}]},
-          [],
-        ]);
-        s.exit(c => [
-          {...c, ops: [...c.ops, {type: 'exit', path: s.path}]},
-          [],
-        ]);
-      });
-
-      s.state('h', s => {
-        s.enter(c => [
-          {...c, ops: [...c.ops, {type: 'enter', path: s.path}]},
-          [],
-        ]);
-        s.exit(c => [
-          {...c, ops: [...c.ops, {type: 'exit', path: s.path}]},
-          [],
-        ]);
-      });
-
+      trace(s);
+      s.state('g', s => trace(s));
+      s.state('h', s => trace(s));
       s.state('i', s => {
+        trace(s);
         s.C(() => 'k');
-
-        s.enter(c => [
-          {...c, ops: [...c.ops, {type: 'enter', path: s.path}]},
-          [],
-        ]);
-        s.exit(c => [
-          {...c, ops: [...c.ops, {type: 'exit', path: s.path}]},
-          [],
-        ]);
-        s.state('j', s => {
-          s.enter(c => [
-            {...c, ops: [...c.ops, {type: 'enter', path: s.path}]},
-            [],
-          ]);
-          s.exit(c => [
-            {...c, ops: [...c.ops, {type: 'exit', path: s.path}]},
-            [],
-          ]);
-        });
+        s.state('j', s => trace(s));
         s.state('k', s => {
-          s.enter(c => [
-            {...c, ops: [...c.ops, {type: 'enter', path: s.path}]},
-            [],
-          ]);
-          s.exit(c => [
-            {...c, ops: [...c.ops, {type: 'exit', path: s.path}]},
-            [],
-          ]);
-          s.state('l', s => {
-            s.enter(c => [
-              {...c, ops: [...c.ops, {type: 'enter', path: s.path}]},
-              [],
-            ]);
-            s.exit(c => [
-              {...c, ops: [...c.ops, {type: 'exit', path: s.path}]},
-              [],
-            ]);
-          });
-          s.state('m', s => {
-            s.enter(c => [
-              {...c, ops: [...c.ops, {type: 'enter', path: s.path}]},
-              [],
-            ]);
-            s.exit(c => [
-              {...c, ops: [...c.ops, {type: 'exit', path: s.path}]},
-              [],
-            ]);
-          });
+          trace(s);
+          s.state('l', s => trace(s));
+          s.state('m', s => trace(s));
         });
       });
     });
