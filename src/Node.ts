@@ -13,6 +13,7 @@ export default class Node<C, E extends Event> {
   public defaultChild?: string;
   private enterHandler?: (ctx: C, evt: E) => [C, Effect<E>[]];
   private exitHandler?: (ctx: C, evt: E) => [C, Effect<E>[]];
+  private condition?: (ctx: C, evt: E) => string;
   private handlers: Partial<
     {
       [T in E['type']]: (
@@ -77,7 +78,8 @@ export default class Node<C, E extends Event> {
     return this;
   }
 
-  C(handler: (ctx: C, evt: E) => string[]): this {
+  C(f: (ctx: C, evt: E) => string): this {
+    this.condition = f;
     return this;
   }
 
@@ -215,7 +217,16 @@ export default class Node<C, E extends Event> {
       return [ctx, effects, [this]];
     }
 
-    const [c, es, ns] = this.children[this.defaultChild!]._enter(ctx, evt);
+    const name = this.condition ? this.condition(ctx, evt) : this.defaultChild;
+    const child = name ? this.children[name] : undefined;
+
+    if (!child) {
+      throw new Error(
+        `Node#_enter: invalid child state returned by condition function: '${name}'`,
+      );
+    }
+
+    const [c, es, ns] = child._enter(ctx, evt);
     ctx = c;
     effects.push(...es);
     return [ctx, effects, ns];
