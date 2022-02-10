@@ -24,26 +24,31 @@ export default class Statechart<C, E extends Event> {
   }
 
   send(state: State<C, E>, evt: E): State<C, E> {
-    const nodes = state.current;
     let context = state.context;
     const effects: Effect<E>[] = [];
-    const transitions: {from: Node<C, E>; to: Node<C, E>[]}[] = [];
+    const transitions: {
+      handler: Node<C, E>;
+      from: Node<C, E>[];
+      to: Node<C, E>[];
+    }[] = [];
 
-    for (const node of nodes) {
-      if (!node) continue;
-      const [c, es, destNodes] = node.handle(context, evt);
+    for (const node of state.current) {
+      const handler = node.handler(evt);
+      if (!handler) continue;
+      const [c, es, to] = handler.handle(context, evt);
       context = c;
       effects.push(...es);
 
-      if (destNodes.length > 0) {
-        transitions.push({from: node, to: destNodes});
+      if (to.length > 0) {
+        const from = state.current.filter(n => n.lineage.includes(handler));
+        transitions.push({handler, from, to});
       }
     }
 
     const current: Node<C, E>[] = [];
 
-    for (const {from, to} of transitions) {
-      const [c, es, ns] = this._transition(context, evt, from, to);
+    for (const {handler, from, to} of transitions) {
+      const [c, es, ns] = this._transition(context, evt, handler, from, to);
       context = c;
       effects.push(...es);
       current.push(...ns);
@@ -55,10 +60,11 @@ export default class Statechart<C, E extends Event> {
   _transition(
     ctx: C,
     evt: E,
-    from: Node<C, E>,
+    handler: Node<C, E>,
+    from: Node<C, E>[],
     to: Node<C, E>[],
   ): [C, Effect<E>[], Node<C, E>[]] {
-    const pivots = to.map(n => Node.pivot(from, n));
+    const pivots = to.map(n => Node.pivot(handler, n));
 
     if (new Set(pivots).size > 1) {
       throw new Error('Statechart#transition: multiple pivot states found');

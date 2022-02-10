@@ -14,7 +14,7 @@ export default class Node<C, E extends Event> {
   public name: string;
   public opts: NodeOpts;
   public parent?: Node<C, E>;
-  public children: {[name: string]: Node<C, E>};
+  public children: Map<string, Node<C, E>>;
   public defaultChild?: string;
   private enterHandler?: (ctx: C, evt: E) => [C, Effect<E>[]];
   private exitHandler?: (ctx: C, evt: E) => [C, Effect<E>[]];
@@ -28,6 +28,7 @@ export default class Node<C, E extends Event> {
     }
   >;
 
+  // FIXME: make this an instance method?
   static pivot<C, E extends Event>(
     n1: Node<C, E>,
     n2: Node<C, E>,
@@ -51,7 +52,7 @@ export default class Node<C, E extends Event> {
   constructor(name: string, opts: NodeOpts, body?: (n: Node<C, E>) => void) {
     this.name = name;
     this.opts = opts;
-    this.children = {};
+    this.children = new Map();
     this.handlers = {};
     if (body) body(this);
   }
@@ -77,7 +78,7 @@ export default class Node<C, E extends Event> {
 
     const node = new Node(name, opts, body);
     node.parent = this;
-    this.children[name] = node;
+    this.children.set(name, node);
     this.defaultChild = this.defaultChild || name;
     return this;
   }
@@ -114,11 +115,15 @@ export default class Node<C, E extends Event> {
   }
 
   get isLeaf(): boolean {
-    return Object.keys(this.children).length === 0;
+    return this.children.size === 0;
   }
 
   get lineage(): Node<C, E>[] {
     return this.parent ? this.parent.lineage.concat([this]) : [this];
+  }
+
+  get type(): 'cluster' | 'concurrent' {
+    return this.opts.concurrent ? 'concurrent' : 'cluster';
   }
 
   get path(): string {
@@ -149,7 +154,7 @@ export default class Node<C, E extends Event> {
         next = this.parent;
         break;
       default:
-        next = this.children[head];
+        next = this.children.get(head);
     }
 
     if (!next) {
@@ -159,9 +164,22 @@ export default class Node<C, E extends Event> {
     return segments.length === 0 ? next : next.resolve(segments);
   }
 
+  handles(evt: E): boolean {
+    return !!this.handlers[evt.type as E['type']];
+  }
+
+  handler(evt: E): Node<C, E> | undefined {
+    if (this.handles(evt)) return this;
+    return this.parent?.handler(evt);
+  }
+
   handle(ctx: C, evt: E): [C, Effect<E>[], Node<C, E>[]] {
     const handler = this.handlers[evt.type as E['type']];
-    if (!handler) return [ctx, [], []];
+    if (!handler)
+      throw new Error(
+        `Node#handle: event ${evt.type} not handled by ${this.path}`,
+      );
+
     const [c, es, ps] = handler(ctx, evt as Extract<E, {type: E['type']}>);
     return [
       c,
@@ -170,18 +188,32 @@ export default class Node<C, E extends Event> {
     ];
   }
 
-  // Exit from the given `from` node to the receiver pivot node.
-  _pivotExit(ctx: C, evt: E, from: Node<C, E>): [C, Effect<E>[]] {
+  // Exit from the given `from` nodes to the receiver pivot node.
+  _pivotExit(ctx: C, evt: E, from: Node<C, E>[]): [C, Effect<E>[]] {
+    const nodes: Set<Node<C, E>> = new Set();
     const effects: Effect<E>[] = [];
-    let n: Node<C, E> | undefined = from;
 
-    while (n && n !== this) {
-      if (n.exitHandler) {
-        const [c, es] = n.exitHandler(ctx, evt);
+    for (const node of from) {
+      let n: Node<C, E> | undefined = node;
+
+      while (n && n !== this) {
+        nodes.add(n);
+        n = n.parent;
+      }
+    }
+
+    const sorted = [...nodes].sort((a, b) => {
+      const adepth = a.lineage.length;
+      const bdepth = b.lineage.length;
+      return adepth === bdepth ? 0 : adepth > bdepth ? -1 : 1;
+    });
+
+    for (const node of sorted) {
+      if (node.exitHandler) {
+        const [c, es] = node.exitHandler(ctx, evt);
         ctx = c;
         effects.push(...es);
       }
-      n = n.parent;
     }
 
     return [ctx, effects];
@@ -228,6 +260,7 @@ export default class Node<C, E extends Event> {
 
   _enter(ctx: C, evt: E): [C, Effect<E>[], Node<C, E>[]] {
     const effects: Effect<E>[] = [];
+    const current: Node<C, E>[] = [];
 
     if (this.enterHandler) {
       const [c, es] = this.enterHandler(ctx, evt);
@@ -239,18 +272,31 @@ export default class Node<C, E extends Event> {
       return [ctx, effects, [this]];
     }
 
-    const name = this.condition ? this.condition(ctx, evt) : this.defaultChild;
-    const child = name ? this.children[name] : undefined;
+    if (this.type === 'concurrent') {
+      for (const [, child] of this.children.entries()) {
+        const [c, es, ns] = child._enter(ctx, evt);
+        ctx = c;
+        effects.push(...es);
+        current.push(...ns);
+      }
+    } else {
+      const name = this.condition
+        ? this.condition(ctx, evt)
+        : this.defaultChild;
+      const child = name ? this.children.get(name) : undefined;
 
-    if (!child) {
-      throw new Error(
-        `Node#_enter: invalid child state returned by condition function: '${name}'`,
-      );
+      if (!child) {
+        throw new Error(
+          `Node#_enter: invalid child state returned by condition function: '${name}'`,
+        );
+      }
+
+      const [c, es, ns] = child._enter(ctx, evt);
+      ctx = c;
+      effects.push(...es);
+      current.push(...ns);
     }
 
-    const [c, es, ns] = child._enter(ctx, evt);
-    ctx = c;
-    effects.push(...es);
-    return [ctx, effects, ns];
+    return [ctx, effects, current];
   }
 }

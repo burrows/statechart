@@ -7,8 +7,8 @@ describe('Node#root', () => {
         s.state('c');
       });
     });
-    const b = a.children.b;
-    const c = b.children.c;
+    const b = a.children.get('b')!;
+    const c = b.children.get('c')!;
 
     expect(a.root).toBe(a);
     expect(b.root).toBe(a);
@@ -23,8 +23,8 @@ describe('Node#lineage', () => {
         s.state('c');
       });
     });
-    const b = a.children.b;
-    const c = b.children.c;
+    const b = a.children.get('b')!;
+    const c = b.children.get('c')!;
 
     expect(a.lineage).toEqual([a]);
     expect(b.lineage).toEqual([a, b]);
@@ -42,9 +42,9 @@ describe('Node#path', () => {
     });
 
     expect(root.path).toBe('/');
-    expect(root.children.a.path).toBe('/a');
-    expect(root.children.a.children.c.path).toBe('/a/c');
-    expect(root.children.b.path).toBe('/b');
+    expect(root.children.get('a')!.path).toBe('/a');
+    expect(root.children.get('a')!.children.get('c')!.path).toBe('/a/c');
+    expect(root.children.get('b')!.path).toBe('/b');
   });
 });
 
@@ -61,13 +61,13 @@ describe('Node#resolve', () => {
       });
     });
   });
-  const s = root.children.s;
-  const s1 = s.children.s1;
-  const s2 = s.children.s2;
-  const s11 = s1.children.s11;
-  const s12 = s1.children.s12;
-  const s21 = s2.children.s21;
-  const s22 = s2.children.s22;
+  const s = root.children.get('s')!;
+  const s1 = s.children.get('s1')!;
+  const s2 = s.children.get('s2')!;
+  const s11 = s1.children.get('s11')!;
+  const s12 = s1.children.get('s12')!;
+  const s21 = s2.children.get('s21')!;
+  const s22 = s2.children.get('s22')!;
 
   it('resolves the node at the given full path from the root node', () => {
     expect(root.resolve('/s')).toBe(s);
