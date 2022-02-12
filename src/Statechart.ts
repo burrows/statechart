@@ -11,14 +11,18 @@ export default class Statechart<C, E extends Event> {
   private initialContext: C;
 
   constructor(context: C, body: (n: Node<C, E>) => void) {
-    this._root = new Node('__root__', {}, body);
+    this._root = new Node('', {}, body);
     this.initialContext = context;
   }
 
   get initialState(): State<C, E> {
-    const [context, effects, current] = this._root._enter(this.initialContext, {
-      type: '__init__',
-    } as E);
+    const [context, effects, current] = this._root._enter(
+      this.initialContext,
+      {
+        type: '__init__',
+      } as E,
+      [],
+    );
 
     return {current, context, effects};
   }
@@ -40,7 +44,7 @@ export default class Statechart<C, E extends Event> {
       effects.push(...es);
 
       if (to.length > 0) {
-        const from = state.current.filter(n => n.lineage.includes(handler));
+        const from = state.current.filter(n => n.path.includes(handler));
         transitions.push({handler, from, to});
       }
     }

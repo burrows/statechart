@@ -8,11 +8,11 @@ type Evt = {type: 'x'};
 
 const trace = (s: Node<Ctx, Evt>): void => {
   s.enter(ctx => [
-    {...ctx, ops: [...ctx.ops, {type: 'enter', path: s.path}]},
+    {...ctx, ops: [...ctx.ops, {type: 'enter', path: s.toString()}]},
     [],
   ]);
   s.exit(ctx => [
-    {...ctx, ops: [...ctx.ops, {type: 'exit', path: s.path}]},
+    {...ctx, ops: [...ctx.ops, {type: 'exit', path: s.toString()}]},
     [],
   ]);
 };
@@ -74,7 +74,7 @@ const sc2 = new Statechart<Ctx, Evt>({ops: []}, s => {
 describe('Statechart#initialState', () => {
   it('is the result of entering the root state', () => {
     const state = sc1.initialState;
-    expect(state.current.map(s => s.path)).toEqual(['/a/c']);
+    expect(state.current.map(s => s.toString())).toEqual(['/a/c']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},

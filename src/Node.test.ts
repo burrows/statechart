@@ -16,35 +16,41 @@ describe('Node#root', () => {
   });
 });
 
-describe('Node#lineage', () => {
-  it('returns a list of lineage nodes', () => {
-    const a = new Node('a', {}, s => {
-      s.state('b', s => {
-        s.state('c');
-      });
-    });
-    const b = a.children.get('b')!;
-    const c = b.children.get('c')!;
-
-    expect(a.lineage).toEqual([a]);
-    expect(b.lineage).toEqual([a, b]);
-    expect(c.lineage).toEqual([a, b, c]);
-  });
-});
-
 describe('Node#path', () => {
-  it('returns the path to the node', () => {
-    const root = new Node('root', {}, s => {
+  it('returns an array of nodes from the root to the receiver', () => {
+    const root = new Node('', {}, s => {
       s.state('a', s => {
         s.state('c');
       });
       s.state('b');
     });
+    const a = root.children.get('a')!;
+    const b = root.children.get('b')!;
+    const c = a.children.get('c')!;
 
-    expect(root.path).toBe('/');
-    expect(root.children.get('a')!.path).toBe('/a');
-    expect(root.children.get('a')!.children.get('c')!.path).toBe('/a/c');
-    expect(root.children.get('b')!.path).toBe('/b');
+    expect(root.path).toEqual([root]);
+    expect(a.path).toEqual([root, a]);
+    expect(c.path).toEqual([root, a, c]);
+    expect(b.path).toEqual([root, b]);
+  });
+});
+
+describe('Node#toString', () => {
+  it(`returns a string representation of the node's path`, () => {
+    const root = new Node('', {}, s => {
+      s.state('a', s => {
+        s.state('c');
+      });
+      s.state('b');
+    });
+    const a = root.children.get('a')!;
+    const b = root.children.get('b')!;
+    const c = a.children.get('c')!;
+
+    expect(root.toString()).toEqual('/');
+    expect(a.toString()).toEqual('/a');
+    expect(c.toString()).toEqual('/a/c');
+    expect(b.toString()).toEqual('/b');
   });
 });
 
