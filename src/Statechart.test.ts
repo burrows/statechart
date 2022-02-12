@@ -1,46 +1,57 @@
-import Node from './Node';
+import Node, {NodeOpts} from './Node';
 import Statechart from './Statechart';
 
 interface Ctx {
   ops: {type: 'enter' | 'exit'; path: string}[];
 }
-type Evt = {type: 'x'};
+
+type Evt = {type: 'goto'; from: string; to: string[]};
 
 const trace = (s: Node<Ctx, Evt>): void => {
   s.enter(ctx => [
-    {...ctx, ops: [...ctx.ops, {type: 'enter', path: s.toString()}]},
+    {...ctx, ops: [...ctx.ops, {type: 'enter', path: s.path}]},
     [],
   ]);
+
   s.exit(ctx => [
-    {...ctx, ops: [...ctx.ops, {type: 'exit', path: s.toString()}]},
+    {...ctx, ops: [...ctx.ops, {type: 'exit', path: s.path}]},
     [],
   ]);
 };
 
+const tstate = (
+  s: Node<Ctx, Evt>,
+  name: string,
+  opts: NodeOpts,
+  body?: (n: Node<Ctx, Evt>) => void,
+) => {
+  s.state(name, opts, s => {
+    trace(s);
+    s.on('goto', (ctx, evt) =>
+      s.path === evt.from ? [ctx, [], evt.to] : undefined,
+    );
+
+    if (body) body(s);
+  });
+};
+
 const sc1 = new Statechart<Ctx, Evt>({ops: []}, s => {
   trace(s);
-
-  s.state('a', s => {
-    trace(s);
-    s.state('c', s => trace(s));
-    s.state('d', s => trace(s));
+  tstate(s, 'a', {}, s => {
+    tstate(s, 'c', {});
+    tstate(s, 'd', {});
   });
-
-  s.state('b', s => {
-    trace(s);
-    s.state('e', s => trace(s));
-    s.state('f', s => {
-      trace(s);
-      s.state('g', s => trace(s));
-      s.state('h', s => trace(s));
-      s.state('i', s => {
-        trace(s);
+  tstate(s, 'b', {}, s => {
+    tstate(s, 'e', {});
+    tstate(s, 'f', {}, s => {
+      tstate(s, 'g', {});
+      tstate(s, 'h', {});
+      tstate(s, 'i', {}, s => {
         s.C(() => 'k');
-        s.state('j', s => trace(s));
-        s.state('k', s => {
-          trace(s);
-          s.state('l', s => trace(s));
-          s.state('m', s => trace(s));
+        tstate(s, 'j', {});
+        tstate(s, 'k', {}, s => {
+          tstate(s, 'l', {});
+          tstate(s, 'm', {});
         });
       });
     });
@@ -49,24 +60,19 @@ const sc1 = new Statechart<Ctx, Evt>({ops: []}, s => {
 
 const sc2 = new Statechart<Ctx, Evt>({ops: []}, s => {
   trace(s);
-  s.state('a', s => trace(s));
-
-  s.state('b', {concurrent: true}, s => {
-    trace(s);
-    s.state('b1', s => {
-      trace(s);
-      s.state('c', s => trace(s));
-      s.state('d', s => trace(s));
+  tstate(s, 'a', {});
+  tstate(s, 'b', {concurrent: true}, s => {
+    tstate(s, 'b1', {}, s => {
+      tstate(s, 'c', {});
+      tstate(s, 'd', {});
     });
-    s.state('b2', s => {
-      trace(s);
-      s.state('e', s => trace(s));
-      s.state('f', s => trace(s));
+    tstate(s, 'b2', {}, s => {
+      tstate(s, 'e', {});
+      tstate(s, 'f', {});
     });
-    s.state('b3', s => {
-      trace(s);
-      s.state('g', s => trace(s));
-      s.state('h', s => trace(s));
+    tstate(s, 'b3', {}, s => {
+      tstate(s, 'g', {});
+      tstate(s, 'h', {});
     });
   });
 });
@@ -74,7 +80,7 @@ const sc2 = new Statechart<Ctx, Evt>({ops: []}, s => {
 describe('Statechart#initialState', () => {
   it('is the result of entering the root state', () => {
     const state = sc1.initialState;
-    expect(state.current.map(s => s.toString())).toEqual(['/a/c']);
+    expect(state.current.map(s => s.path)).toEqual(['/a/c']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -86,18 +92,20 @@ describe('Statechart#initialState', () => {
   });
 });
 
-describe('Statechart#_transition', () => {
-  it('exits from the from state to the pivot state and then enters to the destination state', () => {
-    const [ctx, effects, nodes] = sc1._transition(
-      {ops: []},
-      {type: 'x'},
-      sc1._root.resolve('/a/c')!,
-      [sc1._root.resolve('/a/c')!],
-      [sc1._root.resolve('/b/f/h')!],
-    );
+describe('Statechart#send', () => {
+  it('exits current state to the pivot state and then enters to the destination state', () => {
+    const state = sc1.send(sc1.initialState, {
+      type: 'goto',
+      from: '/a/c',
+      to: ['/b/f/h'],
+    });
 
-    expect(ctx).toEqual({
+    expect(state.current.map(n => n.path)).toEqual(['/b/f/h']);
+    expect(state.context).toEqual({
       ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'enter', path: '/a/c'},
         {type: 'exit', path: '/a/c'},
         {type: 'exit', path: '/a'},
         {type: 'enter', path: '/b'},
@@ -105,21 +113,66 @@ describe('Statechart#_transition', () => {
         {type: 'enter', path: '/b/f/h'},
       ],
     });
-    expect(effects).toEqual([]);
-    expect(nodes).toEqual([sc1._root.resolve('/b/f/h')]);
+    expect(state.effects).toEqual([]);
+  });
+
+  it('handles events at non-leaf states', () => {
+    const state = sc1.send(sc1.initialState, {
+      type: 'goto',
+      from: '/a',
+      to: ['/b/f/i/j'],
+    });
+
+    expect(state.current.map(n => n.path)).toEqual(['/b/f/i/j']);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'enter', path: '/a/c'},
+        {type: 'exit', path: '/a/c'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/f'},
+        {type: 'enter', path: '/b/f/i'},
+        {type: 'enter', path: '/b/f/i/j'},
+      ],
+    });
+    expect(state.effects).toEqual([]);
+  });
+
+  it('transitions to paths that are relative to the handler', () => {
+    const state = sc1.send(sc1.initialState, {
+      type: 'goto',
+      from: '/a/c',
+      to: ['../d'],
+    });
+
+    expect(state.current.map(n => n.path)).toEqual(['/a/d']);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'enter', path: '/a/c'},
+        {type: 'exit', path: '/a/c'},
+        {type: 'enter', path: '/a/d'},
+      ],
+    });
+    expect(state.effects).toEqual([]);
   });
 
   it('enters to a leaf state when the destination is not a leaf state', () => {
-    const [ctx, effects, nodes] = sc1._transition(
-      {ops: []},
-      {type: 'x'},
-      sc1._root.resolve('/a/c')!,
-      [sc1._root.resolve('/a/c')!],
-      [sc1._root.resolve('/b/f')!],
-    );
+    const state = sc1.send(sc1.initialState, {
+      type: 'goto',
+      from: '/a/c',
+      to: ['/b/f'],
+    });
 
-    expect(ctx).toEqual({
+    expect(state.current.map(n => n.path)).toEqual(['/b/f/g']);
+    expect(state.context).toEqual({
       ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'enter', path: '/a/c'},
         {type: 'exit', path: '/a/c'},
         {type: 'exit', path: '/a'},
         {type: 'enter', path: '/b'},
@@ -127,21 +180,22 @@ describe('Statechart#_transition', () => {
         {type: 'enter', path: '/b/f/g'},
       ],
     });
-    expect(effects).toEqual([]);
-    expect(nodes).toEqual([sc1._root.resolve('/b/f/g')]);
+    expect(state.effects).toEqual([]);
   });
 
-  it('uses condition function to determine child state to enter when present', () => {
-    const [ctx, effects, nodes] = sc1._transition(
-      {ops: []},
-      {type: 'x'},
-      sc1._root.resolve('/a/c')!,
-      [sc1._root.resolve('/a/c')!],
-      [sc1._root.resolve('/b/f/i')!],
-    );
+  it('uses condition function when present to determine child state to enter', () => {
+    const state = sc1.send(sc1.initialState, {
+      type: 'goto',
+      from: '/a/c',
+      to: ['/b/f/i'],
+    });
 
-    expect(ctx).toEqual({
+    expect(state.current.map(n => n.path)).toEqual(['/b/f/i/k/l']);
+    expect(state.context).toEqual({
       ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'enter', path: '/a/c'},
         {type: 'exit', path: '/a/c'},
         {type: 'exit', path: '/a'},
         {type: 'enter', path: '/b'},
@@ -151,21 +205,25 @@ describe('Statechart#_transition', () => {
         {type: 'enter', path: '/b/f/i/k/l'},
       ],
     });
-    expect(effects).toEqual([]);
-    expect(nodes).toEqual([sc1._root.resolve('/b/f/i/k/l')]);
+    expect(state.effects).toEqual([]);
   });
 
   it('enters all child states of a concurrent state', () => {
-    const [ctx, effects, nodes] = sc2._transition(
-      {ops: []},
-      {type: 'x'},
-      sc2._root.resolve('/a')!,
-      [sc2._root.resolve('/a')!],
-      [sc2._root.resolve('/b')!],
-    );
+    const state = sc2.send(sc2.initialState, {
+      type: 'goto',
+      from: '/a',
+      to: ['/b'],
+    });
 
-    expect(ctx).toEqual({
+    expect(state.current.map(n => n.path)).toEqual([
+      '/b/b1/c',
+      '/b/b2/e',
+      '/b/b3/g',
+    ]);
+    expect(state.context).toEqual({
       ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
         {type: 'exit', path: '/a'},
         {type: 'enter', path: '/b'},
         {type: 'enter', path: '/b/b1'},
@@ -176,32 +234,67 @@ describe('Statechart#_transition', () => {
         {type: 'enter', path: '/b/b3/g'},
       ],
     });
-    expect(effects).toEqual([]);
-    expect(nodes).toEqual([
-      sc2._root.resolve('/b/b1/c'),
-      sc2._root.resolve('/b/b2/e'),
-      sc2._root.resolve('/b/b3/g'),
+    expect(state.effects).toEqual([]);
+  });
+
+  it('enters the specified substates of a concurrent state', () => {
+    const state = sc2.send(sc2.initialState, {
+      type: 'goto',
+      from: '/a',
+      to: ['/b/b1/d', '/b/b3/h'],
+    });
+
+    expect(state.current.map(n => n.path)).toEqual([
+      '/b/b1/d',
+      '/b/b2/e',
+      '/b/b3/h',
     ]);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/b1'},
+        {type: 'enter', path: '/b/b1/d'},
+        {type: 'enter', path: '/b/b2'},
+        {type: 'enter', path: '/b/b2/e'},
+        {type: 'enter', path: '/b/b3'},
+        {type: 'enter', path: '/b/b3/h'},
+      ],
+    });
+    expect(state.effects).toEqual([]);
   });
 
   it('exits all child states of a concurrent state', () => {
-    const [ctx, effects, nodes] = sc2._transition(
-      {ops: []},
-      {type: 'x'},
-      sc2._root.resolve('/b/b1/c')!,
-      [
-        sc2._root.resolve('/b/b1/c')!,
-        sc2._root.resolve('/b/b2/f')!,
-        sc2._root.resolve('/b/b3/g')!,
-      ],
-      [sc2._root.resolve('/a')!],
-    );
+    let state = sc2.send(sc2.initialState, {
+      type: 'goto',
+      from: '/a',
+      to: ['/b'],
+    });
 
-    expect(ctx).toEqual({
+    state = sc2.send(state, {
+      type: 'goto',
+      from: '/b/b1/c',
+      to: ['/a'],
+    });
+
+    expect(state.current.map(n => n.path)).toEqual(['/a']);
+    expect(state.context).toEqual({
       ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/b1'},
+        {type: 'enter', path: '/b/b1/c'},
+        {type: 'enter', path: '/b/b2'},
+        {type: 'enter', path: '/b/b2/e'},
+        {type: 'enter', path: '/b/b3'},
+        {type: 'enter', path: '/b/b3/g'},
         {type: 'exit', path: '/b/b1/c'},
         {type: 'exit', path: '/b/b1'},
-        {type: 'exit', path: '/b/b2/f'},
+        {type: 'exit', path: '/b/b2/e'},
         {type: 'exit', path: '/b/b2'},
         {type: 'exit', path: '/b/b3/g'},
         {type: 'exit', path: '/b/b3'},
@@ -209,7 +302,6 @@ describe('Statechart#_transition', () => {
         {type: 'enter', path: '/a'},
       ],
     });
-    expect(effects).toEqual([]);
-    expect(nodes).toEqual([sc2._root.resolve('/a')]);
+    expect(state.effects).toEqual([]);
   });
 });

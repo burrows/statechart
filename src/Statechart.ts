@@ -29,30 +29,59 @@ export default class Statechart<C, E extends Event> {
 
   send(state: State<C, E>, evt: E): State<C, E> {
     let context = state.context;
+    const seen = new Set<Node<C, E>>();
     const effects: Effect<E>[] = [];
-    const transitions: {
-      handler: Node<C, E>;
-      from: Node<C, E>[];
-      to: Node<C, E>[];
-    }[] = [];
+    const transitions: {pivot: Node<C, E>; to: Node<C, E>[]}[] = [];
 
     for (const node of state.current) {
-      const handler = node.handler(evt);
-      if (!handler) continue;
-      const [c, es, to] = handler.handle(context, evt);
-      context = c;
-      effects.push(...es);
+      let n: Node<C, E> | undefined = node;
 
-      if (to.length > 0) {
-        const from = state.current.filter(n => n.path.includes(handler));
-        transitions.push({handler, from, to});
+      while (n && !seen.has(n)) {
+        seen.add(n);
+
+        const result = n.send(context, evt);
+
+        if (!result) {
+          n = n.parent;
+          continue;
+        }
+
+        const [c, es, to] = result;
+        context = c;
+        effects.push(...es);
+
+        const pivots = new Set<Node<C, E>>();
+
+        for (const node of to) {
+          const pivot = n.pivot(node);
+          if (!pivot) {
+            throw new Error(
+              `Statechart#send: could not find pivot between ${n} and ${node}`,
+            );
+          }
+          pivots.add(pivot);
+        }
+
+        if (pivots.size > 1) {
+          throw new Error(
+            `Statechart#send: invalid transition, multiple pivot states found between ${n} and ${to}`,
+          );
+        }
+
+        transitions.push({pivot: Array.from(pivots)[0], to});
       }
     }
 
     const current: Node<C, E>[] = [];
 
-    for (const {handler, from, to} of transitions) {
-      const [c, es, ns] = this._transition(context, evt, handler, from, to);
+    for (const {pivot, to} of transitions) {
+      const [c, es, ns] = this._transition(
+        context,
+        evt,
+        pivot,
+        state.current,
+        to,
+      );
       context = c;
       effects.push(...es);
       current.push(...ns);
@@ -64,22 +93,10 @@ export default class Statechart<C, E extends Event> {
   _transition(
     ctx: C,
     evt: E,
-    handler: Node<C, E>,
+    pivot: Node<C, E>,
     from: Node<C, E>[],
     to: Node<C, E>[],
   ): [C, Effect<E>[], Node<C, E>[]] {
-    const pivots = to.map(n => Node.pivot(handler, n));
-
-    if (new Set(pivots).size > 1) {
-      throw new Error('Statechart#transition: multiple pivot states found');
-    }
-
-    const pivot = pivots[0];
-
-    if (!pivot) {
-      throw new Error('Statechart#transition: could not find pivot node');
-    }
-
     let effects: Effect<E>[] = [];
     let current: Node<C, E>[] = [];
 

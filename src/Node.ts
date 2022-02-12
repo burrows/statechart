@@ -24,30 +24,9 @@ export default class Node<C, E extends Event> {
       [T in E['type']]: (
         ctx: C,
         evt: Extract<E, {type: T}>,
-      ) => [C, Effect<E>[], string[]];
+      ) => [C, Effect<E>[], string[]] | undefined;
     }
   >;
-
-  // FIXME: make this an instance method?
-  static pivot<C, E extends Event>(
-    n1: Node<C, E>,
-    n2: Node<C, E>,
-  ): Node<C, E> | undefined {
-    let pivot: Node<C, E> | undefined;
-    const nodes1 = n1.path;
-    const nodes2 = n2.path;
-    const len = nodes1.length < nodes2.length ? nodes1.length : nodes2.length;
-
-    for (let i = 0; i < len; i++) {
-      if (nodes1[i] === nodes2[i]) {
-        pivot = nodes1[i];
-      } else {
-        break;
-      }
-    }
-
-    return pivot;
-  }
 
   constructor(name: string, opts: NodeOpts, body?: (n: Node<C, E>) => void) {
     this.name = name;
@@ -95,7 +74,10 @@ export default class Node<C, E extends Event> {
 
   on<T extends E['type']>(
     type: T,
-    handler: (ctx: C, evt: Extract<E, {type: T}>) => [C, Effect<E>[], string[]],
+    handler: (
+      ctx: C,
+      evt: Extract<E, {type: T}>,
+    ) => [C, Effect<E>[], string[]] | undefined,
   ): this {
     this.handlers[type] = handler;
     return this;
@@ -122,16 +104,20 @@ export default class Node<C, E extends Event> {
     return this.opts.concurrent ? 'concurrent' : 'cluster';
   }
 
-  get path(): Node<C, E>[] {
-    return (this.parent?.path || []).concat([this]);
+  get lineage(): Node<C, E>[] {
+    return (this.parent?.lineage || []).concat([this]);
   }
 
   get depth(): number {
-    return this.path.length - 1;
+    return this.lineage.length - 1;
   }
 
-  toString() {
-    return this.isRoot ? '/' : this.path.map(n => n.name).join('/');
+  get path(): string {
+    return this.isRoot ? '/' : this.lineage.map(n => n.name).join('/');
+  }
+
+  toString(): string {
+    return this.path;
   }
 
   resolve(path: string | string[]): Node<C, E> | undefined {
@@ -162,31 +148,48 @@ export default class Node<C, E extends Event> {
     return segments.length === 0 ? next : next.resolve(segments);
   }
 
-  handles(evt: E): boolean {
-    return !!this.handlers[evt.type as E['type']];
-  }
-
-  handler(evt: E): Node<C, E> | undefined {
-    if (this.handles(evt)) return this;
-    return this.parent?.handler(evt);
-  }
-
-  handle(ctx: C, evt: E): [C, Effect<E>[], Node<C, E>[]] {
+  send(ctx: C, evt: E): [C, Effect<E>[], Node<C, E>[]] | undefined {
     const handler = this.handlers[evt.type as E['type']];
-    if (!handler)
-      throw new Error(`Node#handle: event ${evt.type} not handled by ${this}`);
+    if (!handler) return undefined;
 
-    const [c, es, ps] = handler(ctx, evt as Extract<E, {type: E['type']}>);
+    const result = handler(ctx, evt as Extract<E, {type: E['type']}>);
+    if (!result) return undefined;
+
     return [
-      c,
-      es,
-      ps.map(p => this.resolve(p)).filter(n => !!n) as Node<C, E>[],
+      result[0],
+      result[1],
+      result[2].map(p => {
+        const n = this.resolve(p);
+        if (!n) {
+          throw new Error(
+            `Node#send: could not resolve path ${p} from ${this}`,
+          );
+        }
+        return n;
+      }),
     ];
+  }
+
+  pivot(other: Node<C, E>): Node<C, E> | undefined {
+    let pivot: Node<C, E> | undefined;
+    const nodes1 = this.lineage;
+    const nodes2 = other.lineage;
+    const len = nodes1.length < nodes2.length ? nodes1.length : nodes2.length;
+
+    for (let i = 0; i < len; i++) {
+      if (nodes1[i] === nodes2[i]) {
+        pivot = nodes1[i];
+      } else {
+        break;
+      }
+    }
+
+    return pivot;
   }
 
   // Exit from the given `from` nodes to the receiver pivot node.
   _pivotExit(ctx: C, evt: E, from: Node<C, E>[]): [C, Effect<E>[]] {
-    const child = this._childToExit(ctx, evt, from);
+    const child = this._childToExit(from);
 
     if (!child) {
       throw new Error(
@@ -197,7 +200,7 @@ export default class Node<C, E extends Event> {
     return child._exit(ctx, evt, from);
   }
 
-  _childToExit(ctx: C, evt: E, from: Node<C, E>[]): Node<C, E> | undefined {
+  _childToExit(from: Node<C, E>[]): Node<C, E> | undefined {
     if (this.type === 'concurrent') {
       throw new Error(
         `Node#_childToEnter: cannot be called on a concurrent state: ${this}`,
@@ -205,7 +208,7 @@ export default class Node<C, E extends Event> {
     }
 
     let name = from
-      .map(n => n.path[this.depth + 1]?.name)
+      .map(n => n.lineage[this.depth + 1]?.name)
       .find(name => this.children.has(name));
 
     return name ? this.children.get(name) : undefined;
@@ -244,7 +247,7 @@ export default class Node<C, E extends Event> {
   }
 
   _exitCluster(ctx: C, evt: E, from: Node<C, E>[]): [C, Effect<E>[]] {
-    const child = this._childToExit(ctx, evt, from);
+    const child = this._childToExit(from);
 
     if (!child) {
       throw new Error(
@@ -280,7 +283,7 @@ export default class Node<C, E extends Event> {
     }
 
     let name = to
-      .map(n => n.path[this.depth + 1]?.name)
+      .map(n => n.lineage[this.depth + 1]?.name)
       .find(name => this.children.has(name));
     if (name) return this.children.get(name);
 

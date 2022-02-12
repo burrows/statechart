@@ -16,7 +16,7 @@ describe('Node#root', () => {
   });
 });
 
-describe('Node#path', () => {
+describe('Node#lineage', () => {
   it('returns an array of nodes from the root to the receiver', () => {
     const root = new Node('', {}, s => {
       s.state('a', s => {
@@ -28,14 +28,14 @@ describe('Node#path', () => {
     const b = root.children.get('b')!;
     const c = a.children.get('c')!;
 
-    expect(root.path).toEqual([root]);
-    expect(a.path).toEqual([root, a]);
-    expect(c.path).toEqual([root, a, c]);
-    expect(b.path).toEqual([root, b]);
+    expect(root.lineage).toEqual([root]);
+    expect(a.lineage).toEqual([root, a]);
+    expect(c.lineage).toEqual([root, a, c]);
+    expect(b.lineage).toEqual([root, b]);
   });
 });
 
-describe('Node#toString', () => {
+describe('Node#path', () => {
   it(`returns a string representation of the node's path`, () => {
     const root = new Node('', {}, s => {
       s.state('a', s => {
@@ -47,10 +47,10 @@ describe('Node#toString', () => {
     const b = root.children.get('b')!;
     const c = a.children.get('c')!;
 
-    expect(root.toString()).toEqual('/');
-    expect(a.toString()).toEqual('/a');
-    expect(c.toString()).toEqual('/a/c');
-    expect(b.toString()).toEqual('/b');
+    expect(root.path).toEqual('/');
+    expect(a.path).toEqual('/a');
+    expect(c.path).toEqual('/a/c');
+    expect(b.path).toEqual('/b');
   });
 });
 
