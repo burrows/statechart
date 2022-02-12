@@ -186,33 +186,73 @@ export default class Node<C, E extends Event> {
 
   // Exit from the given `from` nodes to the receiver pivot node.
   _pivotExit(ctx: C, evt: E, from: Node<C, E>[]): [C, Effect<E>[]] {
-    const nodes: Set<Node<C, E>> = new Set();
-    const effects: Effect<E>[] = [];
+    const child = this._childToExit(ctx, evt, from);
 
-    for (const node of from) {
-      let n: Node<C, E> | undefined = node;
-
-      while (n && n !== this) {
-        nodes.add(n);
-        n = n.parent;
-      }
+    if (!child) {
+      throw new Error(
+        `Node#_pivotExit: could not determine child state to exit`,
+      );
     }
 
-    const sorted = [...nodes].sort((a, b) => {
-      const adepth = a.path.length;
-      const bdepth = b.path.length;
-      return adepth === bdepth ? 0 : adepth > bdepth ? -1 : 1;
-    });
+    return child._exit(ctx, evt, from);
+  }
 
-    for (const node of sorted) {
-      if (node.exitHandler) {
-        const [c, es] = node.exitHandler(ctx, evt);
-        ctx = c;
-        effects.push(...es);
-      }
+  _childToExit(ctx: C, evt: E, from: Node<C, E>[]): Node<C, E> | undefined {
+    if (this.type === 'concurrent') {
+      throw new Error(
+        `Node#_childToEnter: cannot be called on a concurrent state: ${this}`,
+      );
+    }
+
+    let name = from
+      .map(n => n.path[this.depth + 1]?.name)
+      .find(name => this.children.has(name));
+
+    return name ? this.children.get(name) : undefined;
+  }
+
+  _exit(ctx: C, evt: E, from: Node<C, E>[]): [C, Effect<E>[]] {
+    const effects: Effect<E>[] = [];
+
+    if (!this.isLeaf) {
+      const [c, es] = this[
+        this.type === 'concurrent' ? '_exitConcurrent' : '_exitCluster'
+      ](ctx, evt, from);
+      ctx = c;
+      effects.push(...es);
+    }
+
+    if (this.exitHandler) {
+      const [c, es] = this.exitHandler(ctx, evt);
+      ctx = c;
+      effects.push(...es);
     }
 
     return [ctx, effects];
+  }
+
+  _exitConcurrent(ctx: C, evt: E, from: Node<C, E>[]): [C, Effect<E>[]] {
+    const effects: Effect<E>[] = [];
+
+    for (const [, child] of this.children) {
+      const [c, es] = child._exit(ctx, evt, from);
+      ctx = c;
+      effects.push(...es);
+    }
+
+    return [ctx, effects];
+  }
+
+  _exitCluster(ctx: C, evt: E, from: Node<C, E>[]): [C, Effect<E>[]] {
+    const child = this._childToExit(ctx, evt, from);
+
+    if (!child) {
+      throw new Error(
+        `Node#_exitCluster: could not determine child state to exit`,
+      );
+    }
+
+    return child._exit(ctx, evt, from);
   }
 
   // Enter from the receiver pivot node to the given `to` nodes.
@@ -221,10 +261,6 @@ export default class Node<C, E extends Event> {
     evt: E,
     to: Node<C, E>[],
   ): [C, Effect<E>[], Node<C, E>[]] {
-    if (this.type === 'concurrent') {
-      throw new Error(`Node#_pivotEnter: invalid pivot state: ${this}`);
-    }
-
     const child = this._childToEnter(ctx, evt, to);
 
     if (!child) {

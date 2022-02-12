@@ -200,10 +200,10 @@ describe('Statechart#_transition', () => {
     expect(ctx).toEqual({
       ops: [
         {type: 'exit', path: '/b/b1/c'},
-        {type: 'exit', path: '/b/b2/f'},
-        {type: 'exit', path: '/b/b3/g'},
         {type: 'exit', path: '/b/b1'},
+        {type: 'exit', path: '/b/b2/f'},
         {type: 'exit', path: '/b/b2'},
+        {type: 'exit', path: '/b/b3/g'},
         {type: 'exit', path: '/b/b3'},
         {type: 'exit', path: '/b'},
         {type: 'enter', path: '/a'},
