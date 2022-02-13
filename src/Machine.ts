@@ -8,20 +8,18 @@ export default class Machine<C, E extends Event> {
     this.state = statechart.initialState;
   }
 
-  start(): this {
+  start(): Promise<(E | undefined)[]> {
     return this.exec(this.state);
   }
 
-  send(event: E): this {
+  send(event: E): Promise<(E | undefined)[]> {
     this.state = this.statechart.send(this.state, event);
     return this.exec(this.state);
   }
 
-  exec(state: State<C, E>): this {
-    for (const effect of state.effects) {
-      effect.run(this.send.bind(this));
-    }
-    return this;
+  exec(state: State<C, E>): Promise<(E | undefined)[]> {
+    const send = this.send.bind(this);
+    return Promise.all(state.effects.map(e => e.run(send)));
   }
 
   get current(): string[] {

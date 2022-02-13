@@ -44,29 +44,30 @@ export default class Statechart<C, E extends Event> {
           continue;
         }
 
-        const [c, es, to] = result;
-        context = c;
-        effects.push(...es);
+        context = result.context;
+        effects.push(...result.effects);
 
-        const pivots = new Set<Node<C, E>>();
+        if (result.goto.length) {
+          const pivots = new Set<Node<C, E>>();
 
-        for (const node of to) {
-          const pivot = n.pivot(node);
-          if (!pivot) {
+          for (const node of result.goto) {
+            const pivot = n.pivot(node);
+            if (!pivot) {
+              throw new Error(
+                `Statechart#send: could not find pivot between ${n} and ${node}`,
+              );
+            }
+            pivots.add(pivot);
+          }
+
+          if (pivots.size > 1) {
             throw new Error(
-              `Statechart#send: could not find pivot between ${n} and ${node}`,
+              `Statechart#send: invalid transition, multiple pivot states found between ${n} and ${result.goto}`,
             );
           }
-          pivots.add(pivot);
-        }
 
-        if (pivots.size > 1) {
-          throw new Error(
-            `Statechart#send: invalid transition, multiple pivot states found between ${n} and ${to}`,
-          );
+          transitions.push({pivot: Array.from(pivots)[0], to: result.goto});
         }
-
-        transitions.push({pivot: Array.from(pivots)[0], to});
       }
     }
 

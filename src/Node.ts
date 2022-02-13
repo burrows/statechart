@@ -137,17 +137,20 @@ export default class Node<C, E extends Event> {
     return this.path;
   }
 
-  send(ctx: C, evt: E): [C, Effect<E>[], Node<C, E>[]] | undefined {
+  send(
+    ctx: C,
+    evt: E,
+  ): {context: C; effects: Effect<E>[]; goto: Node<C, E>[]} | undefined {
     const handler = this.handlers[evt.type as E['type']];
     if (!handler) return undefined;
 
     const result = handler(ctx, evt as Extract<E, {type: E['type']}>);
     if (!result) return undefined;
 
-    return [
-      result.context || ctx,
-      result.effects || [],
-      (result.goto ? [result.goto] : []).flat().map(p => {
+    return {
+      context: result.context || ctx,
+      effects: result.effects || [],
+      goto: (result.goto ? [result.goto] : []).flat().map(p => {
         const n = this.resolve(p);
         if (!n) {
           throw new Error(
@@ -156,7 +159,7 @@ export default class Node<C, E extends Event> {
         }
         return n;
       }),
-    ];
+    };
   }
 
   pivot(other: Node<C, E>): Node<C, E> | undefined {
