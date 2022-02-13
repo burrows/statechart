@@ -5,18 +5,16 @@ interface Ctx {
   ops: {type: 'enter' | 'exit'; path: string}[];
 }
 
-type Evt = {type: 'goto'; from: string; to: string[]};
+type Evt = {type: 'goto'; from: string; to: string | string[]};
 
 const trace = (s: Node<Ctx, Evt>): void => {
-  s.enter(ctx => [
-    {...ctx, ops: [...ctx.ops, {type: 'enter', path: s.path}]},
-    [],
-  ]);
+  s.enter(ctx => ({
+    context: {...ctx, ops: [...ctx.ops, {type: 'enter', path: s.path}]},
+  }));
 
-  s.exit(ctx => [
-    {...ctx, ops: [...ctx.ops, {type: 'exit', path: s.path}]},
-    [],
-  ]);
+  s.exit(ctx => ({
+    context: {...ctx, ops: [...ctx.ops, {type: 'exit', path: s.path}]},
+  }));
 };
 
 const tstate = (
@@ -27,8 +25,8 @@ const tstate = (
 ) => {
   s.state(name, opts, s => {
     trace(s);
-    s.on('goto', (ctx, evt) =>
-      s.path === evt.from ? [ctx, [], evt.to] : undefined,
+    s.on('goto', (_ctx, evt) =>
+      s.path === evt.from ? {goto: evt.to} : undefined,
     );
 
     if (body) body(s);
@@ -97,7 +95,7 @@ describe('Statechart#send', () => {
     const state = sc1.send(sc1.initialState, {
       type: 'goto',
       from: '/a/c',
-      to: ['/b/f/h'],
+      to: '/b/f/h',
     });
 
     expect(state.current.map(n => n.path)).toEqual(['/b/f/h']);
@@ -120,7 +118,7 @@ describe('Statechart#send', () => {
     const state = sc1.send(sc1.initialState, {
       type: 'goto',
       from: '/a',
-      to: ['/b/f/i/j'],
+      to: '/b/f/i/j',
     });
 
     expect(state.current.map(n => n.path)).toEqual(['/b/f/i/j']);
@@ -144,7 +142,7 @@ describe('Statechart#send', () => {
     const state = sc1.send(sc1.initialState, {
       type: 'goto',
       from: '/a/c',
-      to: ['../d'],
+      to: '../d',
     });
 
     expect(state.current.map(n => n.path)).toEqual(['/a/d']);
@@ -164,7 +162,7 @@ describe('Statechart#send', () => {
     const state = sc1.send(sc1.initialState, {
       type: 'goto',
       from: '/a/c',
-      to: ['/b/f'],
+      to: '/b/f',
     });
 
     expect(state.current.map(n => n.path)).toEqual(['/b/f/g']);
@@ -187,7 +185,7 @@ describe('Statechart#send', () => {
     const state = sc1.send(sc1.initialState, {
       type: 'goto',
       from: '/a/c',
-      to: ['/b/f/i'],
+      to: '/b/f/i',
     });
 
     expect(state.current.map(n => n.path)).toEqual(['/b/f/i/k/l']);
@@ -212,7 +210,7 @@ describe('Statechart#send', () => {
     const state = sc2.send(sc2.initialState, {
       type: 'goto',
       from: '/a',
-      to: ['/b'],
+      to: '/b',
     });
 
     expect(state.current.map(n => n.path)).toEqual([
@@ -270,13 +268,13 @@ describe('Statechart#send', () => {
     let state = sc2.send(sc2.initialState, {
       type: 'goto',
       from: '/a',
-      to: ['/b'],
+      to: '/b',
     });
 
     state = sc2.send(state, {
       type: 'goto',
       from: '/b/b1/c',
-      to: ['/a'],
+      to: '/a',
     });
 
     expect(state.current.map(n => n.path)).toEqual(['/a']);

@@ -10,38 +10,38 @@ type Evt = {type: 'open'} | {type: 'close'};
 const statechart = new Statechart<Ctx, Evt>({openings: 0}, s => {
   s.enter((ctx, evt) => {
     console.log('ROOT ENTER:', ctx, evt);
-    return [ctx, []];
+    return {};
   });
 
   s.state('closed', s => {
     s.enter((ctx, evt) => {
       console.log('CLOSED ENTER:', ctx, evt);
-      return [ctx, []];
+      return {};
     });
 
     s.exit((ctx, evt) => {
       console.log('CLOSED EXIT:', ctx, evt);
-      return [ctx, []];
+      return {};
     });
 
     s.on('open', (ctx, _evt) => {
-      return [ctx, [], ['../opened']];
+      return {goto: '../opened'};
     });
   });
 
   s.state('opened', s => {
     s.enter((ctx, evt) => {
       console.log('OPENED ENTER:', ctx, evt);
-      return [{...ctx, openings: ctx.openings + 1}, []];
+      return {context: {...ctx, openings: ctx.openings + 1}};
     });
 
     s.exit((ctx, evt) => {
       console.log('OPENED EXIT:', ctx, evt);
-      return [ctx, []];
+      return {};
     });
 
     s.on('close', (ctx, _evt) => {
-      return [ctx, [], ['../closed']];
+      return {goto: '../closed'};
     });
   });
 });

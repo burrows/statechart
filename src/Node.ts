@@ -12,7 +12,10 @@ export interface NodeOpts {
 
 export type NodeBody<C, E extends Event> = (n: Node<C, E>) => void;
 
-export type TransitionHandlerResult<C, E extends Event> = [C, Effect<E>[]];
+export interface TransitionHandlerResult<C, E extends Event> {
+  context?: C;
+  effects?: Effect<E>[];
+}
 
 export type TransitionHandler<C, E extends Event> = (
   ctx: C,
@@ -20,7 +23,7 @@ export type TransitionHandler<C, E extends Event> = (
 ) => TransitionHandlerResult<C, E>;
 
 export type EventHandlerResult<C, E extends Event> =
-  | [C, Effect<E>[], string[]]
+  | {context?: C; effects?: Effect<E>[]; goto?: string | string[]}
   | undefined;
 
 export type EventHandler<C, E extends Event, T extends E['type']> = (
@@ -142,9 +145,9 @@ export default class Node<C, E extends Event> {
     if (!result) return undefined;
 
     return [
-      result[0],
-      result[1],
-      result[2].map(p => {
+      result.context || ctx,
+      result.effects || [],
+      (result.goto ? [result.goto] : []).flat().map(p => {
         const n = this.resolve(p);
         if (!n) {
           throw new Error(
@@ -203,9 +206,9 @@ export default class Node<C, E extends Event> {
     const effects: Effect<E>[] = [];
 
     if (this.enterHandler) {
-      const [c, es] = this.enterHandler(ctx, evt);
-      ctx = c;
-      effects.push(...es);
+      const r = this.enterHandler(ctx, evt);
+      ctx = r.context || ctx;
+      effects.push(...(r.effects || []));
     }
 
     if (this.isLeaf) return [ctx, effects, [this]];
@@ -273,9 +276,9 @@ export default class Node<C, E extends Event> {
     }
 
     if (this.exitHandler) {
-      const [c, es] = this.exitHandler(ctx, evt);
-      ctx = c;
-      effects.push(...es);
+      const r = this.exitHandler(ctx, evt);
+      ctx = r.context || ctx;
+      effects.push(...(r.effects || []));
     }
 
     return [ctx, effects];
