@@ -1,4 +1,4 @@
-import Node, {NodeOpts} from './Node';
+import Node, {NodeOpts, NodeBody} from './Node';
 import Statechart from './Statechart';
 
 interface Ctx {
@@ -23,7 +23,7 @@ const tstate = (
   s: Node<Ctx, Evt>,
   name: string,
   opts: NodeOpts,
-  body?: (n: Node<Ctx, Evt>) => void,
+  body?: NodeBody<Ctx, Evt>,
 ) => {
   s.state(name, opts, s => {
     trace(s);

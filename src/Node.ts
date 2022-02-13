@@ -7,8 +7,28 @@ export interface Effect<E> {
 }
 
 export interface NodeOpts {
-  concurrent?: boolean;
+  concurrent?: true;
 }
+
+export type NodeBody<C, E extends Event> = (n: Node<C, E>) => void;
+
+export type TransitionHandlerResult<C, E extends Event> = [C, Effect<E>[]];
+
+export type TransitionHandler<C, E extends Event> = (
+  ctx: C,
+  evt: E,
+) => TransitionHandlerResult<C, E>;
+
+export type EventHandlerResult<C, E extends Event> =
+  | [C, Effect<E>[], string[]]
+  | undefined;
+
+export type EventHandler<C, E extends Event, T extends E['type']> = (
+  ctx: C,
+  evt: Extract<E, {type: T}>,
+) => EventHandlerResult<C, E>;
+
+export type ConditionFn<C, E extends Event> = (ctx: C, evt: E) => string;
 
 export default class Node<C, E extends Event> {
   public name: string;
@@ -16,19 +36,19 @@ export default class Node<C, E extends Event> {
   public parent?: Node<C, E>;
   public children: Map<string, Node<C, E>>;
   public defaultChild?: string;
-  private enterHandler?: (ctx: C, evt: E) => [C, Effect<E>[]];
-  private exitHandler?: (ctx: C, evt: E) => [C, Effect<E>[]];
-  private condition?: (ctx: C, evt: E) => string;
+  private enterHandler?: TransitionHandler<C, E>;
+  private exitHandler?: TransitionHandler<C, E>;
+  private condition?: ConditionFn<C, E>;
   private handlers: Partial<
     {
       [T in E['type']]: (
         ctx: C,
         evt: Extract<E, {type: T}>,
-      ) => [C, Effect<E>[], string[]] | undefined;
+      ) => EventHandlerResult<C, E>;
     }
   >;
 
-  constructor(name: string, opts: NodeOpts, body?: (n: Node<C, E>) => void) {
+  constructor(name: string, opts: NodeOpts, body?: NodeBody<C, E>) {
     this.name = name;
     this.opts = opts;
     this.children = new Map();
@@ -37,12 +57,12 @@ export default class Node<C, E extends Event> {
   }
 
   state(name: string): this;
-  state(name: string, body: (n: Node<C, E>) => void): this;
+  state(name: string, body: NodeBody<C, E>): this;
   state(name: string, opts: NodeOpts): this;
-  state(name: string, opts: NodeOpts, body: (n: Node<C, E>) => void): this;
+  state(name: string, opts: NodeOpts, body: NodeBody<C, E>): this;
   state(name: string, ...args: any[]): this {
     let opts: NodeOpts = {};
-    let body: ((n: Node<C, E>) => void) | undefined;
+    let body: NodeBody<C, E> | undefined;
 
     if (args[0] && args[1]) {
       opts = args[0];
@@ -62,28 +82,22 @@ export default class Node<C, E extends Event> {
     return this;
   }
 
-  enter(handler: (ctx: C, evt: E) => [C, Effect<E>[]]): this {
+  enter(handler: TransitionHandler<C, E>): this {
     this.enterHandler = handler;
     return this;
   }
 
-  exit(handler: (ctx: C, evt: E) => [C, Effect<E>[]]): this {
+  exit(handler: TransitionHandler<C, E>): this {
     this.exitHandler = handler;
     return this;
   }
 
-  on<T extends E['type']>(
-    type: T,
-    handler: (
-      ctx: C,
-      evt: Extract<E, {type: T}>,
-    ) => [C, Effect<E>[], string[]] | undefined,
-  ): this {
+  on<T extends E['type']>(type: T, handler: EventHandler<C, E, T>): this {
     this.handlers[type] = handler;
     return this;
   }
 
-  C(f: (ctx: C, evt: E) => string): this {
+  C(f: ConditionFn<C, E>): this {
     this.condition = f;
     return this;
   }
