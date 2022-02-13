@@ -95,8 +95,12 @@ export default class Node<C, E extends Event> {
     return this;
   }
 
-  on<T extends E['type']>(type: T, handler: EventHandler<C, E, T>): this {
-    this.handlers[type] = handler;
+  on<T extends E['type']>(
+    type: T,
+    handler: EventHandler<C, E, T> | string,
+  ): this {
+    this.handlers[type] =
+      typeof handler === 'string' ? () => ({goto: handler}) : handler;
     return this;
   }
 

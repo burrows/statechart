@@ -390,7 +390,7 @@ describe('Statechart#send', () => {
       s.state('b', {concurrent: true}, s => {
         s.state('b1', s => {
           s.state('x', s => {
-            s.on('foo', () => ({goto: '../y'}));
+            s.on('foo', '../y');
           });
           s.state('y');
         });
@@ -400,7 +400,7 @@ describe('Statechart#send', () => {
         });
         s.state('b3', s => {
           s.state('x', s => {
-            s.on('foo', () => ({goto: '../y'}));
+            s.on('foo', '../y');
           });
           s.state('y');
         });
