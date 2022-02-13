@@ -16,15 +16,13 @@ export default class Statechart<C, E extends Event> {
   }
 
   get initialState(): State<C, E> {
-    const [context, effects, current] = this.root._enter(
+    return this.root._enter(
       this.initialContext,
       {
         type: '__init__',
       } as E,
       [],
     );
-
-    return {current, context, effects};
   }
 
   send(state: State<C, E>, evt: E): State<C, E> {
@@ -75,22 +73,14 @@ export default class Statechart<C, E extends Event> {
     const current: Node<C, E>[] = [];
 
     for (const {pivot, to} of transitions) {
-      const [exitCtx, exitEffects] = pivot.pivotExit(
-        context,
-        evt,
-        state.current,
-      );
-      context = exitCtx;
-      effects.push(...exitEffects);
+      const exitRes = pivot.pivotExit(context, evt, state.current);
+      context = exitRes.context;
+      effects.push(...exitRes.effects);
 
-      const [enterCtx, enterEffects, nodes] = pivot.pivotEnter(
-        context,
-        evt,
-        to,
-      );
-      context = enterCtx;
-      effects.push(...enterEffects);
-      current.push(...nodes);
+      const enterRes = pivot.pivotEnter(context, evt, to);
+      context = enterRes.context;
+      effects.push(...enterRes.effects);
+      current.push(...enterRes.current);
     }
 
     return {current, context, effects};
