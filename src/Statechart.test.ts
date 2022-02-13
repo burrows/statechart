@@ -381,4 +381,38 @@ describe('Statechart#send', () => {
     });
     expect(state.effects).toEqual([]);
   });
+
+  it('handles multiple transitions across concurrent states', () => {
+    type Ctx = {};
+    type Evt = {type: 'foo'};
+
+    const sc = new Statechart<Ctx, Evt>({}, s => {
+      s.state('b', {concurrent: true}, s => {
+        s.state('b1', s => {
+          s.state('x', s => {
+            s.on('foo', () => ({goto: '../y'}));
+          });
+          s.state('y');
+        });
+        s.state('b2', s => {
+          s.state('x');
+          s.state('y');
+        });
+        s.state('b3', s => {
+          s.state('x', s => {
+            s.on('foo', () => ({goto: '../y'}));
+          });
+          s.state('y');
+        });
+      });
+    });
+
+    const state = sc.send(sc.initialState, {type: 'foo'});
+
+    expect(state.current.map(n => n.path)).toEqual([
+      '/b/b2/x',
+      '/b/b1/y',
+      '/b/b3/y',
+    ]);
+  });
 });
