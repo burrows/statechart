@@ -163,6 +163,8 @@ export default class Node<C, E extends Event> {
   }
 
   pivot(other: Node<C, E>): Node<C, E> | undefined {
+    if (this === other) return this;
+
     let pivot: Node<C, E> | undefined;
     const nodes1 = this.lineage;
     const nodes2 = other.lineage;
@@ -211,6 +213,30 @@ export default class Node<C, E extends Event> {
     }
 
     return child._enter(ctx, evt, to);
+  }
+
+  _exit(
+    ctx: C,
+    evt: E,
+    from: Node<C, E>[],
+  ): {context: C; effects: Effect<E>[]} {
+    const effects: Effect<E>[] = [];
+
+    if (!this.isLeaf) {
+      const r = this[
+        this.type === 'concurrent' ? '_exitConcurrent' : '_exitCluster'
+      ](ctx, evt, from);
+      ctx = r.context;
+      effects.push(...r.effects);
+    }
+
+    if (this.exitHandler) {
+      const r = this.exitHandler(ctx, evt);
+      ctx = r.context || ctx;
+      effects.push(...(r.effects || []));
+    }
+
+    return {context: ctx, effects};
   }
 
   _enter(
@@ -277,30 +303,6 @@ export default class Node<C, E extends Event> {
       .find(name => this.children.has(name));
 
     return name ? this.children.get(name) : undefined;
-  }
-
-  private _exit(
-    ctx: C,
-    evt: E,
-    from: Node<C, E>[],
-  ): {context: C; effects: Effect<E>[]} {
-    const effects: Effect<E>[] = [];
-
-    if (!this.isLeaf) {
-      const r = this[
-        this.type === 'concurrent' ? '_exitConcurrent' : '_exitCluster'
-      ](ctx, evt, from);
-      ctx = r.context;
-      effects.push(...r.effects);
-    }
-
-    if (this.exitHandler) {
-      const r = this.exitHandler(ctx, evt);
-      ctx = r.context || ctx;
-      effects.push(...(r.effects || []));
-    }
-
-    return {context: ctx, effects};
   }
 
   private _exitConcurrent(

@@ -302,4 +302,26 @@ describe('Statechart#send', () => {
     });
     expect(state.effects).toEqual([]);
   });
+
+  it('exits and re-enters the current states when a self transition is indicated', () => {
+    const state = sc1.send(sc1.initialState, {
+      type: 'goto',
+      from: '/a',
+      to: '.',
+    });
+
+    expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'enter', path: '/a/c'},
+        {type: 'exit', path: '/a/c'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/a'},
+        {type: 'enter', path: '/a/c'},
+      ],
+    });
+    expect(state.effects).toEqual([]);
+  });
 });
