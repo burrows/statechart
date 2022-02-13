@@ -77,12 +77,16 @@ export default class Statechart<C, E extends Event> {
             self,
           });
         }
+
+        break;
       }
     }
 
-    const current: Node<C, E>[] = [];
+    let current = [...state.current];
 
     for (const {pivot, to, self} of transitions) {
+      current = current.filter(n => !n.lineage.includes(pivot));
+
       const exitRes = self
         ? pivot._exit(context, evt, state.current)
         : pivot.pivotExit(context, evt, state.current);

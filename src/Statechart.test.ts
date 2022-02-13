@@ -5,7 +5,7 @@ interface Ctx {
   ops: {type: 'enter' | 'exit'; path: string}[];
 }
 
-type Evt = {type: 'goto'; from: string; to: string | string[]};
+type Evt = {type: 'goto'; from: string; to: string | string[]} | {type: 'noop'};
 
 const trace = (s: Node<Ctx, Evt>): void => {
   s.enter(ctx => ({
@@ -320,6 +320,63 @@ describe('Statechart#send', () => {
         {type: 'exit', path: '/a'},
         {type: 'enter', path: '/a'},
         {type: 'enter', path: '/a/c'},
+      ],
+    });
+    expect(state.effects).toEqual([]);
+  });
+
+  it('does nothing on events that are not handled', () => {
+    const state = sc1.send(sc1.initialState, {type: 'noop'});
+
+    expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'enter', path: '/a/c'},
+      ],
+    });
+    expect(state.effects).toEqual([]);
+  });
+
+  it('handles transitions in nested concurrent states', () => {
+    let state = sc2.send(sc2.initialState, {
+      type: 'goto',
+      from: '/a',
+      to: '/b',
+    });
+
+    expect(state.current.map(n => n.path)).toEqual([
+      '/b/b1/c',
+      '/b/b2/e',
+      '/b/b3/g',
+    ]);
+
+    state = sc2.send(state, {
+      type: 'goto',
+      from: '/b/b3/g',
+      to: '../h',
+    });
+
+    expect(state.current.map(n => n.path)).toEqual([
+      '/b/b1/c',
+      '/b/b2/e',
+      '/b/b3/h',
+    ]);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/b1'},
+        {type: 'enter', path: '/b/b1/c'},
+        {type: 'enter', path: '/b/b2'},
+        {type: 'enter', path: '/b/b2/e'},
+        {type: 'enter', path: '/b/b3'},
+        {type: 'enter', path: '/b/b3/g'},
+        {type: 'exit', path: '/b/b3/g'},
+        {type: 'enter', path: '/b/b3/h'},
       ],
     });
     expect(state.effects).toEqual([]);
