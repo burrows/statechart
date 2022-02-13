@@ -75,40 +75,24 @@ export default class Statechart<C, E extends Event> {
     const current: Node<C, E>[] = [];
 
     for (const {pivot, to} of transitions) {
-      const [c, es, ns] = this._transition(
+      const [exitCtx, exitEffects] = pivot._pivotExit(
         context,
         evt,
-        pivot,
         state.current,
+      );
+      context = exitCtx;
+      effects.push(...exitEffects);
+
+      const [enterCtx, enterEffects, nodes] = pivot._pivotEnter(
+        context,
+        evt,
         to,
       );
-      context = c;
-      effects.push(...es);
-      current.push(...ns);
+      context = enterCtx;
+      effects.push(...enterEffects);
+      current.push(...nodes);
     }
 
     return {current, context, effects};
-  }
-
-  _transition(
-    ctx: C,
-    evt: E,
-    pivot: Node<C, E>,
-    from: Node<C, E>[],
-    to: Node<C, E>[],
-  ): [C, Effect<E>[], Node<C, E>[]] {
-    let effects: Effect<E>[] = [];
-    let current: Node<C, E>[] = [];
-
-    const [exitCtx, exitEffects] = pivot._pivotExit(ctx, evt, from);
-    ctx = exitCtx;
-    effects.push(...exitEffects);
-
-    const [enterCtx, enterEffects, nodes] = pivot._pivotEnter(ctx, evt, to);
-    ctx = enterCtx;
-    effects.push(...enterEffects);
-    current.push(...nodes);
-
-    return [ctx, effects, current];
   }
 }
