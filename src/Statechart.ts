@@ -7,16 +7,16 @@ export interface State<C, E extends Event> {
 }
 
 export default class Statechart<C, E extends Event> {
-  public _root: Node<C, E>;
+  private root: Node<C, E>;
   private initialContext: C;
 
   constructor(context: C, body: (n: Node<C, E>) => void) {
-    this._root = new Node('', {}, body);
+    this.root = new Node('', {}, body);
     this.initialContext = context;
   }
 
   get initialState(): State<C, E> {
-    const [context, effects, current] = this._root._enter(
+    const [context, effects, current] = this.root._enter(
       this.initialContext,
       {
         type: '__init__',
@@ -75,7 +75,7 @@ export default class Statechart<C, E extends Event> {
     const current: Node<C, E>[] = [];
 
     for (const {pivot, to} of transitions) {
-      const [exitCtx, exitEffects] = pivot._pivotExit(
+      const [exitCtx, exitEffects] = pivot.pivotExit(
         context,
         evt,
         state.current,
@@ -83,7 +83,7 @@ export default class Statechart<C, E extends Event> {
       context = exitCtx;
       effects.push(...exitEffects);
 
-      const [enterCtx, enterEffects, nodes] = pivot._pivotEnter(
+      const [enterCtx, enterEffects, nodes] = pivot.pivotEnter(
         context,
         evt,
         to,
