@@ -1,5 +1,5 @@
 import Statechart from './Statechart';
-import Runner from './Runner';
+import Machine from './Machine';
 
 interface Ctx {
   openings: number;
@@ -24,7 +24,7 @@ const statechart = new Statechart<Ctx, Evt>({openings: 0}, s => {
       return {};
     });
 
-    s.on('open', (ctx, _evt) => {
+    s.on('open', (_ctx, _evt) => {
       return {goto: '../opened'};
     });
   });
@@ -40,18 +40,18 @@ const statechart = new Statechart<Ctx, Evt>({openings: 0}, s => {
       return {};
     });
 
-    s.on('close', (ctx, _evt) => {
+    s.on('close', (_ctx, _evt) => {
       return {goto: '../closed'};
     });
   });
 });
 
-const runner = new Runner(statechart);
-runner.start();
-console.log('1:', runner.current, runner.context);
-runner.send({type: 'open'});
-console.log('2:', runner.current, runner.context);
-runner.send({type: 'close'});
-console.log('3:', runner.current, runner.context);
-runner.send({type: 'open'});
-console.log('4:', runner.current, runner.context);
+const machine = new Machine(statechart);
+machine.start();
+console.log('1:', machine.current, machine.context);
+machine.send({type: 'open'});
+console.log('2:', machine.current, machine.context);
+machine.send({type: 'close'});
+console.log('3:', machine.current, machine.context);
+machine.send({type: 'open'});
+console.log('4:', machine.current, machine.context);

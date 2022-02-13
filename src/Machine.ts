@@ -1,7 +1,7 @@
 import {Event} from './Node';
 import Statechart, {State} from './Statechart';
 
-export default class Runner<C, E extends Event> {
+export default class Machine<C, E extends Event> {
   private state: State<C, E>;
 
   constructor(private statechart: Statechart<C, E>) {
