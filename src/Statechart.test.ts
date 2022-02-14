@@ -75,6 +75,28 @@ const sc2 = new Statechart<Ctx, Evt>({ops: []}, s => {
   });
 });
 
+const sc3 = new Statechart<Ctx, Evt>({ops: []}, s => {
+  trace(s);
+  tstate(s, 'a', {});
+  tstate(s, 'b', {}, s => {
+    tstate(s, 'c', {H: true}, s => {
+      tstate(s, 'e', {});
+      tstate(s, 'f', {});
+      tstate(s, 'g', {});
+    });
+    tstate(s, 'd', {H: '*'}, s => {
+      tstate(s, 'h', {}, s => {
+        tstate(s, 'j', {});
+        tstate(s, 'k', {});
+      });
+      tstate(s, 'i', {}, s => {
+        tstate(s, 'l', {});
+        tstate(s, 'm', {});
+      });
+    });
+  });
+});
+
 describe('Statechart#initialState', () => {
   it('is the result of entering the root state', () => {
     const state = sc1.initialState;
@@ -414,5 +436,147 @@ describe('Statechart#send', () => {
       '/b/b1/y',
       '/b/b3/y',
     ]);
+  });
+
+  it('handles shallow history states', () => {
+    let state = sc3.send(sc3.initialState, {
+      type: 'goto',
+      from: '/a',
+      to: '/b/c/f',
+    });
+
+    expect(state.current.map(n => n.path)).toEqual(['/b/c/f']);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/c'},
+        {type: 'enter', path: '/b/c/f'},
+      ],
+    });
+
+    state = sc3.send(state, {
+      type: 'goto',
+      from: '/b',
+      to: '/a',
+    });
+
+    expect(state.current.map(n => n.path)).toEqual(['/a']);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/c'},
+        {type: 'enter', path: '/b/c/f'},
+        {type: 'exit', path: '/b/c/f'},
+        {type: 'exit', path: '/b/c'},
+        {type: 'exit', path: '/b'},
+        {type: 'enter', path: '/a'},
+      ],
+    });
+
+    state = sc3.send(state, {
+      type: 'goto',
+      from: '/a',
+      to: '/b/c',
+    });
+
+    expect(state.current.map(n => n.path)).toEqual(['/b/c/f']);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/c'},
+        {type: 'enter', path: '/b/c/f'},
+        {type: 'exit', path: '/b/c/f'},
+        {type: 'exit', path: '/b/c'},
+        {type: 'exit', path: '/b'},
+        {type: 'enter', path: '/a'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/c'},
+        {type: 'enter', path: '/b/c/f'},
+      ],
+    });
+  });
+
+  it('handles deep history states', () => {
+    let state = sc3.send(sc3.initialState, {
+      type: 'goto',
+      from: '/a',
+      to: '/b/d/i/m',
+    });
+
+    expect(state.current.map(n => n.path)).toEqual(['/b/d/i/m']);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/d'},
+        {type: 'enter', path: '/b/d/i'},
+        {type: 'enter', path: '/b/d/i/m'},
+      ],
+    });
+
+    state = sc3.send(state, {
+      type: 'goto',
+      from: '/b',
+      to: '/a',
+    });
+
+    expect(state.current.map(n => n.path)).toEqual(['/a']);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/d'},
+        {type: 'enter', path: '/b/d/i'},
+        {type: 'enter', path: '/b/d/i/m'},
+        {type: 'exit', path: '/b/d/i/m'},
+        {type: 'exit', path: '/b/d/i'},
+        {type: 'exit', path: '/b/d'},
+        {type: 'exit', path: '/b'},
+        {type: 'enter', path: '/a'},
+      ],
+    });
+
+    state = sc3.send(state, {
+      type: 'goto',
+      from: '/a',
+      to: '/b/d',
+    });
+
+    expect(state.current.map(n => n.path)).toEqual(['/b/d/i/m']);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/d'},
+        {type: 'enter', path: '/b/d/i'},
+        {type: 'enter', path: '/b/d/i/m'},
+        {type: 'exit', path: '/b/d/i/m'},
+        {type: 'exit', path: '/b/d/i'},
+        {type: 'exit', path: '/b/d'},
+        {type: 'exit', path: '/b'},
+        {type: 'enter', path: '/a'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/d'},
+        {type: 'enter', path: '/b/d/i'},
+        {type: 'enter', path: '/b/d/i/m'},
+      ],
+    });
   });
 });

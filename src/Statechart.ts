@@ -1,4 +1,4 @@
-import Node, {Effect, Event, State} from './Node';
+import Node, {Event, State} from './Node';
 
 export default class Statechart<C, E extends Event> {
   private root: Node<C, E>;
@@ -11,10 +11,8 @@ export default class Statechart<C, E extends Event> {
 
   get initialState(): State<C, E> {
     return this.root._enter(
-      {context: this.initialContext, effects: [], current: []},
-      {
-        type: '__init__',
-      } as E,
+      {context: this.initialContext, effects: [], current: [], history: {}},
+      {type: '__init__'} as E,
       [],
     );
   }

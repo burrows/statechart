@@ -1,5 +1,6 @@
 import {Event} from './Node';
-import Statechart, {State} from './Statechart';
+import Statechart from './Statechart';
+import {State} from './Node';
 
 export default class Machine<C, E extends Event> {
   private state: State<C, E>;

@@ -10,10 +10,12 @@ export interface State<C, E extends Event> {
   current: Node<C, E>[];
   context: C;
   effects: Effect<E>[];
+  history: {[path: string]: string};
 }
 
 export interface NodeOpts {
   concurrent?: true;
+  H?: true | '*';
 }
 
 export type NodeBody<C, E extends Event> = (n: Node<C, E>) => void;
@@ -141,6 +143,16 @@ export default class Node<C, E extends Event> {
 
   get path(): string {
     return this.isRoot ? '/' : this.lineage.map(n => n.name).join('/');
+  }
+
+  get history(): boolean {
+    if (this.opts.H) return true;
+    let n = this.parent;
+    while (n) {
+      if (n.opts.H === '*') return true;
+      n = n.parent;
+    }
+    return false;
   }
 
   toString(): string {
@@ -332,6 +344,10 @@ export default class Node<C, E extends Event> {
       );
     }
 
+    if (this.history) {
+      state = {...state, history: {...state.history, [this.path]: child.name}};
+    }
+
     return child._exit(state, evt);
   }
 
@@ -351,9 +367,11 @@ export default class Node<C, E extends Event> {
       .find(name => this.children.has(name));
     if (name) return this.children.get(name);
 
-    name = this.condition
-      ? this.condition(state.context, evt)
-      : this.defaultChild;
+    if (this.condition) {
+      return this.children.get(this.condition(state.context, evt));
+    }
+
+    name = state.history[this.path] || this.defaultChild;
     return name ? this.children.get(name) : undefined;
   }
 
