@@ -298,7 +298,7 @@ export default class Node<C, E extends Event> {
   private _childToExit(from: Node<C, E>[]): Node<C, E> | undefined {
     if (this.type === 'concurrent') {
       throw new Error(
-        `Node#_childToEnter: cannot be called on a concurrent state: ${this}`,
+        `Node#_childToExit: cannot be called on a concurrent state: ${this}`,
       );
     }
 
