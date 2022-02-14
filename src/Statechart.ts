@@ -1,10 +1,4 @@
-import Node, {Effect, Event} from './Node';
-
-export interface State<C, E extends Event> {
-  current: Node<C, E>[];
-  context: C;
-  effects: Effect<E>[];
-}
+import Node, {Effect, Event, State} from './Node';
 
 export default class Statechart<C, E extends Event> {
   private root: Node<C, E>;
@@ -17,7 +11,7 @@ export default class Statechart<C, E extends Event> {
 
   get initialState(): State<C, E> {
     return this.root._enter(
-      this.initialContext,
+      {context: this.initialContext, effects: [], current: []},
       {
         type: '__init__',
       } as E,
@@ -26,14 +20,14 @@ export default class Statechart<C, E extends Event> {
   }
 
   send(state: State<C, E>, evt: E): State<C, E> {
-    let context = state.context;
     const seen = new Set<Node<C, E>>();
-    const effects: Effect<E>[] = [];
     const transitions: {
       pivot: Node<C, E>;
       to: Node<C, E>[];
       self: boolean;
     }[] = [];
+
+    state = {...state, effects: []};
 
     for (const node of state.current) {
       let n: Node<C, E> | undefined = node;
@@ -41,15 +35,14 @@ export default class Statechart<C, E extends Event> {
       while (n && !seen.has(n)) {
         seen.add(n);
 
-        const result = n.send(context, evt);
+        const result = n.send(state, evt);
 
         if (!result) {
           n = n.parent;
           continue;
         }
 
-        context = result.context;
-        effects.push(...result.effects);
+        state = result.state;
 
         if (result.goto.length) {
           const pivots = new Set<Node<C, E>>();
@@ -82,25 +75,13 @@ export default class Statechart<C, E extends Event> {
       }
     }
 
-    let current = [...state.current];
-
     for (const {pivot, to, self} of transitions) {
-      current = current.filter(n => !n.lineage.includes(pivot));
-
-      const exitRes = self
-        ? pivot._exit(context, evt, state.current)
-        : pivot.pivotExit(context, evt, state.current);
-      context = exitRes.context;
-      effects.push(...exitRes.effects);
-
-      const enterRes = self
-        ? pivot._enter(context, evt, to)
-        : pivot.pivotEnter(context, evt, to);
-      context = enterRes.context;
-      effects.push(...enterRes.effects);
-      current.push(...enterRes.current);
+      state = self ? pivot._exit(state, evt) : pivot.pivotExit(state, evt);
+      state = self
+        ? pivot._enter(state, evt, to)
+        : pivot.pivotEnter(state, evt, to);
     }
 
-    return {current, context, effects};
+    return state;
   }
 }

@@ -6,6 +6,12 @@ export interface Effect<E> {
   run(send: (event: E) => void): Promise<E | undefined>;
 }
 
+export interface State<C, E extends Event> {
+  current: Node<C, E>[];
+  context: C;
+  effects: Effect<E>[];
+}
+
 export interface NodeOpts {
   concurrent?: true;
 }
@@ -142,18 +148,23 @@ export default class Node<C, E extends Event> {
   }
 
   send(
-    ctx: C,
+    state: State<C, E>,
     evt: E,
-  ): {context: C; effects: Effect<E>[]; goto: Node<C, E>[]} | undefined {
+  ): {state: State<C, E>; goto: Node<C, E>[]} | undefined {
     const handler = this.handlers[evt.type as E['type']];
     if (!handler) return undefined;
 
-    const result = handler(ctx, evt as Extract<E, {type: E['type']}>);
+    const result = handler(state.context, evt as Extract<E, {type: E['type']}>);
     if (!result) return undefined;
 
+    state = {
+      ...state,
+      context: result.context || state.context,
+      effects: [...state.effects, ...(result.effects || [])],
+    };
+
     return {
-      context: result.context || ctx,
-      effects: result.effects || [],
+      state,
       goto: (result.goto ? [result.goto] : []).flat().map(p => {
         const n = this.resolve(p);
         if (!n) {
@@ -186,12 +197,8 @@ export default class Node<C, E extends Event> {
   }
 
   // Exit from the given `from` nodes to the receiver pivot node.
-  pivotExit(
-    ctx: C,
-    evt: E,
-    from: Node<C, E>[],
-  ): {context: C; effects: Effect<E>[]} {
-    const child = this._childToExit(from);
+  pivotExit(state: State<C, E>, evt: E): State<C, E> {
+    const child = this._childToExit(state.current);
 
     if (!child) {
       throw new Error(
@@ -199,16 +206,12 @@ export default class Node<C, E extends Event> {
       );
     }
 
-    return child._exit(ctx, evt, from);
+    return child._exit(state, evt);
   }
 
   // Enter from the receiver pivot node to the given `to` nodes.
-  pivotEnter(
-    ctx: C,
-    evt: E,
-    to: Node<C, E>[],
-  ): {context: C; effects: Effect<E>[]; current: Node<C, E>[]} {
-    const child = this._childToEnter(ctx, evt, to);
+  pivotEnter(state: State<C, E>, evt: E, to: Node<C, E>[]): State<C, E> {
+    const child = this._childToEnter(state, evt, to);
 
     if (!child) {
       throw new Error(
@@ -216,55 +219,52 @@ export default class Node<C, E extends Event> {
       );
     }
 
-    return child._enter(ctx, evt, to);
+    return child._enter(state, evt, to);
   }
 
-  _exit(
-    ctx: C,
-    evt: E,
-    from: Node<C, E>[],
-  ): {context: C; effects: Effect<E>[]} {
-    const effects: Effect<E>[] = [];
-
+  _exit(state: State<C, E>, evt: E): State<C, E> {
     if (!this.isLeaf) {
-      const r = this[
+      state = this[
         this.type === 'concurrent' ? '_exitConcurrent' : '_exitCluster'
-      ](ctx, evt, from);
-      ctx = r.context;
-      effects.push(...r.effects);
+      ](state, evt);
+    } else {
+      state = {...state, current: state.current.filter(n => n !== this)};
     }
 
     if (this.exitHandler) {
-      const r = this.exitHandler(ctx, evt);
-      ctx = r.context || ctx;
-      effects.push(...(r.effects || []));
+      const r = this.exitHandler(state.context, evt);
+      state = {
+        ...state,
+        context: r.context || state.context,
+        effects: [...state.effects, ...(r.effects || [])],
+      };
     }
 
-    return {context: ctx, effects};
+    return state;
   }
 
-  _enter(
-    ctx: C,
-    evt: E,
-    to: Node<C, E>[],
-  ): {context: C; effects: Effect<E>[]; current: Node<C, E>[]} {
-    const effects: Effect<E>[] = [];
-
+  _enter(state: State<C, E>, evt: E, to: Node<C, E>[]): State<C, E> {
     if (this.enterHandler) {
-      const r = this.enterHandler(ctx, evt);
-      ctx = r.context || ctx;
-      effects.push(...(r.effects || []));
+      const r = this.enterHandler(state.context, evt);
+      state = {
+        ...state,
+        context: r.context || state.context,
+        effects: [...state.effects, ...(r.effects || [])],
+      };
     }
 
-    if (this.isLeaf) return {context: ctx, effects, current: [this]};
+    if (this.isLeaf) return {...state, current: [...state.current, this]};
 
     const result = this[
       this.type === 'concurrent' ? '_enterConcurrent' : '_enterCluster'
-    ](ctx, evt, to);
-    ctx = result.context;
-    effects.push(...result.effects);
+    ](state, evt, to);
 
-    return {context: ctx, effects, current: result.current};
+    return {
+      ...state,
+      context: result.context,
+      effects: [...state.effects, ...result.effects],
+      current: result.current,
+    };
   }
 
   resolve(path: string | string[]): Node<C, E> | undefined {
@@ -309,28 +309,22 @@ export default class Node<C, E extends Event> {
     return name ? this.children.get(name) : undefined;
   }
 
-  private _exitConcurrent(
-    ctx: C,
-    evt: E,
-    from: Node<C, E>[],
-  ): {context: C; effects: Effect<E>[]} {
-    const effects: Effect<E>[] = [];
-
+  private _exitConcurrent(state: State<C, E>, evt: E): State<C, E> {
     for (const [, child] of this.children) {
-      const r = child._exit(ctx, evt, from);
-      ctx = r.context;
-      effects.push(...r.effects);
+      const r = child._exit(state, evt);
+      state = {
+        ...state,
+        context: r.context,
+        effects: [...state.effects, ...r.effects],
+        current: r.current,
+      };
     }
 
-    return {context: ctx, effects};
+    return state;
   }
 
-  private _exitCluster(
-    ctx: C,
-    evt: E,
-    from: Node<C, E>[],
-  ): {context: C; effects: Effect<E>[]} {
-    const child = this._childToExit(from);
+  private _exitCluster(state: State<C, E>, evt: E): State<C, E> {
+    const child = this._childToExit(state.current);
 
     if (!child) {
       throw new Error(
@@ -338,11 +332,11 @@ export default class Node<C, E extends Event> {
       );
     }
 
-    return child._exit(ctx, evt, from);
+    return child._exit(state, evt);
   }
 
   private _childToEnter(
-    ctx: C,
+    state: State<C, E>,
     evt: E,
     to: Node<C, E>[],
   ): Node<C, E> | undefined {
@@ -357,34 +351,36 @@ export default class Node<C, E extends Event> {
       .find(name => this.children.has(name));
     if (name) return this.children.get(name);
 
-    name = this.condition ? this.condition(ctx, evt) : this.defaultChild;
+    name = this.condition
+      ? this.condition(state.context, evt)
+      : this.defaultChild;
     return name ? this.children.get(name) : undefined;
   }
 
   private _enterConcurrent(
-    ctx: C,
+    state: State<C, E>,
     evt: E,
     to: Node<C, E>[],
-  ): {context: C; effects: Effect<E>[]; current: Node<C, E>[]} {
-    const effects: Effect<E>[] = [];
-    const current: Node<C, E>[] = [];
-
+  ): State<C, E> {
     for (const [, child] of this.children) {
-      const r = child._enter(ctx, evt, to);
-      ctx = r.context;
-      effects.push(...r.effects);
-      current.push(...r.current);
+      const r = child._enter(state, evt, to);
+      state = {
+        ...state,
+        context: r.context,
+        effects: [...state.effects, ...r.effects],
+        current: r.current,
+      };
     }
 
-    return {context: ctx, effects, current};
+    return state;
   }
 
   private _enterCluster(
-    ctx: C,
+    state: State<C, E>,
     evt: E,
     to: Node<C, E>[],
-  ): {context: C; effects: Effect<E>[]; current: Node<C, E>[]} {
-    const child = this._childToEnter(ctx, evt, to);
+  ): State<C, E> {
+    const child = this._childToEnter(state, evt, to);
 
     if (!child) {
       throw new Error(
@@ -392,6 +388,6 @@ export default class Node<C, E extends Event> {
       );
     }
 
-    return child._enter(ctx, evt, to);
+    return child._enter(state, evt, to);
   }
 }
