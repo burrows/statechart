@@ -2,9 +2,13 @@ export interface Event {
   type: string;
 }
 
-export interface Effect<E> {
-  run(send: (event: E) => void): Promise<E | undefined>;
+export interface EffectObj<E> {
+  exec(send: (event: E) => void): Promise<E | undefined>;
 }
+
+export type EffectFn<E> = (send: (event: E) => void) => Promise<E | undefined>;
+
+export type Effect<E> = EffectObj<E> | EffectFn<E>;
 
 export interface State<C, E extends Event> {
   current: Node<C, E>[];

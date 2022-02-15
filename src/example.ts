@@ -1,5 +1,5 @@
 import Statechart from './Statechart';
-import {Effect} from './Node';
+import {Effect, EffectFn} from './Node';
 import Machine from './Machine';
 
 interface Ctx {
@@ -12,18 +12,29 @@ type Evt =
   | {type: 'knock'}
   | {type: 'knockDone'};
 
-class KnockEffect {
-  run(send: (e: Evt) => void): Promise<Evt> {
-    return new Promise(r => {
-      setTimeout(() => {
-        const evt: Evt = {type: 'knockDone'};
-        console.log('*knock*');
-        send(evt);
-        r(evt);
-      }, 1000);
-    });
-  }
-}
+// class KnockEffect {
+//   run(send: (e: Evt) => void): Promise<Evt> {
+//     return new Promise(r => {
+//       setTimeout(() => {
+//         const evt: Evt = {type: 'knockDone'};
+//         console.log('*knock*');
+//         send(evt);
+//         r(evt);
+//       }, 1000);
+//     });
+//   }
+// }
+
+const knock: EffectFn<Evt> = send => {
+  return new Promise(r => {
+    setTimeout(() => {
+      const evt: Evt = {type: 'knockDone'};
+      console.log('*knock*');
+      send(evt);
+      r(evt);
+    }, 1000);
+  });
+};
 
 const statechart = new Statechart<Ctx, Evt>({openings: 0}, s => {
   s.state('closed', s => {
@@ -32,7 +43,7 @@ const statechart = new Statechart<Ctx, Evt>({openings: 0}, s => {
     });
 
     s.on('knock', (_ctx, _evt) => {
-      return {effects: [new KnockEffect()]};
+      return {effects: [knock]};
     });
   });
 

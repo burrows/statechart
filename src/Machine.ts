@@ -20,7 +20,11 @@ export default class Machine<C, E extends Event> {
 
   exec(state: State<C, E>): Promise<(E | undefined)[]> {
     const send = this.send.bind(this);
-    return Promise.all(state.effects.map(e => e.run(send)));
+    return Promise.all(
+      state.effects.map(e =>
+        typeof e === 'function' ? e(send) : e.exec(send),
+      ),
+    );
   }
 
   get current(): string[] {
