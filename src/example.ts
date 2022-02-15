@@ -1,6 +1,4 @@
-import Statechart from './Statechart';
-import {Effect, EffectFn} from './Node';
-import Machine from './Machine';
+import Statechart, {EffectFn, Machine} from './index';
 
 interface Ctx {
   openings: number;
