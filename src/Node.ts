@@ -210,7 +210,7 @@ export default class Node<C, E extends Event> {
 
   // Exit from the given `from` nodes to the receiver pivot node.
   pivotExit(state: State<C, E>, evt: E): State<C, E> {
-    const child = this._childToExit(state.current);
+    const child = this.childToExit(state.current);
 
     if (!child) {
       throw new Error(
@@ -223,7 +223,7 @@ export default class Node<C, E extends Event> {
 
   // Enter from the receiver pivot node to the given `to` nodes.
   pivotEnter(state: State<C, E>, evt: E, to: Node<C, E>[]): State<C, E> {
-    const child = this._childToEnter(state, evt, to);
+    const child = this.childToEnter(state, evt, to);
 
     if (!child) {
       throw new Error(
@@ -237,7 +237,7 @@ export default class Node<C, E extends Event> {
   _exit(state: State<C, E>, evt: E): State<C, E> {
     if (!this.isLeaf) {
       state = this[
-        this.type === 'concurrent' ? '_exitConcurrent' : '_exitCluster'
+        this.type === 'concurrent' ? 'exitConcurrent' : 'exitCluster'
       ](state, evt);
     } else {
       state = {...state, current: state.current.filter(n => n !== this)};
@@ -268,7 +268,7 @@ export default class Node<C, E extends Event> {
     if (this.isLeaf) return {...state, current: [...state.current, this]};
 
     const result = this[
-      this.type === 'concurrent' ? '_enterConcurrent' : '_enterCluster'
+      this.type === 'concurrent' ? 'enterConcurrent' : 'enterCluster'
     ](state, evt, to);
 
     return {
@@ -307,7 +307,7 @@ export default class Node<C, E extends Event> {
     return segments.length === 0 ? next : next.resolve(segments);
   }
 
-  private _childToExit(from: Node<C, E>[]): Node<C, E> | undefined {
+  private childToExit(from: Node<C, E>[]): Node<C, E> | undefined {
     if (this.type === 'concurrent') {
       throw new Error(
         `Node#_childToExit: cannot be called on a concurrent state: ${this}`,
@@ -321,7 +321,7 @@ export default class Node<C, E extends Event> {
     return name ? this.children.get(name) : undefined;
   }
 
-  private _exitConcurrent(state: State<C, E>, evt: E): State<C, E> {
+  private exitConcurrent(state: State<C, E>, evt: E): State<C, E> {
     for (const [, child] of this.children) {
       const r = child._exit(state, evt);
       state = {
@@ -335,8 +335,8 @@ export default class Node<C, E extends Event> {
     return state;
   }
 
-  private _exitCluster(state: State<C, E>, evt: E): State<C, E> {
-    const child = this._childToExit(state.current);
+  private exitCluster(state: State<C, E>, evt: E): State<C, E> {
+    const child = this.childToExit(state.current);
 
     if (!child) {
       throw new Error(
@@ -351,7 +351,7 @@ export default class Node<C, E extends Event> {
     return child._exit(state, evt);
   }
 
-  private _childToEnter(
+  private childToEnter(
     state: State<C, E>,
     evt: E,
     to: Node<C, E>[],
@@ -375,7 +375,7 @@ export default class Node<C, E extends Event> {
     return name ? this.children.get(name) : undefined;
   }
 
-  private _enterConcurrent(
+  private enterConcurrent(
     state: State<C, E>,
     evt: E,
     to: Node<C, E>[],
@@ -393,16 +393,16 @@ export default class Node<C, E extends Event> {
     return state;
   }
 
-  private _enterCluster(
+  private enterCluster(
     state: State<C, E>,
     evt: E,
     to: Node<C, E>[],
   ): State<C, E> {
-    const child = this._childToEnter(state, evt, to);
+    const child = this.childToEnter(state, evt, to);
 
     if (!child) {
       throw new Error(
-        `Node#_enterCluster: could not determine child state to enter`,
+        `Node#enterCluster: could not determine child state to enter`,
       );
     }
 
