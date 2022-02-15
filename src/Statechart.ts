@@ -11,7 +11,17 @@ export default class Statechart<C, E extends Event> {
 
   get initialState(): State<C, E> {
     return this.root._enter(
-      {context: this.initialContext, effects: [], current: [], history: {}},
+      {
+        context: this.initialContext,
+        effects: [],
+        current: [],
+        history: {},
+        activities: {
+          current: {},
+          start: [],
+          stop: [],
+        },
+      },
       {type: '__init__'} as E,
       [],
     );
@@ -25,7 +35,15 @@ export default class Statechart<C, E extends Event> {
       self: boolean;
     }[] = [];
 
-    state = {...state, effects: []};
+    state = {
+      ...state,
+      effects: [],
+      activities: {
+        ...state.activities,
+        start: [],
+        stop: [],
+      },
+    };
 
     for (const node of state.current) {
       let n: Node<C, E> | undefined = node;

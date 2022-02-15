@@ -2,19 +2,31 @@ export interface Event {
   type: string;
 }
 
+export type SendFn<E> = (event: E) => void;
+
 export interface EffectObj<E> {
-  exec(send: (event: E) => void): Promise<E | undefined>;
+  exec(send: SendFn<E>): Promise<E | undefined>;
 }
 
-export type EffectFn<E> = (send: (event: E) => void) => Promise<E | undefined>;
+export type EffectFn<E> = (send: SendFn<E>) => Promise<E | undefined>;
 
 export type Effect<E> = EffectObj<E> | EffectFn<E>;
+
+export interface Activity<E> {
+  start(send: SendFn<E>): void;
+  stop(): void;
+}
 
 export interface State<C, E extends Event> {
   current: Node<C, E>[];
   context: C;
   effects: Effect<E>[];
   history: {[path: string]: string};
+  activities: {
+    current: {[path: string]: Activity<E>[]};
+    start: Activity<E>[];
+    stop: Activity<E>[];
+  };
 }
 
 export interface NodeOpts {
@@ -24,15 +36,26 @@ export interface NodeOpts {
 
 export type NodeBody<C, E extends Event> = (n: Node<C, E>) => void;
 
-export interface TransitionHandlerResult<C, E extends Event> {
+export interface ExitHandlerResult<C, E extends Event> {
   context?: C;
   effects?: Effect<E>[];
 }
 
-export type TransitionHandler<C, E extends Event> = (
+export type ExitHandler<C, E extends Event> = (
   ctx: C,
   evt: E,
-) => TransitionHandlerResult<C, E>;
+) => ExitHandlerResult<C, E>;
+
+export interface EnterHandlerResult<C, E extends Event> {
+  context?: C;
+  effects?: Effect<E>[];
+  activities?: Activity<E>[];
+}
+
+export type EnterHandler<C, E extends Event> = (
+  ctx: C,
+  evt: E,
+) => EnterHandlerResult<C, E>;
 
 export type EventHandlerResult<C, E extends Event> =
   | {context?: C; effects?: Effect<E>[]; goto?: string | string[]}
@@ -51,8 +74,8 @@ export default class Node<C, E extends Event> {
   public parent?: Node<C, E>;
   public children: Map<string, Node<C, E>>;
   private defaultChild?: string;
-  private enterHandler?: TransitionHandler<C, E>;
-  private exitHandler?: TransitionHandler<C, E>;
+  private enterHandler?: EnterHandler<C, E>;
+  private exitHandler?: ExitHandler<C, E>;
   private condition?: ConditionFn<C, E>;
   private handlers: Partial<
     {
@@ -97,12 +120,12 @@ export default class Node<C, E extends Event> {
     return this;
   }
 
-  enter(handler: TransitionHandler<C, E>): this {
+  enter(handler: EnterHandler<C, E>): this {
     this.enterHandler = handler;
     return this;
   }
 
-  exit(handler: TransitionHandler<C, E>): this {
+  exit(handler: ExitHandler<C, E>): this {
     this.exitHandler = handler;
     return this;
   }
@@ -256,6 +279,18 @@ export default class Node<C, E extends Event> {
       };
     }
 
+    const activities = state.activities.current[this.path];
+
+    if (activities) {
+      const {[this.path]: _v, ...current} = state.activities.current;
+
+      state.activities = {
+        ...state.activities,
+        current,
+        stop: [...state.activities.stop, ...activities],
+      };
+    }
+
     return state;
   }
 
@@ -267,20 +302,24 @@ export default class Node<C, E extends Event> {
         context: r.context || state.context,
         effects: [...state.effects, ...(r.effects || [])],
       };
+
+      if (r.activities?.length) {
+        state.activities = {
+          ...state.activities,
+          current: {
+            ...state.activities.current,
+            [this.path]: r.activities,
+          },
+          start: [...state.activities.start, ...r.activities],
+        };
+      }
     }
 
     if (this.isLeaf) return {...state, current: [...state.current, this]};
 
-    const result = this[
+    return this[
       this.type === 'concurrent' ? 'enterConcurrent' : 'enterCluster'
     ](state, evt, to);
-
-    return {
-      ...state,
-      context: result.context,
-      effects: [...state.effects, ...result.effects],
-      current: result.current,
-    };
   }
 
   resolve(path: string | string[]): Node<C, E> | undefined {

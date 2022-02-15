@@ -34,8 +34,27 @@ const knock: EffectFn<Evt> = send => {
   });
 };
 
+class MyActivity {
+  public timer?: NodeJS.Timer;
+
+  start(send: (evt: Evt) => void): void {
+    this.timer = setInterval(() => {
+      console.log('MyActivity:', new Date().toISOString());
+    }, 1000);
+  }
+
+  stop(): void {
+    if (!this.timer) return;
+    clearInterval(this.timer);
+  }
+}
+
 const statechart = new Statechart<Ctx, Evt>({openings: 0}, s => {
   s.state('closed', s => {
+    s.enter((_ctx, _evt) => {
+      return {activities: [new MyActivity()]};
+    });
+
     s.on('open', (_ctx, _evt) => {
       return {goto: '../opened'};
     });
@@ -56,15 +75,21 @@ const statechart = new Statechart<Ctx, Evt>({openings: 0}, s => {
   });
 });
 
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
 (async () => {
   const machine = new Machine(statechart);
-  console.log(await machine.start());
+  machine.start();
   console.log('1:', machine.current, machine.context);
-  console.log(await machine.send({type: 'open'}));
+  await sleep(5000);
+  machine.send({type: 'open'});
   console.log('2:', machine.current, machine.context);
-  console.log(await machine.send({type: 'close'}));
+  await sleep(5000);
+  machine.send({type: 'close'});
   console.log('3:', machine.current, machine.context);
-  console.log(await machine.send({type: 'knock'}));
-  console.log(await machine.send({type: 'open'}));
+  await sleep(5000);
+  machine.send({type: 'knock'});
+  machine.send({type: 'open'});
   console.log('4:', machine.current, machine.context);
+  await sleep(5000);
 })();
