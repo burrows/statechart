@@ -1,4 +1,4 @@
-import Node, {NodeOpts, NodeBody} from './Node';
+import Node, {NodeOpts, NodeBody, SendFn} from './Node';
 import Statechart from './Statechart';
 
 interface Ctx {
@@ -662,6 +662,91 @@ describe('Statechart#send', () => {
       state = sc.send(state, {type: 'z'});
       expect(state.current.map(n => n.path)).toEqual(['/b/e/g', '/b/f/i']);
       expect(state.effects).toEqual([effc4, effc2, effb1, effg1, effi1, effi2]);
+    });
+  });
+
+  describe('activities', () => {
+    interface Ctx {}
+    type Evt = {type: 'x'};
+
+    const acta1 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
+    const actc1 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
+    const actc2 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
+    const actd1 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
+    const actb1 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
+    const actg1 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
+    const acti1 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
+
+    const sc = new Statechart<Ctx, Evt>({}, s => {
+      s.state('a', s => {
+        s.enter(() => ({activities: [acta1]}));
+
+        s.state('c', s => {
+          s.enter(() => ({activities: [actc1, actc2]}));
+          s.on('x', '../d');
+        });
+        s.state('d', s => {
+          s.enter(() => ({activities: [actd1]}));
+          s.on('x', '../../b');
+        });
+      });
+      s.state('b', {concurrent: true}, s => {
+        s.enter(() => ({activities: [actb1]}));
+
+        s.state('e', s => {
+          s.state('g', s => {
+            s.enter(() => ({activities: [actg1]}));
+          });
+          s.state('h');
+        });
+        s.state('f', s => {
+          s.state('i', s => {
+            s.enter(() => ({activities: [acti1]}));
+          });
+          s.state('j');
+        });
+
+        s.on('x', '/a');
+      });
+    });
+
+    it('adds activities to activities.current and activities.start as states are entered and moves them to stop when states are exited', () => {
+      let state = sc.initialState;
+      expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+      expect(state.activities.current).toEqual({
+        '/a': [acta1],
+        '/a/c': [actc1, actc2],
+      });
+      expect(state.activities.start).toEqual([acta1, actc1, actc2]);
+      expect(state.activities.stop).toEqual([]);
+
+      state = sc.send(state, {type: 'x'});
+      expect(state.current.map(n => n.path)).toEqual(['/a/d']);
+      expect(state.activities.current).toEqual({
+        '/a': [acta1],
+        '/a/d': [actd1],
+      });
+      expect(state.activities.start).toEqual([actd1]);
+      expect(state.activities.stop).toEqual([actc1, actc2]);
+
+      state = sc.send(state, {type: 'x'});
+      expect(state.current.map(n => n.path)).toEqual(['/b/e/g', '/b/f/i']);
+      expect(state.activities.current).toEqual({
+        '/b': [actb1],
+        '/b/e/g': [actg1],
+        '/b/f/i': [acti1],
+      });
+      expect(state.activities.start).toEqual([actb1, actg1, acti1]);
+      expect(state.activities.stop).toEqual([actd1, acta1]);
+
+      state = sc.send(state, {type: 'x'});
+      expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+      expect(state.activities.current).toEqual({
+        '/a': [acta1],
+        '/a/c': [actc1, actc2],
+      });
+      expect(state.activities.start).toEqual([acta1, actc1, actc2]);
+      expect(state.activities.stop).toEqual([actg1, acti1, actb1]);
     });
   });
 });
