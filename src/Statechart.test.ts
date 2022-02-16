@@ -579,4 +579,89 @@ describe('Statechart#send', () => {
       ],
     });
   });
+
+  describe('effects', () => {
+    interface Ctx {}
+    type Evt = {type: 'x'} | {type: 'y'} | {type: 'z'};
+
+    const effc1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const effc2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const effc3 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const effc4 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const effd1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const effd2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const effb1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const effg1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const effg2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const effi1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const effi2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const effi3 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+
+    const sc = new Statechart<Ctx, Evt>({}, s => {
+      s.state('a', s => {
+        s.state('c', s => {
+          s.enter(() => ({effects: [effc1]}));
+          s.exit(() => ({effects: [effc2]}));
+          s.on('x', '../d');
+          s.on('y', () => ({effects: [effc3]}));
+          s.on('z', () => ({effects: [effc4], goto: '/b'}));
+        });
+        s.state('d', s => {
+          s.enter(() => ({effects: [effd1, effd2]}));
+          s.on('x', '/b');
+        });
+      });
+      s.state('b', {concurrent: true}, s => {
+        s.enter(() => ({effects: [effb1]}));
+
+        s.state('e', s => {
+          s.state('g', s => {
+            s.enter(() => ({effects: [effg1]}));
+            s.exit(() => ({effects: [effg2]}));
+          });
+          s.state('h');
+        });
+        s.state('f', s => {
+          s.state('i', s => {
+            s.enter(() => ({effects: [effi1, effi2]}));
+            s.exit(() => ({effects: [effi3]}));
+          });
+          s.state('j');
+        });
+
+        s.on('x', '../a');
+      });
+    });
+
+    it('gathers effects from enter and exit handlers', () => {
+      let state = sc.initialState;
+      expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+      expect(state.effects).toEqual([effc1]);
+
+      state = sc.send(state, {type: 'x'});
+      expect(state.current.map(n => n.path)).toEqual(['/a/d']);
+      expect(state.effects).toEqual([effc2, effd1, effd2]);
+
+      state = sc.send(state, {type: 'x'});
+      expect(state.current.map(n => n.path)).toEqual(['/b/e/g', '/b/f/i']);
+      expect(state.effects).toEqual([effb1, effg1, effi1, effi2]);
+
+      state = sc.send(state, {type: 'x'});
+      expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+      expect(state.effects).toEqual([effg2, effi3, effc1]);
+    });
+
+    it('gathers effects from event handlers', () => {
+      let state = sc.initialState;
+      expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+
+      state = sc.send(state, {type: 'y'});
+      expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+      expect(state.effects).toEqual([effc3]);
+
+      state = sc.send(state, {type: 'z'});
+      expect(state.current.map(n => n.path)).toEqual(['/b/e/g', '/b/f/i']);
+      expect(state.effects).toEqual([effc4, effc2, effb1, effg1, effi1, effi2]);
+    });
+  });
 });

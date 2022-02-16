@@ -368,13 +368,7 @@ export default class Node<C, E extends Event> {
 
   private exitConcurrent(state: State<C, E>, evt: E): State<C, E> {
     for (const [, child] of this.children) {
-      const r = child._exit(state, evt);
-      state = {
-        ...state,
-        context: r.context,
-        effects: [...state.effects, ...r.effects],
-        current: r.current,
-      };
+      state = child._exit(state, evt);
     }
 
     return state;
@@ -426,13 +420,7 @@ export default class Node<C, E extends Event> {
     to: Node<C, E>[],
   ): State<C, E> {
     for (const [, child] of this.children) {
-      const r = child._enter(state, evt, to);
-      state = {
-        ...state,
-        context: r.context,
-        effects: [...state.effects, ...r.effects],
-        current: r.current,
-      };
+      state = child._enter(state, evt, to);
     }
 
     return state;
