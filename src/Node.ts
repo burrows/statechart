@@ -5,10 +5,10 @@ export interface Event {
 export type SendFn<E> = (event: E) => void;
 
 export interface EffectObj<E> {
-  exec(send: SendFn<E>): Promise<E | undefined>;
+  exec(): Promise<E | void>;
 }
 
-export type EffectFn<E> = (send: SendFn<E>) => Promise<E | undefined>;
+export type EffectFn<E> = () => Promise<E | void>;
 
 export type Effect<E> = EffectObj<E> | EffectFn<E>;
 
@@ -57,9 +57,11 @@ export type EnterHandler<C, E extends Event> = (
   evt: E,
 ) => EnterHandlerResult<C, E>;
 
-export type EventHandlerResult<C, E extends Event> =
-  | {context?: C; effects?: Effect<E>[]; goto?: string | string[]}
-  | undefined;
+export type EventHandlerResult<C, E extends Event> = {
+  context?: C;
+  effects?: Effect<E>[];
+  goto?: string | string[];
+} | void;
 
 export type EventHandler<C, E extends Event, T extends E['type']> = (
   ctx: C,

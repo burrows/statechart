@@ -9,27 +9,32 @@ export default class Machine<C, E extends Event> {
     this.state = statechart.initialState;
   }
 
-  start(): Promise<(E | undefined)[]> {
+  start(): Promise<(E | void)[]> {
     return this.exec(this.state);
   }
 
-  send(event: E): Promise<(E | undefined)[]> {
+  send(event: E): Promise<(E | void)[]> {
     this.state = this.statechart.send(this.state, event);
     return this.exec(this.state);
   }
 
-  exec(state: State<C, E>): Promise<(E | undefined)[]> {
+  exec(state: State<C, E>): Promise<(E | void)[]> {
     const send = this.send.bind(this);
 
     for (const a of state.activities.start) {
       a.start(send);
     }
+
     for (const a of state.activities.stop) {
       a.stop();
     }
+
     return Promise.all(
       state.effects.map(e =>
-        typeof e === 'function' ? e(send) : e.exec(send),
+        ('exec' in e ? e.exec() : e()).then(e => {
+          if (e) send(e);
+          return e;
+        }),
       ),
     );
   }

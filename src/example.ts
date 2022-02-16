@@ -23,13 +23,11 @@ type Evt =
 //   }
 // }
 
-const knock: EffectFn<Evt> = send => {
+const knock: EffectFn<Evt> = () => {
   return new Promise(r => {
     setTimeout(() => {
-      const evt: Evt = {type: 'knockDone'};
       console.log('*knock*');
-      send(evt);
-      r(evt);
+      r({type: 'knockDone'});
     }, 1000);
   });
 };
@@ -62,6 +60,10 @@ const statechart = new Statechart<Ctx, Evt>({openings: 0}, s => {
     s.on('knock', (_ctx, _evt) => {
       return {effects: [knock]};
     });
+
+    s.on('knockDone', (_ctx, _evt) => {
+      console.log('knockDone');
+    });
   });
 
   s.state('opened', s => {
@@ -89,6 +91,7 @@ const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
   console.log('3:', machine.current, machine.context);
   await sleep(5000);
   machine.send({type: 'knock'});
+  await sleep(5000);
   machine.send({type: 'open'});
   console.log('4:', machine.current, machine.context);
   await sleep(5000);
