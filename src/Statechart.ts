@@ -1,11 +1,16 @@
-import Node, {Event, State} from './Node';
+import Node, {Event, State, NodeOpts, NodeBody} from './Node';
 
 export default class Statechart<C, E extends Event> {
   private root: Node<C, E>;
   private initialContext: C;
 
-  constructor(context: C, body: (n: Node<C, E>) => void) {
-    this.root = new Node('', {}, body);
+  constructor(context: C, body: NodeBody<C, E>);
+  constructor(context: C, opts: NodeOpts, body: NodeBody<C, E>);
+  constructor(context: C, ...args: any[]) {
+    this.root =
+      args.length === 2
+        ? new Node('', args[0], args[1])
+        : new Node('', {}, args[0]);
     this.initialContext = context;
   }
 
