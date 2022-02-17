@@ -2,6 +2,10 @@ export interface Event {
   type: string;
 }
 
+export type InternalEvent =
+  | {type: '__init__'}
+  | {type: '__goto__'; paths: string[]};
+
 export type SendFn<E> = (event: E) => void;
 
 export interface EffectObj<E> {
@@ -43,7 +47,7 @@ export interface ExitHandlerResult<C, E extends Event> {
 
 export type ExitHandler<C, E extends Event> = (
   ctx: C,
-  evt: E,
+  evt: InternalEvent | E,
 ) => ExitHandlerResult<C, E>;
 
 export interface EnterHandlerResult<C, E extends Event> {
@@ -54,7 +58,7 @@ export interface EnterHandlerResult<C, E extends Event> {
 
 export type EnterHandler<C, E extends Event> = (
   ctx: C,
-  evt: E,
+  evt: InternalEvent | E,
 ) => EnterHandlerResult<C, E>;
 
 export type EventHandlerResult<C, E extends Event> = {
@@ -63,12 +67,16 @@ export type EventHandlerResult<C, E extends Event> = {
   goto?: string | string[];
 } | void;
 
-export type EventHandler<C, E extends Event, T extends E['type']> = (
-  ctx: C,
-  evt: Extract<E, {type: T}>,
-) => EventHandlerResult<C, E>;
+export type EventHandler<
+  C,
+  E extends Event,
+  T extends E['type'] | InternalEvent['type']
+> = (ctx: C, evt: Extract<E, {type: T}>) => EventHandlerResult<C, E>;
 
-export type ConditionFn<C, E extends Event> = (ctx: C, evt: E) => string;
+export type ConditionFn<C, E extends Event> = (
+  ctx: C,
+  evt: InternalEvent | E,
+) => string;
 
 export default class Node<C, E extends Event> {
   public name: string;
@@ -79,14 +87,9 @@ export default class Node<C, E extends Event> {
   private enterHandler?: EnterHandler<C, E>;
   private exitHandler?: ExitHandler<C, E>;
   private condition?: ConditionFn<C, E>;
-  private handlers: Partial<
-    {
-      [T in E['type']]: (
-        ctx: C,
-        evt: Extract<E, {type: T}>,
-      ) => EventHandlerResult<C, E>;
-    }
-  >;
+  private handlers: {
+    [evt: string]: (...args: any[]) => EventHandlerResult<C, E>;
+  };
 
   constructor(name: string, opts: NodeOpts, body?: NodeBody<C, E>) {
     this.name = name;
@@ -134,10 +137,12 @@ export default class Node<C, E extends Event> {
 
   on<T extends E['type']>(
     type: T,
-    handler: EventHandler<C, E, T> | string,
+    handler: EventHandler<C, E, T> | string | string[],
   ): this {
     this.handlers[type] =
-      typeof handler === 'string' ? () => ({goto: handler}) : handler;
+      typeof handler === 'string' || Array.isArray(handler)
+        ? () => ({goto: handler})
+        : handler;
     return this;
   }
 
@@ -190,12 +195,12 @@ export default class Node<C, E extends Event> {
 
   send(
     state: State<C, E>,
-    evt: E,
+    evt: InternalEvent | E,
   ): {state: State<C, E>; goto: Node<C, E>[]} | undefined {
-    const handler = this.handlers[evt.type as E['type']];
+    const handler = this.handlers[evt.type];
     if (!handler) return undefined;
 
-    const result = handler(state.context, evt as Extract<E, {type: E['type']}>);
+    const result = handler(state.context, evt);
     if (!result) return undefined;
 
     state = {
@@ -238,7 +243,7 @@ export default class Node<C, E extends Event> {
   }
 
   // Exit from the given `from` nodes to the receiver pivot node.
-  pivotExit(state: State<C, E>, evt: E): State<C, E> {
+  pivotExit(state: State<C, E>, evt: InternalEvent | E): State<C, E> {
     const child = this.childToExit(state.current);
 
     if (!child) {
@@ -251,7 +256,11 @@ export default class Node<C, E extends Event> {
   }
 
   // Enter from the receiver pivot node to the given `to` nodes.
-  pivotEnter(state: State<C, E>, evt: E, to: Node<C, E>[]): State<C, E> {
+  pivotEnter(
+    state: State<C, E>,
+    evt: InternalEvent | E,
+    to: Node<C, E>[],
+  ): State<C, E> {
     const child = this.childToEnter(state, evt, to);
 
     if (!child) {
@@ -263,7 +272,7 @@ export default class Node<C, E extends Event> {
     return child._enter(state, evt, to);
   }
 
-  _exit(state: State<C, E>, evt: E): State<C, E> {
+  _exit(state: State<C, E>, evt: InternalEvent | E): State<C, E> {
     if (!this.isLeaf) {
       state = this[
         this.type === 'concurrent' ? 'exitConcurrent' : 'exitCluster'
@@ -296,7 +305,11 @@ export default class Node<C, E extends Event> {
     return state;
   }
 
-  _enter(state: State<C, E>, evt: E, to: Node<C, E>[]): State<C, E> {
+  _enter(
+    state: State<C, E>,
+    evt: InternalEvent | E,
+    to: Node<C, E>[],
+  ): State<C, E> {
     if (this.enterHandler) {
       const r = this.enterHandler(state.context, evt);
       state = {
@@ -366,7 +379,10 @@ export default class Node<C, E extends Event> {
     return name ? this.children.get(name) : undefined;
   }
 
-  private exitConcurrent(state: State<C, E>, evt: E): State<C, E> {
+  private exitConcurrent(
+    state: State<C, E>,
+    evt: InternalEvent | E,
+  ): State<C, E> {
     for (const [, child] of this.children) {
       state = child._exit(state, evt);
     }
@@ -374,7 +390,7 @@ export default class Node<C, E extends Event> {
     return state;
   }
 
-  private exitCluster(state: State<C, E>, evt: E): State<C, E> {
+  private exitCluster(state: State<C, E>, evt: InternalEvent | E): State<C, E> {
     const child = this.childToExit(state.current);
 
     if (!child) {
@@ -392,7 +408,7 @@ export default class Node<C, E extends Event> {
 
   private childToEnter(
     state: State<C, E>,
-    evt: E,
+    evt: InternalEvent | E,
     to: Node<C, E>[],
   ): Node<C, E> | undefined {
     if (this.type === 'concurrent') {
@@ -416,7 +432,7 @@ export default class Node<C, E extends Event> {
 
   private enterConcurrent(
     state: State<C, E>,
-    evt: E,
+    evt: InternalEvent | E,
     to: Node<C, E>[],
   ): State<C, E> {
     for (const [, child] of this.children) {
@@ -428,7 +444,7 @@ export default class Node<C, E extends Event> {
 
   private enterCluster(
     state: State<C, E>,
-    evt: E,
+    evt: InternalEvent | E,
     to: Node<C, E>[],
   ): State<C, E> {
     const child = this.childToEnter(state, evt, to);

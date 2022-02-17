@@ -112,6 +112,30 @@ describe('Statechart#initialState', () => {
   });
 });
 
+describe('Statechart#goto', () => {
+  it('transitions the statechart to the given state(s)', () => {
+    let state = sc1.initialState;
+    expect(state.current.map(s => s.path)).toEqual(['/a/c']);
+
+    state = sc1.goto(state, ['/b/f/i/k/m']);
+    expect(state.current.map(s => s.path)).toEqual(['/b/f/i/k/m']);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'enter', path: '/a/c'},
+        {type: 'exit', path: '/a/c'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/f'},
+        {type: 'enter', path: '/b/f/i'},
+        {type: 'enter', path: '/b/f/i/k'},
+        {type: 'enter', path: '/b/f/i/k/m'},
+      ],
+    });
+  });
+});
+
 describe('Statechart#send', () => {
   it('exits current state to the pivot state and then enters to the destination state', () => {
     const state = sc1.send(sc1.initialState, {
