@@ -103,7 +103,7 @@ describe('Statechart constructor', () => {
       new Statechart<Ctx, Evt>({ops: []}, s => {
         s.state('');
       });
-    }).toThrow('Node#state: state must have a name');
+    }).toThrow(new Error('Node#state: state must have a name'));
   });
 });
 
@@ -612,6 +612,20 @@ describe('Statechart#send', () => {
         {type: 'enter', path: '/b/d/i/m'},
       ],
     });
+  });
+
+  it('throws an exception when multiple pivot states are found', () => {
+    expect(() => {
+      let state = sc1.send(sc1.initialState, {
+        type: 'goto',
+        from: '/a/c',
+        to: ['/a/d', '/b'],
+      });
+    }).toThrow(
+      new Error(
+        'Statechart#send: invalid transition, multiple pivot states found between /a/c and /a/d,/b',
+      ),
+    );
   });
 
   describe('effects', () => {
