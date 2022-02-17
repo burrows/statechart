@@ -5,11 +5,15 @@ export default class Statechart<C, E extends Event> {
   private initialContext: C;
 
   constructor(context: C, body: NodeBody<C, E>);
-  constructor(context: C, opts: NodeOpts, body: NodeBody<C, E>);
+  constructor(
+    context: C,
+    opts: Omit<NodeOpts, 'concurrent'>,
+    body: NodeBody<C, E>,
+  );
   constructor(context: C, ...args: any[]) {
     this.root =
       args.length === 2
-        ? new Node('', args[0], args[1])
+        ? new Node('', {...args[0], concurrent: undefined}, args[1])
         : new Node('', {}, args[0]);
 
     this.root.on('__goto__', (_ctx, evt: any) => ({goto: evt.paths}));
