@@ -104,6 +104,10 @@ export default class Node<C, E extends Event> {
   state(name: string, opts: NodeOpts): this;
   state(name: string, opts: NodeOpts, body: NodeBody<C, E>): this;
   state(name: string, ...args: any[]): this {
+    if (!name) {
+      throw new Error('Node#state: state must have a name');
+    }
+
     let opts: NodeOpts = {};
     let body: NodeBody<C, E> | undefined;
 

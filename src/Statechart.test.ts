@@ -97,6 +97,16 @@ const sc3 = new Statechart<Ctx, Evt>({ops: []}, s => {
   });
 });
 
+describe('Statechart constructor', () => {
+  it('throws an error when a state does not have a name', () => {
+    expect(() => {
+      new Statechart<Ctx, Evt>({ops: []}, s => {
+        s.state('');
+      });
+    }).toThrow('Node#state: state must have a name');
+  });
+});
+
 describe('Statechart#initialState', () => {
   it('is the result of entering the root state', () => {
     const state = sc1.initialState;
