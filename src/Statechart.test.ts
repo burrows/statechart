@@ -616,7 +616,7 @@ describe('Statechart#send', () => {
 
   it('throws an exception when multiple pivot states are found', () => {
     expect(() => {
-      let state = sc1.send(sc1.initialState, {
+      sc1.send(sc1.initialState, {
         type: 'goto',
         from: '/a/c',
         to: ['/a/d', '/b'],
@@ -624,6 +624,46 @@ describe('Statechart#send', () => {
     }).toThrow(
       new Error(
         'Statechart#send: invalid transition, multiple pivot states found between /a/c and /a/d,/b',
+      ),
+    );
+  });
+
+  it('throws an exception when a concurrency boundary is crossed', () => {
+    let state = sc2.send(sc2.initialState, {
+      type: 'goto',
+      from: '/a',
+      to: '/b',
+    });
+
+    expect(state.current.map(n => n.path)).toEqual([
+      '/b/b1/c',
+      '/b/b2/e',
+      '/b/b3/g',
+    ]);
+
+    expect(() => {
+      sc2.send(state, {
+        type: 'goto',
+        from: '/b/b1/c',
+        to: '../../b2/e',
+      });
+    }).toThrow(
+      new Error(
+        'Statechart#send: invalid transition, /b/b1/c to /b/b2/e crosses a concurrency boundary',
+      ),
+    );
+  });
+
+  it('throws an exception when multiple cluster destination states are indicated', () => {
+    expect(() => {
+      sc1.send(sc1.initialState, {
+        type: 'goto',
+        from: '/a/c',
+        to: ['/b/e', '/b/f'],
+      });
+    }).toThrow(
+      new Error(
+        'Node#childToEnter: invalid transition, cannot enter multiple child states of cluster state /b',
       ),
     );
   });

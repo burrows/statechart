@@ -96,11 +96,15 @@ export default class Statechart<C, E extends Event> {
             );
           }
 
-          transitions.push({
-            pivot: Array.from(pivots)[0],
-            to: result.goto,
-            self,
-          });
+          const pivot = Array.from(pivots)[0];
+
+          if (pivot.type === 'concurrent') {
+            throw new Error(
+              `Statechart#send: invalid transition, ${n} to ${result.goto} crosses a concurrency boundary`,
+            );
+          }
+
+          transitions.push({pivot, to: result.goto, self});
         }
 
         break;

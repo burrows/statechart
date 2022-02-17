@@ -372,7 +372,7 @@ export default class Node<C, E extends Event> {
   private childToExit(from: Node<C, E>[]): Node<C, E> | undefined {
     if (this.type === 'concurrent') {
       throw new Error(
-        `Node#_childToExit: cannot be called on a concurrent state: ${this}`,
+        `Node#childToExit: cannot be called on a concurrent state: ${this}`,
       );
     }
 
@@ -417,20 +417,27 @@ export default class Node<C, E extends Event> {
   ): Node<C, E> | undefined {
     if (this.type === 'concurrent') {
       throw new Error(
-        `Node#_childToEnter: cannot be called on a concurrent state: ${this}`,
+        `Node#childToEnter: cannot be called on a concurrent state: ${this}`,
       );
     }
 
-    let name = to
+    let names = to
       .map(n => n.lineage[this.depth + 1]?.name)
-      .find(name => this.children.has(name));
-    if (name) return this.children.get(name);
+      .filter(name => this.children.has(name));
+    if (names.length > 0) {
+      if (new Set(names).size > 1) {
+        throw new Error(
+          `Node#childToEnter: invalid transition, cannot enter multiple child states of cluster state ${this}`,
+        );
+      }
+      return this.children.get(names[0]);
+    }
 
     if (this.condition) {
       return this.children.get(this.condition(state.context, evt));
     }
 
-    name = state.history[this.path] || this.defaultChild;
+    let name = state.history[this.path] || this.defaultChild;
     return name ? this.children.get(name) : undefined;
   }
 
