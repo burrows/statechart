@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
+    "target": "esnext",
+    "module": "esnext",
+    "jsx": "preserve",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -9,6 +10,7 @@
     "strictNullChecks": true,
     "skipLibCheck": true,
     "outDir": "build",
-    "sourceMap": true
+    "sourceMap": true,
+    "moduleResolution": "node"
   }
 }
