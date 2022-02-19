@@ -1,4 +1,5 @@
-import Node, {Event, Effect, Activity} from './Node';
+import {Event, Effect, Activity} from './types';
+import Node from './Node';
 
 export default class State<C, E extends Event> {
   current: Node<C, E>[];

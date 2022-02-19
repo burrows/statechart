@@ -1,5 +1,6 @@
+import {InternalEvent, Event, NodeOpts, NodeBody} from './types';
 import State from './State';
-import Node, {InternalEvent, Event, NodeOpts, NodeBody} from './Node';
+import Node from './Node';
 
 export default class Statechart<C, E extends Event> {
   private root: Node<C, E>;

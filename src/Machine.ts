@@ -1,4 +1,4 @@
-import {Event} from './Node';
+import {Event} from './types';
 import Statechart from './Statechart';
 import State from './State';
 

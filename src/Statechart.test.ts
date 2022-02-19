@@ -1,4 +1,5 @@
-import Node, {NodeOpts, NodeBody, SendFn} from './Node';
+import {NodeOpts, NodeBody, SendFn} from './types';
+import Node from './Node';
 import Statechart from './Statechart';
 
 interface Ctx {
