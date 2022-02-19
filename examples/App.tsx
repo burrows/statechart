@@ -78,6 +78,9 @@ function App({}: AppProps) {
   const [state, setState] = useState(sc.initialState);
 
   useEffect(() => {
+    console.clear();
+    console.log(sc.inspect(state));
+
     for (const activity of state.activities.start) {
       activity.start((evt: Evt) => {
         setState(state => sc.send(state, evt));

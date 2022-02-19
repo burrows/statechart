@@ -839,3 +839,76 @@ describe('Statechart#send', () => {
     });
   });
 });
+
+describe('Statechart#inspect', () => {
+  it('returns a tree representation of the statechart and indicates the current state(s)', () => {
+    let s1 = sc1.initialState;
+    expect(sc1.inspect(s1)).toBe(`/ *
+├── a *
+│   ├── c *
+│   └── d
+└── b
+    ├── e
+    └── f
+        ├── g
+        ├── h
+        └── i
+            ├── j
+            └── k
+                ├── l
+                └── m
+`);
+
+    s1 = sc1.goto(s1, ['/b/f/i/k/m']);
+
+    expect(sc1.inspect(s1)).toBe(`/ *
+├── a
+│   ├── c
+│   └── d
+└── b *
+    ├── e
+    └── f *
+        ├── g
+        ├── h
+        └── i *
+            ├── j
+            └── k *
+                ├── l
+                └── m *
+`);
+
+    let s2 = sc2.initialState;
+    expect(sc2.inspect(s2)).toEqual(
+      `/ *
+├── a *
+└── b
+    ├┄┄ b1
+    │   ├── c
+    │   └── d
+    ├┄┄ b2
+    │   ├── e
+    │   └── f
+    └┄┄ b3
+        ├── g
+        └── h
+`,
+    );
+
+    s2 = sc2.goto(s2, ['/b']);
+    expect(sc2.inspect(s2)).toEqual(
+      `/ *
+├── a
+└── b *
+    ├┄┄ b1 *
+    │   ├── c *
+    │   └── d
+    ├┄┄ b2 *
+    │   ├── e *
+    │   └── f
+    └┄┄ b3 *
+        ├── g *
+        └── h
+`,
+    );
+  });
+});

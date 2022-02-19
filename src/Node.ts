@@ -142,6 +142,30 @@ export default class Node<C, E extends Event> {
     return this.path;
   }
 
+  inspect({
+    prefix = '',
+    state,
+  }: {prefix?: string; state?: State<C, E>} = {}): string {
+    const current = state?.current.flatMap(n => n.lineage).includes(this);
+    const opts = this.opts.H ? (this.opts.H === '*' ? ' (H*)' : ' (H)') : '';
+    let s = `${prefix}${this.isRoot ? '/' : this.name}${opts}${
+      current ? ' *' : ''
+    }\n`;
+    const children = Array.from(this.children.values());
+    const horiz = this.opts.concurrent ? '┄┄' : '──';
+
+    for (let i = 0; i < children.length; i++) {
+      const last = i === children.length - 1;
+      const line = (last ? '└' : '├') + horiz + ' ';
+      s += children[i].inspect({
+        prefix: `${prefix.replace(/[─┄└]/g, ' ').replace(/├/g, '│')}${line}`,
+        state,
+      });
+    }
+
+    return s;
+  }
+
   send(
     state: State<C, E>,
     evt: InternalEvent<E> | E,

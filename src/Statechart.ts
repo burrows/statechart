@@ -131,4 +131,8 @@ export default class Statechart<C, E extends Event> {
 
     return state;
   }
+
+  inspect(state?: State<C, E>): string {
+    return this.root.inspect({state});
+  }
 }

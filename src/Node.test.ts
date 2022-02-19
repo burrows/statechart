@@ -141,3 +141,49 @@ describe('Node#matches', () => {
     }).toThrow('Node#matches: /a/b/e does not resolve');
   });
 });
+
+describe('Node#inspect', () => {
+  interface Ctx {}
+  type Evt = {type: 'x'};
+
+  const n1 = new Node<Ctx, Evt>('', {}, s => {
+    s.state('a', s => {
+      s.state('d', {H: '*'}, s => {
+        s.state('l');
+        s.state('m');
+      });
+      s.state('e');
+    });
+    s.state('b', {concurrent: true}, s => {
+      s.state('f', s => {
+        s.state('h');
+        s.state('i');
+      });
+      s.state('g', {H: true}, s => {
+        s.state('j');
+        s.state('k');
+      });
+    });
+    s.state('c');
+  });
+
+  it('returns a tree representation of the node and its children', () => {
+    expect(n1.inspect()).toBe(
+      `/
+├── a
+│   ├── d (H*)
+│   │   ├── l
+│   │   └── m
+│   └── e
+├── b
+│   ├┄┄ f
+│   │   ├── h
+│   │   └── i
+│   └┄┄ g (H)
+│       ├── j
+│       └── k
+└── c
+`,
+    );
+  });
+});
