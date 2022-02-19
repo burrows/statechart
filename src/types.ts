@@ -4,9 +4,9 @@ export interface Event {
   type: string;
 }
 
-export type InternalEvent =
+export type InternalEvent<E extends Event> =
   | {type: '__init__'}
-  | {type: '__goto__'; paths: string[]};
+  | ({type: '__goto__'; __paths__: string[]} & AllEventFields<E>);
 
 export type SendFn<E> = (event: E) => void;
 
@@ -37,7 +37,7 @@ export interface ExitHandlerResult<C, E extends Event> {
 
 export type ExitHandler<C, E extends Event> = (
   ctx: C,
-  evt: InternalEvent | E,
+  evt: InternalEvent<E> | E,
 ) => ExitHandlerResult<C, E>;
 
 export interface EnterHandlerResult<C, E extends Event> {
@@ -48,7 +48,7 @@ export interface EnterHandlerResult<C, E extends Event> {
 
 export type EnterHandler<C, E extends Event> = (
   ctx: C,
-  evt: InternalEvent | E,
+  evt: InternalEvent<E> | E,
 ) => EnterHandlerResult<C, E>;
 
 export type EventHandlerResult<C, E extends Event> = {
@@ -60,10 +60,28 @@ export type EventHandlerResult<C, E extends Event> = {
 export type EventHandler<
   C,
   E extends Event,
-  T extends E['type'] | InternalEvent['type']
+  T extends E['type'] | InternalEvent<E>['type']
 > = (ctx: C, evt: Extract<E, {type: T}>) => EventHandlerResult<C, E>;
 
 export type ConditionFn<C, E extends Event> = (
   ctx: C,
-  evt: InternalEvent | E,
+  evt: InternalEvent<E> | E,
 ) => string;
+
+// Helper types to convert the Event union type to a type with all possible
+// fields. Take from https://stackoverflow.com/a/65928340.
+type UnionToIntersection<U> = (U extends any
+? (k: U) => void
+: never) extends (k: infer I) => void
+  ? I
+  : never;
+
+type Indexify<T> = T & {[str: string]: undefined};
+
+type UndefinedVals<T> = {[K in keyof T]: undefined};
+
+type AllUnionKeys<T> = keyof UnionToIntersection<UndefinedVals<T>>;
+
+type AllFields<T> = {[K in AllUnionKeys<T> & string]: Indexify<T>[K]};
+
+export type AllEventFields<E> = Partial<Omit<AllFields<E>, 'type'>>;

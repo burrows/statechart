@@ -1,4 +1,4 @@
-import {Event} from './types';
+import {Event, AllEventFields} from './types';
 import Statechart from './Statechart';
 import State from './State';
 
@@ -10,6 +10,11 @@ export default class Machine<C, E extends Event> {
   }
 
   start(): Promise<(E | void)[]> {
+    return this.exec(this.state);
+  }
+
+  goto(paths: string[], fields?: AllEventFields<E>): Promise<(E | void)[]> {
+    this.state = this.statechart.goto(this.state, paths, fields);
     return this.exec(this.state);
   }
 

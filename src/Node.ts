@@ -144,7 +144,7 @@ export default class Node<C, E extends Event> {
 
   send(
     state: State<C, E>,
-    evt: InternalEvent | E,
+    evt: InternalEvent<E> | E,
   ): {state: State<C, E>; goto: Node<C, E>[]} | undefined {
     const handler = this.handlers[evt.type];
     if (!handler) return undefined;
@@ -191,7 +191,7 @@ export default class Node<C, E extends Event> {
   }
 
   // Exit from the given `from` nodes to the receiver pivot node.
-  pivotExit(state: State<C, E>, evt: InternalEvent | E): State<C, E> {
+  pivotExit(state: State<C, E>, evt: InternalEvent<E> | E): State<C, E> {
     const child = this.childToExit(state.current);
 
     if (!child) {
@@ -206,7 +206,7 @@ export default class Node<C, E extends Event> {
   // Enter from the receiver pivot node to the given `to` nodes.
   pivotEnter(
     state: State<C, E>,
-    evt: InternalEvent | E,
+    evt: InternalEvent<E> | E,
     to: Node<C, E>[],
   ): State<C, E> {
     const child = this.childToEnter(state, evt, to);
@@ -220,7 +220,7 @@ export default class Node<C, E extends Event> {
     return child._enter(state, evt, to);
   }
 
-  _exit(state: State<C, E>, evt: InternalEvent | E): State<C, E> {
+  _exit(state: State<C, E>, evt: InternalEvent<E> | E): State<C, E> {
     if (!this.isLeaf) {
       state = this[
         this.type === 'concurrent' ? 'exitConcurrent' : 'exitCluster'
@@ -254,7 +254,7 @@ export default class Node<C, E extends Event> {
 
   _enter(
     state: State<C, E>,
-    evt: InternalEvent | E,
+    evt: InternalEvent<E> | E,
     to: Node<C, E>[],
   ): State<C, E> {
     if (this.enterHandler) {
@@ -327,7 +327,7 @@ export default class Node<C, E extends Event> {
 
   private exitConcurrent(
     state: State<C, E>,
-    evt: InternalEvent | E,
+    evt: InternalEvent<E> | E,
   ): State<C, E> {
     for (const [, child] of this.children) {
       state = child._exit(state, evt);
@@ -336,7 +336,10 @@ export default class Node<C, E extends Event> {
     return state;
   }
 
-  private exitCluster(state: State<C, E>, evt: InternalEvent | E): State<C, E> {
+  private exitCluster(
+    state: State<C, E>,
+    evt: InternalEvent<E> | E,
+  ): State<C, E> {
     const child = this.childToExit(state.current);
 
     if (!child) {
@@ -356,7 +359,7 @@ export default class Node<C, E extends Event> {
 
   private childToEnter(
     state: State<C, E>,
-    evt: InternalEvent | E,
+    evt: InternalEvent<E> | E,
     to: Node<C, E>[],
   ): Node<C, E> | undefined {
     if (this.type === 'concurrent') {
@@ -387,7 +390,7 @@ export default class Node<C, E extends Event> {
 
   private enterConcurrent(
     state: State<C, E>,
-    evt: InternalEvent | E,
+    evt: InternalEvent<E> | E,
     to: Node<C, E>[],
   ): State<C, E> {
     for (const [, child] of this.children) {
@@ -399,7 +402,7 @@ export default class Node<C, E extends Event> {
 
   private enterCluster(
     state: State<C, E>,
-    evt: InternalEvent | E,
+    evt: InternalEvent<E> | E,
     to: Node<C, E>[],
   ): State<C, E> {
     const child = this.childToEnter(state, evt, to);
