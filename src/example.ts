@@ -82,6 +82,8 @@ const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 (async () => {
   const machine = new Machine(statechart);
   machine.start();
+  console.log('X:', machine.matches('/closed'));
+  console.log('X:', machine.matches('/opened'));
   console.log('1:', machine.current, machine.context);
   await sleep(5000);
   machine.send({type: 'open'});

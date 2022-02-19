@@ -1,4 +1,5 @@
-import Node, {InternalEvent, Event, State, NodeOpts, NodeBody} from './Node';
+import State from './State';
+import Node, {InternalEvent, Event, NodeOpts, NodeBody} from './Node';
 
 export default class Statechart<C, E extends Event> {
   private root: Node<C, E>;
@@ -23,7 +24,7 @@ export default class Statechart<C, E extends Event> {
 
   get initialState(): State<C, E> {
     return this.root._enter(
-      {
+      new State({
         context: this.initialContext,
         effects: [],
         current: [],
@@ -33,7 +34,7 @@ export default class Statechart<C, E extends Event> {
           start: [],
           stop: [],
         },
-      },
+      }),
       {type: '__init__'},
       [],
     );
@@ -51,15 +52,14 @@ export default class Statechart<C, E extends Event> {
       self: boolean;
     }[] = [];
 
-    state = {
-      ...state,
+    state = state.update({
       effects: [],
       activities: {
         ...state.activities,
         start: [],
         stop: [],
       },
-    };
+    });
 
     for (const node of state.current) {
       let n: Node<C, E> | undefined = node;

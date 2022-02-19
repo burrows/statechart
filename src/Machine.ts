@@ -1,6 +1,6 @@
 import {Event} from './Node';
 import Statechart from './Statechart';
-import {State} from './Node';
+import State from './State';
 
 export default class Machine<C, E extends Event> {
   private state: State<C, E>;
@@ -45,5 +45,9 @@ export default class Machine<C, E extends Event> {
 
   get context(): C {
     return this.state.context;
+  }
+
+  matches(path: string): boolean {
+    return this.state.matches(path);
   }
 }

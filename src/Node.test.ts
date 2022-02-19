@@ -104,3 +104,40 @@ describe('Node#resolve', () => {
     expect(root.resolve('/a/b/x')).toBe(undefined);
   });
 });
+
+describe('Node#matches', () => {
+  const root = new Node('', {}, s => {
+    s.state('a', s => {
+      s.state('b', s => {
+        s.state('c');
+        s.state('d');
+      });
+    });
+  });
+
+  it("returns true when the given path matches the node's path and false otherwise", () => {
+    const a = root.resolve('/a')!;
+    const b = root.resolve('/a/b')!;
+
+    expect(root.matches('/')).toBe(true);
+    expect(root.matches('/a')).toBe(false);
+
+    expect(a.matches('/a')).toBe(true);
+    expect(a.matches('/')).toBe(true);
+    expect(a.matches('/a/b')).toBe(false);
+
+    expect(b.matches('/a/b')).toBe(true);
+    expect(b.matches('/a')).toBe(true);
+    expect(b.matches('/')).toBe(true);
+    expect(b.matches('/a/b/c')).toBe(false);
+    expect(b.matches('/a/b/d')).toBe(false);
+  });
+
+  it('throws an exception when the given path does not resolve', () => {
+    const c = root.resolve('/a/b/c')!;
+
+    expect(() => {
+      c.matches('/a/b/e');
+    }).toThrow('Node#matches: /a/b/e does not resolve');
+  });
+});

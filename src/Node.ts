@@ -1,3 +1,5 @@
+import State from './State';
+
 export interface Event {
   type: string;
 }
@@ -19,18 +21,6 @@ export type Effect<E> = EffectObj<E> | EffectFn<E>;
 export interface Activity<E> {
   start(send: SendFn<E>): void;
   stop(): void;
-}
-
-export interface State<C, E extends Event> {
-  current: Node<C, E>[];
-  context: C;
-  effects: Effect<E>[];
-  history: {[path: string]: string};
-  activities: {
-    current: {[path: string]: Activity<E>[]};
-    start: Activity<E>[];
-    stop: Activity<E>[];
-  };
 }
 
 export interface NodeOpts {
@@ -193,6 +183,18 @@ export default class Node<C, E extends Event> {
     return false;
   }
 
+  matches(path: string): boolean {
+    if (!this.resolve(path)) {
+      throw new Error(`Node#matches: ${path} does not resolve`);
+    }
+
+    if (this.path === path) return true;
+    if (path[path.length - 1] !== '/') {
+      path = path + '/';
+    }
+    return !!this.path.match(path);
+  }
+
   toString(): string {
     return this.path;
   }
@@ -207,11 +209,10 @@ export default class Node<C, E extends Event> {
     const result = handler(state.context, evt);
     if (!result) return undefined;
 
-    state = {
-      ...state,
+    state = state.update({
       context: result.context || state.context,
       effects: [...state.effects, ...(result.effects || [])],
-    };
+    });
 
     return {
       state,
@@ -282,16 +283,15 @@ export default class Node<C, E extends Event> {
         this.type === 'concurrent' ? 'exitConcurrent' : 'exitCluster'
       ](state, evt);
     } else {
-      state = {...state, current: state.current.filter(n => n !== this)};
+      state = state.update({current: state.current.filter(n => n !== this)});
     }
 
     if (this.exitHandler) {
       const r = this.exitHandler(state.context, evt);
-      state = {
-        ...state,
+      state = state.update({
         context: r.context || state.context,
         effects: [...state.effects, ...(r.effects || [])],
-      };
+      });
     }
 
     const activities = state.activities.current[this.path];
@@ -316,11 +316,10 @@ export default class Node<C, E extends Event> {
   ): State<C, E> {
     if (this.enterHandler) {
       const r = this.enterHandler(state.context, evt);
-      state = {
-        ...state,
+      state = state.update({
         context: r.context || state.context,
         effects: [...state.effects, ...(r.effects || [])],
-      };
+      });
 
       if (r.activities?.length) {
         state.activities = {
@@ -334,7 +333,7 @@ export default class Node<C, E extends Event> {
       }
     }
 
-    if (this.isLeaf) return {...state, current: [...state.current, this]};
+    if (this.isLeaf) return state.update({current: [...state.current, this]});
 
     return this[
       this.type === 'concurrent' ? 'enterConcurrent' : 'enterCluster'
@@ -404,7 +403,9 @@ export default class Node<C, E extends Event> {
     }
 
     if (this.history) {
-      state = {...state, history: {...state.history, [this.path]: child.name}};
+      state = state.update({
+        history: {...state.history, [this.path]: child.name},
+      });
     }
 
     return child._exit(state, evt);
