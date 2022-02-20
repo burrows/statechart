@@ -9,16 +9,16 @@
     "@types/react": "^17.0.39",
     "@types/react-dom": "^17.0.11",
     "jest": "^27.5.0",
+    "parcel": "^2.3.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "snowpack": "^3.8.8",
     "ts-jest": "^27.1.3",
     "typescript": "^4.5.5"
   },
   "scripts": {
     "test": "npx jest",
     "build": "npx tsc",
-    "examples": "snowpack dev"
+    "examples": "npx parcel examples/index.html"
   },
   "author": "",
   "license": "MIT"

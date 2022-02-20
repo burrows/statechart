@@ -1,3 +1,5 @@
 node_modules/
 scratch/
 build/
+.parcel-cache/
+dist/
