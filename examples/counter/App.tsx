@@ -77,19 +77,15 @@ const sc = new Statechart<Ctx, Evt>({count: 0, step: 0}, s => {
 const App: React.FC<AppProps> = ({}) => {
   const [state, setState] = useState(sc.initialState);
 
+  const send = (evt: Evt): void => {
+    setState(state => sc.send(state, evt));
+  };
+
   useEffect(() => {
     console.clear();
     console.log(sc.inspect(state));
-
-    for (const activity of state.activities.start) {
-      activity.start((evt: Evt) => {
-        setState(state => sc.send(state, evt));
-      });
-    }
-
-    for (const activity of state.activities.stop) {
-      activity.stop();
-    }
+    state.activities.start.forEach(a => a.start(send));
+    state.activities.stop.forEach(a => a.stop());
   }, [state]);
 
   const on = state.matches('/on');
@@ -101,21 +97,11 @@ const App: React.FC<AppProps> = ({}) => {
       auto={auto}
       count={state.context.count}
       step={state.context.step}
-      onToggleOnOff={() => {
-        setState(state => sc.send(state, {type: 'TOGGLE_ON_OFF'}));
-      }}
-      onToggleAuto={() => {
-        setState(state => sc.send(state, {type: 'TOGGLE_AUTO'}));
-      }}
-      onIncrement={() => {
-        setState(state => sc.send(state, {type: 'INCREMENT'}));
-      }}
-      onDecrement={() => {
-        setState(state => sc.send(state, {type: 'DECREMENT'}));
-      }}
-      onChangeSpeed={() => {
-        setState(state => sc.send(state, {type: 'CHANGE_SPEED'}));
-      }}
+      onToggleOnOff={send.bind(null, {type: 'TOGGLE_ON_OFF'})}
+      onToggleAuto={send.bind(null, {type: 'TOGGLE_AUTO'})}
+      onIncrement={send.bind(null, {type: 'INCREMENT'})}
+      onDecrement={send.bind(null, {type: 'DECREMENT'})}
+      onChangeSpeed={send.bind(null, {type: 'CHANGE_SPEED'})}
     />
   );
 };
