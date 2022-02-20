@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
-// import './App.css';
 
-import Statechart from '../src';
+import Statechart from '../../src';
+import Counter from '../components/Counter';
 
 interface AppProps {}
 
@@ -74,7 +74,7 @@ const sc = new Statechart<Ctx, Evt>({count: 0, step: 0}, s => {
   });
 });
 
-function App({}: AppProps) {
+const App: React.FC<AppProps> = ({}) => {
   const [state, setState] = useState(sc.initialState);
 
   useEffect(() => {
@@ -92,50 +92,32 @@ function App({}: AppProps) {
     }
   }, [state]);
 
-  const isOn = state.matches('/on');
-  const isAuto = state.matches('/on/mode/auto');
+  const on = state.matches('/on');
+  const auto = state.matches('/on/mode/auto');
 
-  // Return the App component.
   return (
-    <div className="App">
-      <button
-        onClick={() => {
-          setState(state => sc.send(state, {type: 'TOGGLE_ON_OFF'}));
-        }}>
-        {isOn ? 'Turn Off' : 'Turn On'}
-      </button>
-      <button
-        disabled={!isOn || isAuto}
-        onClick={() => {
-          setState(state => sc.send(state, {type: 'INCREMENT'}));
-        }}>
-        Increment
-      </button>
-      <button
-        disabled={!isOn || isAuto}
-        onClick={() => {
-          setState(state => sc.send(state, {type: 'DECREMENT'}));
-        }}>
-        Decrement
-      </button>
-      <button
-        disabled={!isOn}
-        onClick={() => {
-          setState(state => sc.send(state, {type: 'TOGGLE_AUTO'}));
-        }}>
-        {isAuto ? 'Turn Auto Off' : 'Turn Auto On'}
-      </button>
-      <button
-        disabled={!isOn}
-        onClick={() => {
-          setState(state => sc.send(state, {type: 'CHANGE_SPEED'}));
-        }}>
-        Change Speed
-      </button>
-      <h1>{state.context.count}</h1>
-      <h6>Step: {state.context.step}</h6>
-    </div>
+    <Counter
+      on={on}
+      auto={auto}
+      count={state.context.count}
+      step={state.context.step}
+      onToggleOnOff={() => {
+        setState(state => sc.send(state, {type: 'TOGGLE_ON_OFF'}));
+      }}
+      onToggleAuto={() => {
+        setState(state => sc.send(state, {type: 'TOGGLE_AUTO'}));
+      }}
+      onIncrement={() => {
+        setState(state => sc.send(state, {type: 'INCREMENT'}));
+      }}
+      onDecrement={() => {
+        setState(state => sc.send(state, {type: 'DECREMENT'}));
+      }}
+      onChangeSpeed={() => {
+        setState(state => sc.send(state, {type: 'CHANGE_SPEED'}));
+      }}
+    />
   );
-}
+};
 
 export default App;

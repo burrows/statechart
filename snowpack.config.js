@@ -8,6 +8,13 @@ module.exports = {
     examples: '/',
     src: '/statechart',
   },
+  routes: [
+    {
+      match: 'routes',
+      src: '/counter',
+      dest: '/counter/index.html',
+    },
+  ],
   plugins: [
     /* ... */
   ],
