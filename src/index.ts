@@ -1,5 +1,6 @@
 import Statechart from './Statechart';
 import Machine from './Machine';
+import State from './State';
 
 import {
   Event as _Event,
@@ -13,5 +14,5 @@ export type EffectObj<E> = _EffectObj<E>;
 export type EffectFn<E> = _EffectFn<E>;
 export type Effect<E> = _Effect<E>;
 
-export {Machine};
+export {Machine, State};
 export default Statechart;
