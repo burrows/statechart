@@ -5,8 +5,8 @@ interface Ctx {
 }
 
 type Evt =
-  | {type: 'open'; x: number}
-  | {type: 'close'; y: string}
+  | {type: 'open'}
+  | {type: 'close'}
   | {type: 'knock'}
   | {type: 'knockDone'};
 

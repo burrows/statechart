@@ -7,7 +7,7 @@ import {
   EffectObj as _EffectObj,
   EffectFn as _EffectFn,
   Effect as _Effect,
-} from './Node';
+} from './types';
 
 export type Event = _Event;
 export type EffectObj<E> = _EffectObj<E>;

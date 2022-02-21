@@ -11,10 +11,10 @@ export type InternalEvent<E extends Event> =
 export type SendFn<E> = (event: E) => void;
 
 export interface EffectObj<E> {
-  exec(): Promise<E | void>;
+  exec(send: SendFn<E>): void;
 }
 
-export type EffectFn<E> = () => Promise<E | void>;
+export type EffectFn<E> = (send: SendFn<E>) => void;
 
 export type Effect<E> = EffectObj<E> | EffectFn<E>;
 
