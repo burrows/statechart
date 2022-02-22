@@ -1,8 +1,10 @@
 {
-  "name": "statechart",
+  "name": "@corey.burrows/statechart",
   "version": "0.0.0",
   "description": "Harel Statechart",
-  "main": "build/index.js",
+  "main": "build/umd/index.js",
+  "module": "build/es/index.js",
+  "types": "build/types/index.d.ts",
   "dependencies": {},
   "devDependencies": {
     "@types/jest": "^27.4.0",
@@ -21,9 +23,11 @@
   },
   "scripts": {
     "test": "npx jest",
-    "build": "npx tsc",
-    "examples": "npx parcel examples/index.html"
+    "build": "npx tsc && npx tsc -p ./tsconfig.umd.json",
+    "clean": "rm -rf ./build",
+    "examples": "npx parcel --dist-dir .parcel examples/index.html",
+    "prepare": "npm run build"
   },
-  "author": "",
+  "author": "Corey Burrows <corey.burrows@gmail.com>",
   "license": "MIT"
 }

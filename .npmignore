@@ -1,6 +1,6 @@
-node_modules/
-scratch/
-build/
 .parcel-cache/
 .parcel/
+src/
+examples/
+scratch/
 *.tgz

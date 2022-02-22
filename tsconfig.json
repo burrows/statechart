@@ -1,7 +1,11 @@
 {
+  "include": ["src/**/*"],
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
+    "outDir": "build/es",
+    "declarationDir": "build/types",
+    "declaration": true,
+    "target": "es6",
+    "module": "esnext",
     "jsx": "preserve",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -9,7 +13,6 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
-    "outDir": "build",
     "sourceMap": true,
     "moduleResolution": "node"
   }
