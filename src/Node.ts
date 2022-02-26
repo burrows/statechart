@@ -21,7 +21,7 @@ export default class Node<C, E extends Event> {
   private exitHandler?: ExitHandler<C, E>;
   private condition?: ConditionFn<C, E>;
   private handlers: {
-    [evt: string]: (...args: any[]) => EventHandlerResult<C, E>;
+    [evt: string]: (...args: any[]) => EventHandlerResult<C, E> | void;
   };
 
   constructor(name: string, opts: NodeOpts, body?: NodeBody<C, E>) {
@@ -255,10 +255,12 @@ export default class Node<C, E extends Event> {
 
     if (this.exitHandler) {
       const r = this.exitHandler(state.context, evt);
-      state = state.update({
-        context: r.context || state.context,
-        effects: [...state.effects, ...(r.effects || [])],
-      });
+      if (r) {
+        state = state.update({
+          context: r.context || state.context,
+          effects: [...state.effects, ...(r.effects || [])],
+        });
+      }
     }
 
     const activities = state.activities.current[this.path];
@@ -283,20 +285,22 @@ export default class Node<C, E extends Event> {
   ): State<C, E> {
     if (this.enterHandler) {
       const r = this.enterHandler(state.context, evt);
-      state = state.update({
-        context: r.context || state.context,
-        effects: [...state.effects, ...(r.effects || [])],
-      });
 
-      if (r.activities?.length) {
-        state.activities = {
-          ...state.activities,
-          current: {
-            ...state.activities.current,
-            [this.path]: r.activities,
-          },
-          start: [...state.activities.start, ...r.activities],
-        };
+      if (r) {
+        state = state.update({
+          context: r.context || state.context,
+          effects: [...state.effects, ...(r.effects || [])],
+        });
+        if (r.activities?.length) {
+          state.activities = {
+            ...state.activities,
+            current: {
+              ...state.activities.current,
+              [this.path]: r.activities,
+            },
+            start: [...state.activities.start, ...r.activities],
+          };
+        }
       }
     }
 

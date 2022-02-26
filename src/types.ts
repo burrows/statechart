@@ -38,7 +38,7 @@ export interface ExitHandlerResult<C, E extends Event> {
 export type ExitHandler<C, E extends Event> = (
   ctx: C,
   evt: InternalEvent<E> | E,
-) => ExitHandlerResult<C, E>;
+) => ExitHandlerResult<C, E> | void;
 
 export interface EnterHandlerResult<C, E extends Event> {
   context?: C;
@@ -49,19 +49,19 @@ export interface EnterHandlerResult<C, E extends Event> {
 export type EnterHandler<C, E extends Event> = (
   ctx: C,
   evt: InternalEvent<E> | E,
-) => EnterHandlerResult<C, E>;
+) => EnterHandlerResult<C, E> | void;
 
 export type EventHandlerResult<C, E extends Event> = {
   context?: C;
   effects?: Effect<E>[];
   goto?: string | string[];
-} | void;
+};
 
 export type EventHandler<
   C,
   E extends Event,
   T extends E['type'] | InternalEvent<E>['type']
-> = (ctx: C, evt: Extract<E, {type: T}>) => EventHandlerResult<C, E>;
+> = (ctx: C, evt: Extract<E, {type: T}>) => EventHandlerResult<C, E> | void;
 
 export type ConditionFn<C, E extends Event> = (
   ctx: C,

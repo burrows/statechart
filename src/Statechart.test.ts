@@ -838,6 +838,43 @@ describe('Statechart#send', () => {
       expect(state.activities.stop).toEqual([actg1, acti1, actb1]);
     });
   });
+
+  it('allows for enter and exit handlers to return void', () => {
+    type Ctx = {enters: string[]; exits: string[]};
+    type Evt = {type: 'x'};
+    const sc = new Statechart<Ctx, Evt>({enters: [], exits: []}, s => {
+      s.state('a', s => {
+        s.enter(ctx => ({context: {...ctx, enters: [...ctx.enters, 'a']}}));
+        s.exit(ctx => ({context: {...ctx, exits: [...ctx.exits, 'a']}}));
+        s.on('x', '../b');
+      });
+
+      s.state('b', s => {
+        s.enter(() => {});
+        s.exit(() => {});
+        s.on('x', '../a');
+      });
+    });
+
+    let state = sc.initialState;
+
+    expect(state.context).toEqual({
+      enters: ['a'],
+      exits: [],
+    });
+
+    state = sc.send(state, {type: 'x'});
+    expect(state.context).toEqual({
+      enters: ['a'],
+      exits: ['a'],
+    });
+
+    state = sc.send(state, {type: 'x'});
+    expect(state.context).toEqual({
+      enters: ['a', 'a'],
+      exits: ['a'],
+    });
+  });
 });
 
 describe('Statechart#inspect', () => {
