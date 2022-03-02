@@ -11,6 +11,7 @@ import Node from './Node';
 export default class Statechart<C, E extends Event> {
   private root: Node<C, E>;
   private initialContext: C;
+  private _initialState?: State<C, E>;
 
   constructor(context: C, body: NodeBody<C, E>);
   constructor(
@@ -30,20 +31,23 @@ export default class Statechart<C, E extends Event> {
   }
 
   get initialState(): State<C, E> {
-    return this.root._enter(
-      new State({
-        context: this.initialContext,
-        effects: [],
-        current: [],
-        history: {},
-        activities: {
-          current: {},
-          start: [],
-          stop: [],
-        },
-      }),
-      {type: '__init__'},
-      [],
+    return (
+      this._initialState ||
+      (this._initialState = this.root._enter(
+        new State({
+          context: this.initialContext,
+          effects: [],
+          current: [],
+          history: {},
+          activities: {
+            current: {},
+            start: [],
+            stop: [],
+          },
+        }),
+        {type: '__init__'},
+        [],
+      ))
     );
   }
 
