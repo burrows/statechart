@@ -875,6 +875,38 @@ describe('Statechart#send', () => {
       exits: ['a'],
     });
   });
+
+  it('allows multiple enter and exit handlers on a node', () => {
+    type Ctx = {enters: string[]; exits: string[]};
+    type Evt = {type: 'x'};
+    const sc = new Statechart<Ctx, Evt>({enters: [], exits: []}, s => {
+      s.state('a', s => {
+        s.enter(ctx => ({context: {...ctx, enters: [...ctx.enters, 'a1']}}));
+        s.enter(ctx => ({context: {...ctx, enters: [...ctx.enters, 'a2']}}));
+        s.enter(ctx => ({context: {...ctx, enters: [...ctx.enters, 'a3']}}));
+        s.exit(ctx => ({context: {...ctx, exits: [...ctx.exits, 'a1']}}));
+        s.exit(ctx => ({context: {...ctx, exits: [...ctx.exits, 'a2']}}));
+        s.on('x', '../b');
+      });
+
+      s.state('b', s => {
+        s.on('x', '../a');
+      });
+    });
+
+    let state = sc.initialState;
+
+    expect(state.context).toEqual({
+      enters: ['a1', 'a2', 'a3'],
+      exits: [],
+    });
+
+    state = sc.send(state, {type: 'x'});
+    expect(state.context).toEqual({
+      enters: ['a1', 'a2', 'a3'],
+      exits: ['a1', 'a2'],
+    });
+  });
 });
 
 describe('Statechart#inspect', () => {

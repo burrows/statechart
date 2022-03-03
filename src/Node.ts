@@ -17,8 +17,8 @@ export default class Node<C, E extends Event> {
   public parent?: Node<C, E>;
   public children: Map<string, Node<C, E>>;
   private defaultChild?: string;
-  private enterHandler?: EnterHandler<C, E>;
-  private exitHandler?: ExitHandler<C, E>;
+  private enterHandlers: EnterHandler<C, E>[];
+  private exitHandlers: ExitHandler<C, E>[];
   private condition?: ConditionFn<C, E>;
   private handlers: {
     [evt: string]: (...args: any[]) => EventHandlerResult<C, E> | void;
@@ -28,6 +28,8 @@ export default class Node<C, E extends Event> {
     this.name = name;
     this.opts = opts;
     this.children = new Map();
+    this.enterHandlers = [];
+    this.exitHandlers = [];
     this.handlers = {};
     if (body) body(this);
   }
@@ -63,12 +65,12 @@ export default class Node<C, E extends Event> {
   }
 
   enter(handler: EnterHandler<C, E>): this {
-    this.enterHandler = handler;
+    this.enterHandlers.push(handler);
     return this;
   }
 
   exit(handler: ExitHandler<C, E>): this {
-    this.exitHandler = handler;
+    this.exitHandlers.push(handler);
     return this;
   }
 
@@ -253,8 +255,8 @@ export default class Node<C, E extends Event> {
       state = state.update({current: state.current.filter(n => n !== this)});
     }
 
-    if (this.exitHandler) {
-      const r = this.exitHandler(state.context, evt);
+    for (const exitHandler of this.exitHandlers) {
+      const r = exitHandler(state.context, evt);
       if (r) {
         state = state.update({
           context: r.context || state.context,
@@ -283,8 +285,8 @@ export default class Node<C, E extends Event> {
     evt: InternalEvent<E> | E,
     to: Node<C, E>[],
   ): State<C, E> {
-    if (this.enterHandler) {
-      const r = this.enterHandler(state.context, evt);
+    for (const enterHandler of this.enterHandlers) {
+      const r = enterHandler(state.context, evt);
 
       if (r) {
         state = state.update({
