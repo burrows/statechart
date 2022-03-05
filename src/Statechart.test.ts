@@ -908,6 +908,48 @@ describe('Statechart#send', () => {
       exits: ['a1', 'a2'],
     });
   });
+
+  it('allows pre/post enter/exit handlers on a node', () => {
+    type Ctx = {enters: string[]; exits: string[]};
+    type Evt = {type: 'x'};
+    const sc = new Statechart<Ctx, Evt>({enters: [], exits: []}, s => {
+      s.state('a', s => {
+        s.enter(
+          ctx => ({context: {...ctx, enters: [...ctx.enters, 'a-post']}}),
+          {type: 'post'},
+        );
+        s.enter(ctx => ({context: {...ctx, enters: [...ctx.enters, 'a']}}));
+        s.enter(
+          ctx => ({context: {...ctx, enters: [...ctx.enters, 'a-pre']}}),
+          {type: 'pre'},
+        );
+
+        s.exit(ctx => ({context: {...ctx, exits: [...ctx.exits, 'a-post']}}), {
+          type: 'post',
+        });
+        s.exit(ctx => ({context: {...ctx, exits: [...ctx.exits, 'a-pre']}}), {
+          type: 'pre',
+        });
+        s.exit(ctx => ({context: {...ctx, exits: [...ctx.exits, 'a']}}));
+        s.on('x', '../b');
+      });
+
+      s.state('b');
+    });
+
+    let state = sc.initialState;
+
+    expect(state.context).toEqual({
+      enters: ['a-pre', 'a', 'a-post'],
+      exits: [],
+    });
+
+    state = sc.send(state, {type: 'x'});
+    expect(state.context).toEqual({
+      enters: ['a-pre', 'a', 'a-post'],
+      exits: ['a-pre', 'a', 'a-post'],
+    });
+  });
 });
 
 describe('Statechart#inspect', () => {

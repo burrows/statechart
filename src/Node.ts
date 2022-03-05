@@ -18,7 +18,11 @@ export default class Node<C, E extends Event> {
   private history: boolean | '*';
   private defaultChild?: string;
   private enterHandlers: EnterHandler<C, E>[];
+  private preEnterHandlers: EnterHandler<C, E>[];
+  private postEnterHandlers: EnterHandler<C, E>[];
   private exitHandlers: ExitHandler<C, E>[];
+  private preExitHandlers: ExitHandler<C, E>[];
+  private postExitHandlers: ExitHandler<C, E>[];
   private condition?: ConditionFn<C, E>;
   private handlers: {
     [evt: string]: (...args: any[]) => EventHandlerResult<C, E> | void;
@@ -30,7 +34,11 @@ export default class Node<C, E extends Event> {
     this.history = false;
     this.children = new Map();
     this.enterHandlers = [];
+    this.preEnterHandlers = [];
+    this.postEnterHandlers = [];
     this.exitHandlers = [];
+    this.preExitHandlers = [];
+    this.postExitHandlers = [];
     this.handlers = {};
     if (body) body(this);
   }
@@ -55,13 +63,34 @@ export default class Node<C, E extends Event> {
     return this;
   }
 
-  enter(handler: EnterHandler<C, E>): this {
-    this.enterHandlers.push(handler);
+  enter(
+    handler: EnterHandler<C, E>,
+    {type}: {type?: 'pre' | 'post'} = {},
+  ): this {
+    switch (type) {
+      case 'pre':
+        this.preEnterHandlers.push(handler);
+        break;
+      case 'post':
+        this.postEnterHandlers.push(handler);
+        break;
+      default:
+        this.enterHandlers.push(handler);
+    }
     return this;
   }
 
-  exit(handler: ExitHandler<C, E>): this {
-    this.exitHandlers.push(handler);
+  exit(handler: ExitHandler<C, E>, {type}: {type?: 'pre' | 'post'} = {}): this {
+    switch (type) {
+      case 'pre':
+        this.preExitHandlers.push(handler);
+        break;
+      case 'post':
+        this.postExitHandlers.push(handler);
+        break;
+      default:
+        this.exitHandlers.push(handler);
+    }
     return this;
   }
 
@@ -242,7 +271,13 @@ export default class Node<C, E extends Event> {
       state = state.update({current: state.current.filter(n => n !== this)});
     }
 
-    for (const exitHandler of this.exitHandlers) {
+    const handlers = [
+      ...this.preExitHandlers,
+      ...this.exitHandlers,
+      ...this.postExitHandlers,
+    ];
+
+    for (const exitHandler of handlers) {
       const r = exitHandler(state.context, evt);
       if (r) {
         state = state.update({
@@ -272,7 +307,12 @@ export default class Node<C, E extends Event> {
     evt: InternalEvent<E> | E,
     to: Node<C, E>[],
   ): State<C, E> {
-    for (const enterHandler of this.enterHandlers) {
+    const handlers = [
+      ...this.preEnterHandlers,
+      ...this.enterHandlers,
+      ...this.postEnterHandlers,
+    ];
+    for (const enterHandler of handlers) {
       const r = enterHandler(state.context, evt);
 
       if (r) {
