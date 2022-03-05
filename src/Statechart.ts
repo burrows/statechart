@@ -1,10 +1,4 @@
-import {
-  InternalEvent,
-  Event,
-  NodeOpts,
-  NodeBody,
-  AllEventFields,
-} from './types';
+import {InternalEvent, Event, NodeBody, AllEventFields} from './types';
 import State from './State';
 import Node from './Node';
 
@@ -13,20 +7,9 @@ export default class Statechart<C, E extends Event> {
   private initialContext: C;
   private _initialState?: State<C, E>;
 
-  constructor(context: C, body: NodeBody<C, E>);
-  constructor(
-    context: C,
-    opts: Omit<NodeOpts, 'concurrent'>,
-    body: NodeBody<C, E>,
-  );
-  constructor(context: C, ...args: any[]) {
-    this.root =
-      args.length === 2
-        ? new Node('', {...args[0], concurrent: undefined}, args[1])
-        : new Node('', {}, args[0]);
-
+  constructor(context: C, body: NodeBody<C, E>) {
+    this.root = new Node('', body);
     this.root.on('__goto__', (_ctx, evt: any) => ({goto: evt.__paths__}));
-
     this.initialContext = context;
   }
 

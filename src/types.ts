@@ -23,11 +23,6 @@ export interface Activity<E> {
   stop(): void;
 }
 
-export interface NodeOpts {
-  concurrent?: true;
-  H?: true | '*';
-}
-
 export type NodeBody<C, E extends Event> = (n: Node<C, E>) => void;
 
 export interface ExitHandlerResult<C, E extends Event> {

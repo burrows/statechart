@@ -1,6 +1,5 @@
 import {
   Event,
-  NodeOpts,
   EnterHandler,
   ExitHandler,
   ConditionFn,
@@ -13,9 +12,10 @@ import State from './State';
 
 export default class Node<C, E extends Event> {
   public name: string;
-  public opts: NodeOpts;
+  public type: 'cluster' | 'concurrent';
   public parent?: Node<C, E>;
   public children: Map<string, Node<C, E>>;
+  private history: boolean | '*';
   private defaultChild?: string;
   private enterHandlers: EnterHandler<C, E>[];
   private exitHandlers: ExitHandler<C, E>[];
@@ -24,9 +24,10 @@ export default class Node<C, E extends Event> {
     [evt: string]: (...args: any[]) => EventHandlerResult<C, E> | void;
   };
 
-  constructor(name: string, opts: NodeOpts, body?: NodeBody<C, E>) {
+  constructor(name: string, body?: NodeBody<C, E>) {
     this.name = name;
-    this.opts = opts;
+    this.type = 'cluster';
+    this.history = false;
     this.children = new Map();
     this.enterHandlers = [];
     this.exitHandlers = [];
@@ -34,30 +35,20 @@ export default class Node<C, E extends Event> {
     if (body) body(this);
   }
 
-  state(name: string): this;
-  state(name: string, body: NodeBody<C, E>): this;
-  state(name: string, opts: NodeOpts): this;
-  state(name: string, opts: NodeOpts, body: NodeBody<C, E>): this;
-  state(name: string, ...args: any[]): this {
-    if (!name) {
-      throw new Error('Node#state: state must have a name');
-    }
+  concurrent(): this {
+    this.type = 'concurrent';
+    return this;
+  }
 
-    let opts: NodeOpts = {};
-    let body: NodeBody<C, E> | undefined;
+  H(star?: '*'): this {
+    this.history = star || true;
+    return this;
+  }
 
-    if (args[0] && args[1]) {
-      opts = args[0];
-      body = args[1];
-    } else if (args[0]) {
-      if (typeof args[0] === 'function') {
-        body = args[0];
-      } else {
-        opts = args[0];
-      }
-    }
+  state(name: string, body?: NodeBody<C, E>): this {
+    if (!name) throw new Error('Node#state: state must have a name');
 
-    const node = new Node(name, opts, body);
+    const node = new Node(name, body);
     node.parent = this;
     this.children.set(name, node);
     this.defaultChild = this.defaultChild || name;
@@ -102,10 +93,6 @@ export default class Node<C, E extends Event> {
     return this.children.size === 0;
   }
 
-  get type(): 'cluster' | 'concurrent' {
-    return this.opts.concurrent ? 'concurrent' : 'cluster';
-  }
-
   get lineage(): Node<C, E>[] {
     return (this.parent?.lineage || []).concat([this]);
   }
@@ -118,11 +105,11 @@ export default class Node<C, E extends Event> {
     return this.isRoot ? '/' : this.lineage.map(n => n.name).join('/');
   }
 
-  get history(): boolean {
-    if (this.opts.H) return true;
+  get isHistory(): boolean {
+    if (this.history) return true;
     let n = this.parent;
     while (n) {
-      if (n.opts.H === '*') return true;
+      if (n.history === '*') return true;
       n = n.parent;
     }
     return false;
@@ -149,12 +136,12 @@ export default class Node<C, E extends Event> {
     state,
   }: {prefix?: string; state?: State<C, E>} = {}): string {
     const current = state?.current.flatMap(n => n.lineage).includes(this);
-    const opts = this.opts.H ? (this.opts.H === '*' ? ' (H*)' : ' (H)') : '';
+    const opts = this.history ? (this.history === '*' ? ' (H*)' : ' (H)') : '';
     let s = `${prefix}${this.isRoot ? '/' : this.name}${opts}${
       current ? ' *' : ''
     }\n`;
     const children = Array.from(this.children.values());
-    const horiz = this.opts.concurrent ? '┄┄' : '──';
+    const horiz = this.type === 'concurrent' ? '┄┄' : '──';
 
     for (let i = 0; i < children.length; i++) {
       const last = i === children.length - 1;
@@ -378,7 +365,7 @@ export default class Node<C, E extends Event> {
       );
     }
 
-    if (this.history) {
+    if (this.isHistory) {
       state = state.update({
         history: {...state.history, [this.path]: child.name},
       });

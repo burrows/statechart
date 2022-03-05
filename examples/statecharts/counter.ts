@@ -31,7 +31,10 @@ export default new Statechart<Ctx, Evt>({count: 0, step: 0}, s => {
     s.on('TOGGLE_ON_OFF', '../on');
   });
 
-  s.state('on', {concurrent: true, H: '*'}, s => {
+  s.state('on', s => {
+    s.concurrent();
+    s.H('*');
+
     s.state('mode', s => {
       s.state('manual', s => {
         s.on('TOGGLE_AUTO', '../auto');

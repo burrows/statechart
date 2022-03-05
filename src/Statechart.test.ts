@@ -1,4 +1,4 @@
-import {NodeOpts, NodeBody, SendFn} from './types';
+import {NodeBody, SendFn} from './types';
 import Node from './Node';
 import Statechart from './Statechart';
 
@@ -18,13 +18,8 @@ const trace = (s: Node<Ctx, Evt>): void => {
   }));
 };
 
-const tstate = (
-  s: Node<Ctx, Evt>,
-  name: string,
-  opts: NodeOpts,
-  body?: NodeBody<Ctx, Evt>,
-) => {
-  s.state(name, opts, s => {
+const tstate = (s: Node<Ctx, Evt>, name: string, body?: NodeBody<Ctx, Evt>) => {
+  s.state(name, s => {
     trace(s);
     s.on('goto', (_ctx, evt) =>
       s.path === evt.from ? {goto: evt.to} : undefined,
@@ -36,21 +31,21 @@ const tstate = (
 
 const sc1 = new Statechart<Ctx, Evt>({ops: []}, s => {
   trace(s);
-  tstate(s, 'a', {}, s => {
-    tstate(s, 'c', {});
-    tstate(s, 'd', {});
+  tstate(s, 'a', s => {
+    tstate(s, 'c');
+    tstate(s, 'd');
   });
-  tstate(s, 'b', {}, s => {
-    tstate(s, 'e', {});
-    tstate(s, 'f', {}, s => {
-      tstate(s, 'g', {});
-      tstate(s, 'h', {});
-      tstate(s, 'i', {}, s => {
+  tstate(s, 'b', s => {
+    tstate(s, 'e');
+    tstate(s, 'f', s => {
+      tstate(s, 'g');
+      tstate(s, 'h');
+      tstate(s, 'i', s => {
         s.C(() => 'k');
-        tstate(s, 'j', {});
-        tstate(s, 'k', {}, s => {
-          tstate(s, 'l', {});
-          tstate(s, 'm', {});
+        tstate(s, 'j');
+        tstate(s, 'k', s => {
+          tstate(s, 'l');
+          tstate(s, 'm');
         });
       });
     });
@@ -59,40 +54,43 @@ const sc1 = new Statechart<Ctx, Evt>({ops: []}, s => {
 
 const sc2 = new Statechart<Ctx, Evt>({ops: []}, s => {
   trace(s);
-  tstate(s, 'a', {});
-  tstate(s, 'b', {concurrent: true}, s => {
-    tstate(s, 'b1', {}, s => {
-      tstate(s, 'c', {});
-      tstate(s, 'd', {});
+  tstate(s, 'a');
+  tstate(s, 'b', s => {
+    s.concurrent();
+    tstate(s, 'b1', s => {
+      tstate(s, 'c');
+      tstate(s, 'd');
     });
-    tstate(s, 'b2', {}, s => {
-      tstate(s, 'e', {});
-      tstate(s, 'f', {});
+    tstate(s, 'b2', s => {
+      tstate(s, 'e');
+      tstate(s, 'f');
     });
-    tstate(s, 'b3', {}, s => {
-      tstate(s, 'g', {});
-      tstate(s, 'h', {});
+    tstate(s, 'b3', s => {
+      tstate(s, 'g');
+      tstate(s, 'h');
     });
   });
 });
 
 const sc3 = new Statechart<Ctx, Evt>({ops: []}, s => {
   trace(s);
-  tstate(s, 'a', {});
-  tstate(s, 'b', {}, s => {
-    tstate(s, 'c', {H: true}, s => {
-      tstate(s, 'e', {});
-      tstate(s, 'f', {});
-      tstate(s, 'g', {});
+  tstate(s, 'a');
+  tstate(s, 'b', s => {
+    tstate(s, 'c', s => {
+      s.H();
+      tstate(s, 'e');
+      tstate(s, 'f');
+      tstate(s, 'g');
     });
-    tstate(s, 'd', {H: '*'}, s => {
-      tstate(s, 'h', {}, s => {
-        tstate(s, 'j', {});
-        tstate(s, 'k', {});
+    tstate(s, 'd', s => {
+      s.H('*');
+      tstate(s, 'h', s => {
+        tstate(s, 'j');
+        tstate(s, 'k');
       });
-      tstate(s, 'i', {}, s => {
-        tstate(s, 'l', {});
-        tstate(s, 'm', {});
+      tstate(s, 'i', s => {
+        tstate(s, 'l');
+        tstate(s, 'm');
       });
     });
   });
@@ -444,7 +442,8 @@ describe('Statechart#send', () => {
     type Evt = {type: 'foo'};
 
     const sc = new Statechart<Ctx, Evt>({}, s => {
-      s.state('b', {concurrent: true}, s => {
+      s.state('b', s => {
+        s.concurrent();
         s.state('b1', s => {
           s.state('x', s => {
             s.on('foo', '../y');
@@ -700,7 +699,8 @@ describe('Statechart#send', () => {
           s.on('x', '/b');
         });
       });
-      s.state('b', {concurrent: true}, s => {
+      s.state('b', s => {
+        s.concurrent();
         s.enter(() => ({effects: [effb1]}));
 
         s.state('e', s => {
@@ -779,7 +779,8 @@ describe('Statechart#send', () => {
           s.on('x', '../../b');
         });
       });
-      s.state('b', {concurrent: true}, s => {
+      s.state('b', s => {
+        s.concurrent();
         s.enter(() => ({activities: [actb1]}));
 
         s.state('e', s => {
