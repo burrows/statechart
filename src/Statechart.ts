@@ -1,4 +1,4 @@
-import {InternalEvent, Event, NodeBody, AllEventFields} from './types';
+import {InternalEvent, Event, NodeBody} from './types';
 import State from './State';
 import Node from './Node';
 
@@ -9,7 +9,6 @@ export default class Statechart<C, E extends Event> {
 
   constructor(context: C, body: NodeBody<C, E>) {
     this.root = new Node('', body);
-    this.root.on('__goto__', (_ctx, evt: any) => ({goto: evt.__paths__}));
     this.initialContext = context;
   }
 
@@ -34,15 +33,7 @@ export default class Statechart<C, E extends Event> {
     );
   }
 
-  goto(
-    state: State<C, E>,
-    paths: string[],
-    fields?: AllEventFields<E>,
-  ): State<C, E> {
-    return this.send(state, {type: '__goto__', __paths__: paths, ...fields});
-  }
-
-  send(state: State<C, E>, evt: InternalEvent<E> | E): State<C, E> {
+  send(state: State<C, E>, evt: InternalEvent | E): State<C, E> {
     const seen = new Set<Node<C, E>>();
     const transitions: {
       pivot: Node<C, E>;
