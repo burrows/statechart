@@ -15,7 +15,7 @@ export default class Node<C, E extends Event> {
   public type: 'cluster' | 'concurrent';
   public parent?: Node<C, E>;
   public children: Map<string, Node<C, E>>;
-  private history: boolean | '*';
+  private history: 'none' | 'shallow' | 'deep';
   private defaultChild?: string;
   private enterHandlers: EnterHandler<C, E>[];
   private preEnterHandlers: EnterHandler<C, E>[];
@@ -31,7 +31,7 @@ export default class Node<C, E extends Event> {
   constructor(name: string, body?: NodeBody<C, E>) {
     this.name = name;
     this.type = 'cluster';
-    this.history = false;
+    this.history = 'none';
     this.children = new Map();
     this.enterHandlers = [];
     this.preEnterHandlers = [];
@@ -49,7 +49,7 @@ export default class Node<C, E extends Event> {
   }
 
   H(star?: '*'): this {
-    this.history = star || true;
+    this.history = star ? 'deep' : 'shallow';
     return this;
   }
 
@@ -135,10 +135,10 @@ export default class Node<C, E extends Event> {
   }
 
   get isHistory(): boolean {
-    if (this.history) return true;
+    if (this.history !== 'none') return true;
     let n = this.parent;
     while (n) {
-      if (n.history === '*') return true;
+      if (n.history === 'deep') return true;
       n = n.parent;
     }
     return false;
@@ -165,7 +165,10 @@ export default class Node<C, E extends Event> {
     state,
   }: {prefix?: string; state?: State<C, E>} = {}): string {
     const current = state?.current.flatMap(n => n.lineage).includes(this);
-    const opts = this.history ? (this.history === '*' ? ' (H*)' : ' (H)') : '';
+    const opts =
+      this.history !== 'none'
+        ? ` (H${this.history === 'deep' ? '*' : ''})`
+        : '';
     let s = `${prefix}${this.isRoot ? '/' : this.name}${opts}${
       current ? ' *' : ''
     }\n`;
