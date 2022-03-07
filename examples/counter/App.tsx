@@ -1,23 +1,42 @@
-import React, {useState, useEffect} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
+import Statechart, {Event, State, SendFn} from '../../src';
 
 import Counter from '../components/Counter';
-import counter, {Evt} from '../statecharts/counter';
+import counter from '../statecharts/counter';
 
 interface AppProps {}
 
-const App: React.FC<AppProps> = ({}) => {
-  const [state, setState] = useState(counter.initialState);
+const useStatechart = <C, E extends Event>(
+  statechart: Statechart<C, E>,
+): [State<C, E>, SendFn<E>] => {
+  const [state, setState] = useState(statechart.initialState);
 
-  const send = (evt: Evt): void => {
-    setState(state => counter.send(state, evt));
-  };
+  const send = useCallback(
+    (evt: E): void => {
+      setState(state => statechart.send(state, evt));
+    },
+    [setState],
+  );
 
   useEffect(() => {
-    console.clear();
-    console.log(counter.inspect(state));
+    // console.clear();
+    // console.log(statechart.inspect(state));
     state.activities.start.forEach(a => a.start(send));
     state.activities.stop.forEach(a => a.stop());
+    state.effects.forEach(e => {
+      if ('exec' in e) {
+        e.exec(send);
+      } else {
+        e(send);
+      }
+    });
   }, [state]);
+
+  return [state, send];
+};
+
+const App: React.FC<AppProps> = ({}) => {
+  const [state, send] = useStatechart(counter);
 
   const on = state.matches('/on');
   const auto = state.matches('/on/mode/auto');
