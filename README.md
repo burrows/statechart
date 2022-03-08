@@ -1,3 +1,5 @@
+![Statechart](https://cdn.rawgit.com/burrows/statechart/main/logo.svg)
+
 # Statechart
 
 `Statechart` is a TypeScript library for building [Harel Statecharts](https://en.wikipedia.org/wiki/State_diagram#Harel_statechart).
