@@ -199,7 +199,7 @@ export default class Node<C, E extends Event> {
 
     state = state.update({
       context: result.context || state.context,
-      effects: [...state.effects, ...(result.effects || [])],
+      actions: [...state.actions, ...(result.actions || [])],
     });
 
     return {
@@ -285,7 +285,7 @@ export default class Node<C, E extends Event> {
       if (r) {
         state = state.update({
           context: r.context || state.context,
-          effects: [...state.effects, ...(r.effects || [])],
+          actions: [...state.actions, ...(r.actions || [])],
         });
       }
     }
@@ -321,7 +321,7 @@ export default class Node<C, E extends Event> {
       if (r) {
         state = state.update({
           context: r.context || state.context,
-          effects: [...state.effects, ...(r.effects || [])],
+          actions: [...state.actions, ...(r.actions || [])],
         });
         if (r.activities?.length) {
           state.activities = {

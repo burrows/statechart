@@ -117,7 +117,7 @@ describe('Statechart#initialState', () => {
         {type: 'enter', path: '/a/c'},
       ],
     });
-    expect(state.effects).toEqual([]);
+    expect(state.actions).toEqual([]);
   });
 });
 
@@ -142,7 +142,7 @@ describe('Statechart#send', () => {
         {type: 'enter', path: '/b/f/h'},
       ],
     });
-    expect(state.effects).toEqual([]);
+    expect(state.actions).toEqual([]);
   });
 
   it('handles events at non-leaf states', () => {
@@ -166,7 +166,7 @@ describe('Statechart#send', () => {
         {type: 'enter', path: '/b/f/i/j'},
       ],
     });
-    expect(state.effects).toEqual([]);
+    expect(state.actions).toEqual([]);
   });
 
   it('transitions to paths that are relative to the handler', () => {
@@ -186,7 +186,7 @@ describe('Statechart#send', () => {
         {type: 'enter', path: '/a/d'},
       ],
     });
-    expect(state.effects).toEqual([]);
+    expect(state.actions).toEqual([]);
   });
 
   it('enters to a leaf state when the destination is not a leaf state', () => {
@@ -209,7 +209,7 @@ describe('Statechart#send', () => {
         {type: 'enter', path: '/b/f/g'},
       ],
     });
-    expect(state.effects).toEqual([]);
+    expect(state.actions).toEqual([]);
   });
 
   it('uses condition function when present to determine child state to enter', () => {
@@ -234,7 +234,7 @@ describe('Statechart#send', () => {
         {type: 'enter', path: '/b/f/i/k/l'},
       ],
     });
-    expect(state.effects).toEqual([]);
+    expect(state.actions).toEqual([]);
   });
 
   it('enters all child states of a concurrent state', () => {
@@ -263,7 +263,7 @@ describe('Statechart#send', () => {
         {type: 'enter', path: '/b/b3/g'},
       ],
     });
-    expect(state.effects).toEqual([]);
+    expect(state.actions).toEqual([]);
   });
 
   it('enters the specified substates of a concurrent state', () => {
@@ -292,7 +292,7 @@ describe('Statechart#send', () => {
         {type: 'enter', path: '/b/b3/h'},
       ],
     });
-    expect(state.effects).toEqual([]);
+    expect(state.actions).toEqual([]);
   });
 
   it('exits all child states of a concurrent state', () => {
@@ -331,7 +331,7 @@ describe('Statechart#send', () => {
         {type: 'enter', path: '/a'},
       ],
     });
-    expect(state.effects).toEqual([]);
+    expect(state.actions).toEqual([]);
   });
 
   it('exits and re-enters the current states when a self transition is indicated', () => {
@@ -353,7 +353,7 @@ describe('Statechart#send', () => {
         {type: 'enter', path: '/a/c'},
       ],
     });
-    expect(state.effects).toEqual([]);
+    expect(state.actions).toEqual([]);
   });
 
   it('does nothing on events that are not handled', () => {
@@ -367,7 +367,7 @@ describe('Statechart#send', () => {
         {type: 'enter', path: '/a/c'},
       ],
     });
-    expect(state.effects).toEqual([]);
+    expect(state.actions).toEqual([]);
   });
 
   it('handles transitions in nested concurrent states', () => {
@@ -410,7 +410,7 @@ describe('Statechart#send', () => {
         {type: 'enter', path: '/b/b3/h'},
       ],
     });
-    expect(state.effects).toEqual([]);
+    expect(state.actions).toEqual([]);
   });
 
   it('handles multiple transitions across concurrent states', () => {
@@ -644,52 +644,52 @@ describe('Statechart#send', () => {
     );
   });
 
-  describe('effects', () => {
+  describe('actions', () => {
     interface Ctx {}
     type Evt = {type: 'x'} | {type: 'y'} | {type: 'z'};
 
-    const effc1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const effc2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const effc3 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const effc4 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const effd1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const effd2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const effb1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const effg1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const effg2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const effi1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const effi2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const effi3 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const actc1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const actc2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const actc3 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const actc4 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const actd1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const actd2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const actb1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const actg1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const actg2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const acti1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const acti2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const acti3 = (): Promise<Evt> => Promise.resolve({type: 'z'});
 
     const sc = new Statechart<Ctx, Evt>({}, s => {
       s.state('a', s => {
         s.state('c', s => {
-          s.enter(() => ({effects: [effc1]}));
-          s.exit(() => ({effects: [effc2]}));
+          s.enter(() => ({actions: [actc1]}));
+          s.exit(() => ({actions: [actc2]}));
           s.on('x', '../d');
-          s.on('y', () => ({effects: [effc3]}));
-          s.on('z', () => ({effects: [effc4], goto: '/b'}));
+          s.on('y', () => ({actions: [actc3]}));
+          s.on('z', () => ({actions: [actc4], goto: '/b'}));
         });
         s.state('d', s => {
-          s.enter(() => ({effects: [effd1, effd2]}));
+          s.enter(() => ({actions: [actd1, actd2]}));
           s.on('x', '/b');
         });
       });
       s.state('b', s => {
         s.concurrent();
-        s.enter(() => ({effects: [effb1]}));
+        s.enter(() => ({actions: [actb1]}));
 
         s.state('e', s => {
           s.state('g', s => {
-            s.enter(() => ({effects: [effg1]}));
-            s.exit(() => ({effects: [effg2]}));
+            s.enter(() => ({actions: [actg1]}));
+            s.exit(() => ({actions: [actg2]}));
           });
           s.state('h');
         });
         s.state('f', s => {
           s.state('i', s => {
-            s.enter(() => ({effects: [effi1, effi2]}));
-            s.exit(() => ({effects: [effi3]}));
+            s.enter(() => ({actions: [acti1, acti2]}));
+            s.exit(() => ({actions: [acti3]}));
           });
           s.state('j');
         });
@@ -698,35 +698,35 @@ describe('Statechart#send', () => {
       });
     });
 
-    it('gathers effects from enter and exit handlers', () => {
+    it('gathers actions from enter and exit handlers', () => {
       let state = sc.initialState;
       expect(state.current.map(n => n.path)).toEqual(['/a/c']);
-      expect(state.effects).toEqual([effc1]);
+      expect(state.actions).toEqual([actc1]);
 
       state = sc.send(state, {type: 'x'});
       expect(state.current.map(n => n.path)).toEqual(['/a/d']);
-      expect(state.effects).toEqual([effc2, effd1, effd2]);
+      expect(state.actions).toEqual([actc2, actd1, actd2]);
 
       state = sc.send(state, {type: 'x'});
       expect(state.current.map(n => n.path)).toEqual(['/b/e/g', '/b/f/i']);
-      expect(state.effects).toEqual([effb1, effg1, effi1, effi2]);
+      expect(state.actions).toEqual([actb1, actg1, acti1, acti2]);
 
       state = sc.send(state, {type: 'x'});
       expect(state.current.map(n => n.path)).toEqual(['/a/c']);
-      expect(state.effects).toEqual([effg2, effi3, effc1]);
+      expect(state.actions).toEqual([actg2, acti3, actc1]);
     });
 
-    it('gathers effects from event handlers', () => {
+    it('gathers actions from event handlers', () => {
       let state = sc.initialState;
       expect(state.current.map(n => n.path)).toEqual(['/a/c']);
 
       state = sc.send(state, {type: 'y'});
       expect(state.current.map(n => n.path)).toEqual(['/a/c']);
-      expect(state.effects).toEqual([effc3]);
+      expect(state.actions).toEqual([actc3]);
 
       state = sc.send(state, {type: 'z'});
       expect(state.current.map(n => n.path)).toEqual(['/b/e/g', '/b/f/i']);
-      expect(state.effects).toEqual([effc4, effc2, effb1, effg1, effi1, effi2]);
+      expect(state.actions).toEqual([actc4, actc2, actb1, actg1, acti1, acti2]);
     });
   });
 

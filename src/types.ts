@@ -8,13 +8,13 @@ export type InternalEvent = {type: '__start__'} | {type: '__stop__'};
 
 export type SendFn<E> = (event: E) => void;
 
-export interface EffectObj<E> {
+export interface ActionObj<E> {
   exec(send: SendFn<E>): void;
 }
 
-export type EffectFn<E> = (send: SendFn<E>) => void;
+export type ActionFn<E> = (send: SendFn<E>) => void;
 
-export type Effect<E> = EffectObj<E> | EffectFn<E>;
+export type Action<E> = ActionObj<E> | ActionFn<E>;
 
 export interface Activity<E> {
   start(send: SendFn<E>): void;
@@ -25,7 +25,7 @@ export type NodeBody<C, E extends Event> = (n: Node<C, E>) => void;
 
 export interface ExitHandlerResult<C, E extends Event> {
   context?: C;
-  effects?: Effect<E>[];
+  actions?: Action<E>[];
 }
 
 export type ExitHandler<C, E extends Event> = (
@@ -35,7 +35,7 @@ export type ExitHandler<C, E extends Event> = (
 
 export interface EnterHandlerResult<C, E extends Event> {
   context?: C;
-  effects?: Effect<E>[];
+  actions?: Action<E>[];
   activities?: Activity<E>[];
 }
 
@@ -46,7 +46,7 @@ export type EnterHandler<C, E extends Event> = (
 
 export type EventHandlerResult<C, E extends Event> = {
   context?: C;
-  effects?: Effect<E>[];
+  actions?: Action<E>[];
   goto?: string | string[];
 };
 

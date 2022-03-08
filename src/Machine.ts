@@ -8,7 +8,7 @@ export default class Machine<C, E extends Event> {
   constructor(private statechart: Statechart<C, E>) {
     this.state = new State({
       context: statechart.initialContext,
-      effects: [],
+      actions: [],
       current: [],
       history: {},
       activities: {
@@ -39,11 +39,11 @@ export default class Machine<C, E extends Event> {
 
     state.activities.start.forEach(a => a.start(send));
     state.activities.stop.forEach(a => a.stop());
-    state.effects.forEach(e => {
-      if ('exec' in e) {
-        e.exec(send);
+    state.actions.forEach(a => {
+      if ('exec' in a) {
+        a.exec(send);
       } else {
-        e(send);
+        a(send);
       }
     });
 

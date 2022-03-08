@@ -23,11 +23,11 @@ const useStatechart = <C, E extends Event>(
     // console.log(statechart.inspect(state));
     state.activities.start.forEach(a => a.start(send));
     state.activities.stop.forEach(a => a.stop());
-    state.effects.forEach(e => {
-      if ('exec' in e) {
-        e.exec(send);
+    state.actions.forEach(a => {
+      if ('exec' in a) {
+        a.exec(send);
       } else {
-        e(send);
+        a(send);
       }
     });
   }, [state]);

@@ -18,7 +18,7 @@ export default class Statechart<C, E extends Event> {
       (this._initialState = this.root._enter(
         new State({
           context: this.initialContext,
-          effects: [],
+          actions: [],
           current: [],
           history: {},
           activities: {
@@ -46,7 +46,7 @@ export default class Statechart<C, E extends Event> {
     }[] = [];
 
     state = state.update({
-      effects: [],
+      actions: [],
       activities: {
         ...state.activities,
         start: [],

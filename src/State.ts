@@ -1,10 +1,10 @@
-import {Event, Effect, Activity} from './types';
+import {Event, Action, Activity} from './types';
 import Node from './Node';
 
 export default class State<C, E extends Event> {
   current: Node<C, E>[];
   context: C;
-  effects: Effect<E>[];
+  actions: Action<E>[];
   history: {[path: string]: string};
   activities: {
     current: {[path: string]: Activity<E>[]};
@@ -15,13 +15,13 @@ export default class State<C, E extends Event> {
   constructor({
     current,
     context,
-    effects,
+    actions,
     history,
     activities,
   }: {
     current: Node<C, E>[];
     context: C;
-    effects: Effect<E>[];
+    actions: Action<E>[];
     history: {[path: string]: string};
     activities: {
       current: {[path: string]: Activity<E>[]};
@@ -31,7 +31,7 @@ export default class State<C, E extends Event> {
   }) {
     this.current = current;
     this.context = context;
-    this.effects = effects;
+    this.actions = actions;
     this.history = history;
     this.activities = activities;
   }
