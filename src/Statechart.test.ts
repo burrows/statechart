@@ -928,6 +928,50 @@ describe('Statechart#send', () => {
   });
 });
 
+describe('Statechart#stop', () => {
+  it('exits all current states up through the root', () => {
+    let state = sc1.send(sc1.initialState, {
+      type: 'goto',
+      from: '/a/c',
+      to: '/b/f/h',
+    });
+
+    expect(state.current.map(n => n.path)).toEqual(['/b/f/h']);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'enter', path: '/a/c'},
+        {type: 'exit', path: '/a/c'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/f'},
+        {type: 'enter', path: '/b/f/h'},
+      ],
+    });
+
+    state = sc1.stop(state);
+
+    expect(state.current).toEqual([]);
+    expect(state.context).toEqual({
+      ops: [
+        {type: 'enter', path: '/'},
+        {type: 'enter', path: '/a'},
+        {type: 'enter', path: '/a/c'},
+        {type: 'exit', path: '/a/c'},
+        {type: 'exit', path: '/a'},
+        {type: 'enter', path: '/b'},
+        {type: 'enter', path: '/b/f'},
+        {type: 'enter', path: '/b/f/h'},
+        {type: 'exit', path: '/b/f/h'},
+        {type: 'exit', path: '/b/f'},
+        {type: 'exit', path: '/b'},
+        {type: 'exit', path: '/'},
+      ],
+    });
+  });
+});
+
 describe('Statechart#inspect', () => {
   it('returns a tree representation of the statechart and indicates the current state(s)', () => {
     let s1 = sc1.initialState;

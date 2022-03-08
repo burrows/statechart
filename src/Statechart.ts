@@ -3,8 +3,8 @@ import State from './State';
 import Node from './Node';
 
 export default class Statechart<C, E extends Event> {
+  public initialContext: C;
   private root: Node<C, E>;
-  private initialContext: C;
   private _initialState?: State<C, E>;
 
   constructor(context: C, body: NodeBody<C, E>) {
@@ -27,10 +27,14 @@ export default class Statechart<C, E extends Event> {
             stop: [],
           },
         }),
-        {type: '__init__'},
+        {type: '__start__'},
         [],
       ))
     );
+  }
+
+  stop(state: State<C, E>): State<C, E> {
+    return this.root._exit(state, {type: '__stop__'});
   }
 
   send(state: State<C, E>, evt: InternalEvent | E): State<C, E> {

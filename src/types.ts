@@ -4,7 +4,7 @@ export interface Event {
   type: string;
 }
 
-export type InternalEvent = {type: '__init__'};
+export type InternalEvent = {type: '__start__'} | {type: '__stop__'};
 
 export type SendFn<E> = (event: E) => void;
 
