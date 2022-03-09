@@ -1,4 +1,4 @@
-![Statechart](https://cdn.rawgit.com/burrows/statechart/main/logo.svg)
+![Statechart](https://cdn.rawgit.com/burrows/statechart/90b94a845e1d7bed6707576a0cf4c1bb1baad1b6/logo.svg)
 
 # Statechart
 
