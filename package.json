@@ -1,7 +1,7 @@
 {
   "name": "@corey.burrows/statechart",
-  "version": "0.0.0",
-  "description": "Harel Statechart",
+  "version": "0.1.0",
+  "description": "Simple Stateless Statechart",
   "main": "build/umd/index.js",
   "module": "build/es/index.js",
   "types": "build/types/index.d.ts",
@@ -26,8 +26,11 @@
     "build": "npx tsc && npx tsc -p ./tsconfig.umd.json",
     "clean": "rm -rf ./build",
     "examples": "npx parcel --dist-dir .parcel examples/index.html",
-    "prepare": "npm run build"
+    "prepare": "npm t && npm run build",
+    "postpublish": "git tag v$(npm --loglevel silent run version) && git push --tags",
+    "version": "node -pe \"require('./package.json').version\""
   },
   "author": "Corey Burrows <corey.burrows@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://github.com/burrows/statechart"
 }

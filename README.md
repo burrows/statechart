@@ -4,6 +4,14 @@
 
 `Statechart` is a TypeScript library for building [Harel Statecharts](https://en.wikipedia.org/wiki/State_diagram#Harel_statechart).
 
+## Installation
+
+```
+npm install @corey.burrows/statechart
+```
+
+## What are statecharts?
+
 A statechart is like a traditional state machine with states, events, and
 transitions, but it adds two features that make them much better at modeling
 complex systems: hierarchical/clustered states and concurrent states.
@@ -22,7 +30,7 @@ by allowing child states that operate independently. This means that the current
 state of a statechart is not a single state, but a vector of states whose length
 is not fixed.
 
-## _Stateless_ Statecharts
+## _Stateless_ statecharts
 
 The `Statechart` class allows you to build _stateless_ statecharts. This may
 seem counterintuitive at first, but it has many practical benefits. A
@@ -32,6 +40,8 @@ the `Statechart` instance, so you are responsible for maintaining the current
 state elsewhere.
 
 ```typescript
+import Statechart from '@corey.burrows/statechart';
+
 type Evt = {type: 'toggle'};
 
 const toggle = new Statechart<{}, Evt>({}, s => {
