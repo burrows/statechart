@@ -5,6 +5,26 @@
   "main": "build/umd/index.js",
   "module": "build/es/index.js",
   "types": "build/types/index.d.ts",
+  "files": [
+    "build/types/Machine.d.ts",
+    "build/types/Node.d.ts",
+    "build/types/State.d.ts",
+    "build/types/Statechart.d.ts",
+    "build/types/index.d.ts",
+    "build/types/types.d.ts",
+    "build/es/Machine.js",
+    "build/es/Node.js",
+    "build/es/State.js",
+    "build/es/Statechart.js",
+    "build/es/index.js",
+    "build/es/types.js",
+    "build/umd/Machine.js",
+    "build/umd/Node.js",
+    "build/umd/State.js",
+    "build/umd/Statechart.js",
+    "build/umd/index.js",
+    "build/umd/types.js"
+  ],
   "dependencies": {},
   "devDependencies": {
     "@types/jest": "^27.4.0",
@@ -26,10 +46,19 @@
     "build": "npx tsc && npx tsc -p ./tsconfig.umd.json",
     "clean": "rm -rf ./build",
     "examples": "npx parcel --dist-dir .parcel examples/index.html",
-    "prepare": "npm t && npm run build",
+    "prepare": "npm run clean && npm t && npm run build",
     "postpublish": "git tag v$(npm --loglevel silent run version) && git push --tags",
     "version": "node -pe \"require('./package.json').version\""
   },
+  "keywords": [
+    "statechart",
+    "state",
+    "chart",
+    "statemachine",
+    "machine",
+    "harel",
+    "fsm"
+  ],
   "author": "Corey Burrows <corey.burrows@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/burrows/statechart"
