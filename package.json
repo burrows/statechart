@@ -29,11 +29,13 @@
   "devDependencies": {
     "@corey.burrows/react-use-statechart": "^0.1.0",
     "@types/jest": "^27.4.0",
+    "@types/lodash": "^4.14.179",
     "@types/react": "^17.0.39",
     "@types/react-dom": "^17.0.11",
     "@types/react-redux": "^7.1.22",
     "@types/redux": "^3.6.0",
     "jest": "^27.5.0",
+    "lodash": "^4.17.21",
     "parcel": "^2.3.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
