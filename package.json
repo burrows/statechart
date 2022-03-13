@@ -27,6 +27,7 @@
   ],
   "dependencies": {},
   "devDependencies": {
+    "@corey.burrows/react-use-statechart": "^0.1.0",
     "@types/jest": "^27.4.0",
     "@types/react": "^17.0.39",
     "@types/react-dom": "^17.0.11",

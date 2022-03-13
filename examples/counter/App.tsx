@@ -1,39 +1,10 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import Statechart, {Event, State, SendFn} from '../../src';
+import React from 'react';
+import useStatechart from '@corey.burrows/react-use-statechart';
 
 import Counter from '../components/Counter';
 import counter from '../statecharts/counter';
 
 interface AppProps {}
-
-const useStatechart = <C, E extends Event>(
-  statechart: Statechart<C, E>,
-): [State<C, E>, SendFn<E>] => {
-  const [state, setState] = useState(statechart.initialState);
-
-  const send = useCallback(
-    (evt: E): void => {
-      setState(state => statechart.send(state, evt));
-    },
-    [setState],
-  );
-
-  useEffect(() => {
-    // console.clear();
-    // console.log(statechart.inspect(state));
-    state.activities.start.forEach(a => a.start(send));
-    state.activities.stop.forEach(a => a.stop());
-    state.actions.forEach(a => {
-      if ('exec' in a) {
-        a.exec(send);
-      } else {
-        a(send);
-      }
-    });
-  }, [state]);
-
-  return [state, send];
-};
 
 const App: React.FC<AppProps> = ({}) => {
   const [state, send] = useStatechart(counter);
