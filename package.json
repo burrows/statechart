@@ -27,7 +27,7 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "@corey.burrows/react-use-statechart": "^0.1.0",
+    "@corey.burrows/react-use-statechart": "^0.1.1",
     "@types/jest": "^27.4.0",
     "@types/lodash": "^4.14.179",
     "@types/react": "^17.0.39",
@@ -64,5 +64,6 @@
   ],
   "author": "Corey Burrows <corey.burrows@gmail.com>",
   "license": "MIT",
+  "repository": "https://github.com/burrows/statechart",
   "homepage": "https://github.com/burrows/statechart"
 }
