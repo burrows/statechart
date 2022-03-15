@@ -38,6 +38,7 @@ console.log(state.paths); // ['/on']
 
 ## Documentation
 
+* [Overview](OVERVIEW.md)
 * [API Docs](docs/README.md)
 * [Statecharts paper](http://www.wisdom.weizmann.ac.il/~harel/papers/Statecharts.pdf)
 * [Statecharts History paper](http://www.wisdom.weizmann.ac.il/~harel/papers/Statecharts.History.pdf)
