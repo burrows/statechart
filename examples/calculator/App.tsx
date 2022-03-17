@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {KeyboardEvent, useEffect, useRef} from 'react';
 import Statechart, {State} from '../../src';
 import useStatechart from '@corey.burrows/react-use-statechart';
 
@@ -240,10 +240,78 @@ const statechart = new Statechart<Ctx, Evt>(initCtx, s => {
 });
 
 const App: React.FC<AppProps> = ({}) => {
-  const [state, send] = useStatechart(statechart, {inspect: true, clear: true});
+  const [state, send] = useStatechart(statechart, {
+    inspect: true,
+    clear: true,
+  });
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
+
+  const onKeyDown = (e: KeyboardEvent) => {
+    switch (e.key) {
+      case '0':
+        send({type: 'digit', value: 0});
+        break;
+      case '1':
+        send({type: 'digit', value: 1});
+        break;
+      case '2':
+        send({type: 'digit', value: 2});
+        break;
+      case '3':
+        send({type: 'digit', value: 3});
+        break;
+      case '4':
+        send({type: 'digit', value: 4});
+        break;
+      case '5':
+        send({type: 'digit', value: 5});
+        break;
+      case '6':
+        send({type: 'digit', value: 6});
+        break;
+      case '7':
+        send({type: 'digit', value: 7});
+        break;
+      case '8':
+        send({type: 'digit', value: 8});
+        break;
+      case '9':
+        send({type: 'digit', value: 9});
+        break;
+      case '+':
+        send({type: 'add'});
+        break;
+      case '-':
+        send({type: 'subtract'});
+        break;
+      case '*':
+        send({type: 'multiply'});
+        break;
+      case '/':
+        send({type: 'divide'});
+        break;
+      case '=':
+      case 'Enter':
+        send({type: 'compute'});
+        break;
+      case '%':
+        send({type: 'percent'});
+        break;
+      case '.':
+        send({type: 'dot'});
+        break;
+      case 'Escape':
+        send({type: 'C'});
+        break;
+    }
+  };
 
   return (
-    <div className="Calculator">
+    <div className="Calculator" ref={ref} tabIndex={0} onKeyDown={onKeyDown}>
       <div className="Calculator-display">{display(state)}</div>
       <button
         className="Calculator-button"
