@@ -444,7 +444,7 @@ console.log(state.context);
 ```
 
 In addition to triggering a transition with the `goto` key, event handlers can
-also update the context (as shown above) and queue actions. 
+also update the context (as shown above) and queue actions.
 
 For simple transitions, you can also specify just the destination state(s):
 
@@ -561,7 +561,112 @@ console.log(state.actions);
 
 ### Activities
 
+Activities are similar to actions, but they are active for the duration of time
+that the state that queued them is current. This means that activities can only
+be queued by state enter handlers. Activities are useful for performing periodic
+side effects such as polling an API for new data. Activities are any object that
+implements the following methods:
+
+* `start(send: SendFn<E>): void`
+* `stop(): void`
+
+The `start` method is just like an action's `exec` method. The `stop` method
+should stop whatever periodic timer the `start` method starts.
+
+```typescript
+import Statechart, {SendFn} from '@corey.burrows/statechart';
+
+interface Ctx {
+  count: number;
+}
+
+type Evt = {type: 'TICK'} | {type: 'START'} | {type: 'STOP'};
+
+class Ticker {
+  interval?: number;
+
+  start(send: SendFn<Evt>): void {
+    this.interval = (setInterval(() => {
+      send({type: 'TICK'});
+    }, 1000);
+  }
+
+  stop(): void {
+    clearInterval(this.interval);
+  }
+}
+
+const statechart = new Statechart<Ctx, Evt>({count: 0}, s => {
+  s.state('off', s => {
+    s.on('START', '../on');
+  });
+
+  s.state('on', s => {
+    s.enter(() => ({activities: [new Ticker()]}));
+    s.on('TICK', ctx => ({context: {...ctx, count: ctx.count + 1}}));
+    s.on('STOP', '../off');
+  });
+});
+
+let state = statechart.initialState;
+state = statechart.send(state, {type: 'START'});
+console.log(state.paths);
+console.log(state.context);
+state.activities.start[0].start((evt: Evt) => {
+  state = statechart.send(state, evt);
+  console.log('TICK:', state.context);
+});
+setTimeout(() => {
+  state = statechart.send(state, {type: 'STOP'});
+  console.log(state.paths);
+  console.log(state.context);
+  state.activities.stop[0].stop();
+}, 3100);
+
+// [ '/on' ]
+// { count: 0 }
+// TICK: { count: 1 }
+// TICK: { count: 2 }
+// TICK: { count: 3 }
+// [ '/off' ]
+// { count: 3 }
+```
+
+When a state enter handler queues an activty using the `activities` key, the
+statechart will add that activity to the returned state's `activities.start`
+property. The outside machine code is responsible for actually calling the
+object's `start` method. Then whenever that state is eventually exited, the
+activity will be moved to the return state's `activities.stop` property.
+
 ## Machines
+
+As previously mentioned, a `Statechart` instance is an immutable object that
+provides a pure `send` method that takes the current state and an event and
+returns the next state. Any side effects are simply added to a queue, not
+acutally executed.
+
+To make use of a statechart, you'll need to provide some orchestration code to
+maintain what the current state is and to execute side effects. The `Statechart`
+library provides a [`Machine`](src/Machine.ts) class that does this, but you
+may want to implement this yourself to depending on the needs of your
+application.
+
+Using the statechart from the activities example:
+
+```typescript
+const machine = new Machine(statechart);
+
+machine.start();
+
+machine.send({type: 'START'});
+
+setTimeout(() => {
+  machine.send({type: 'STOP'});
+
+  console.log(machine.paths); // [ '/off' ]
+  console.log(machine.context); // { count: 3 }
+}, 3100);
+```
 
 ## Bringing it all together
 
@@ -572,6 +677,6 @@ console.log(state.actions);
 * Use `enter` handlers to update the state context appropriate for the state's
   particular system configuration
 * Use `enter` handlers to queue any necessary side effects that the state needs
-  (e.g. load data) 
+  (e.g. load data)
 * Use `exit` handlers to clean up the context
 
