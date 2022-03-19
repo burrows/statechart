@@ -311,123 +311,131 @@ const App: React.FC<AppProps> = ({}) => {
   };
 
   return (
-    <div className="Calculator" ref={ref} tabIndex={0} onKeyDown={onKeyDown}>
-      <div className="Calculator-display">{display(state)}</div>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btn0'}}
-        onClick={() => send({type: 'digit', value: 0})}>
-        0
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btn1'}}
-        onClick={() => send({type: 'digit', value: 1})}>
-        1
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btn2'}}
-        onClick={() => send({type: 'digit', value: 2})}>
-        2
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btn3'}}
-        onClick={() => send({type: 'digit', value: 3})}>
-        3
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btn4'}}
-        onClick={() => send({type: 'digit', value: 4})}>
-        4
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btn5'}}
-        onClick={() => send({type: 'digit', value: 5})}>
-        5
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btn6'}}
-        onClick={() => send({type: 'digit', value: 6})}>
-        6
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btn7'}}
-        onClick={() => send({type: 'digit', value: 7})}>
-        7
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btn8'}}
-        onClick={() => send({type: 'digit', value: 8})}>
-        8
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btn9'}}
-        onClick={() => send({type: 'digit', value: 9})}>
-        9
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btnDot'}}
-        onClick={() => send({type: 'dot'})}>
-        .
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btnAdd'}}
-        onClick={() => send({type: 'add'})}>
-        +
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btnSub'}}
-        onClick={() => send({type: 'subtract'})}>
-        -
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btnMul'}}
-        onClick={() => send({type: 'multiply'})}>
-        *
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btnDiv'}}
-        onClick={() => send({type: 'divide'})}>
-        /
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btnPct'}}
-        onClick={() => send({type: 'percent'})}>
-        %
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btnEq'}}
-        onClick={() => send({type: 'compute'})}>
-        =
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btnCE'}}
-        onClick={() => send({type: 'CE'})}>
-        CE
-      </button>
-      <button
-        className="Calculator-button"
-        style={{gridArea: 'btnC'}}
-        onClick={() => send({type: 'C'})}>
-        C
-      </button>
-    </div>
+    <main
+      style={{
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+      <div className="Calculator" ref={ref} tabIndex={0} onKeyDown={onKeyDown}>
+        <div className="Calculator-display">{display(state)}</div>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btn0'}}
+          onClick={() => send({type: 'digit', value: 0})}>
+          0
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btn1'}}
+          onClick={() => send({type: 'digit', value: 1})}>
+          1
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btn2'}}
+          onClick={() => send({type: 'digit', value: 2})}>
+          2
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btn3'}}
+          onClick={() => send({type: 'digit', value: 3})}>
+          3
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btn4'}}
+          onClick={() => send({type: 'digit', value: 4})}>
+          4
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btn5'}}
+          onClick={() => send({type: 'digit', value: 5})}>
+          5
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btn6'}}
+          onClick={() => send({type: 'digit', value: 6})}>
+          6
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btn7'}}
+          onClick={() => send({type: 'digit', value: 7})}>
+          7
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btn8'}}
+          onClick={() => send({type: 'digit', value: 8})}>
+          8
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btn9'}}
+          onClick={() => send({type: 'digit', value: 9})}>
+          9
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btnDot'}}
+          onClick={() => send({type: 'dot'})}>
+          .
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btnAdd'}}
+          onClick={() => send({type: 'add'})}>
+          +
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btnSub'}}
+          onClick={() => send({type: 'subtract'})}>
+          -
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btnMul'}}
+          onClick={() => send({type: 'multiply'})}>
+          *
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btnDiv'}}
+          onClick={() => send({type: 'divide'})}>
+          /
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btnPct'}}
+          onClick={() => send({type: 'percent'})}>
+          %
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btnEq'}}
+          onClick={() => send({type: 'compute'})}>
+          =
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btnCE'}}
+          onClick={() => send({type: 'CE'})}>
+          CE
+        </button>
+        <button
+          className="Calculator-button"
+          style={{gridArea: 'btnC'}}
+          onClick={() => send({type: 'C'})}>
+          C
+        </button>
+      </div>
+    </main>
   );
 };
 
