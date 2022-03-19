@@ -16,17 +16,7 @@ export default class Statechart<C, E extends Event> {
     return (
       this._initialState ||
       (this._initialState = this.root._enter(
-        new State({
-          context: this.initialContext,
-          actions: [],
-          current: [],
-          history: {},
-          activities: {
-            current: {},
-            start: [],
-            stop: [],
-          },
-        }),
+        new State({context: this.initialContext}),
         {type: '__start__'},
         [],
       ))

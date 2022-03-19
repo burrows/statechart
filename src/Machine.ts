@@ -6,17 +6,7 @@ export default class Machine<C, E extends Event> {
   private state: State<C, E>;
 
   constructor(private statechart: Statechart<C, E>) {
-    this.state = new State({
-      context: statechart.initialContext,
-      actions: [],
-      current: [],
-      history: {},
-      activities: {
-        current: {},
-        start: [],
-        stop: [],
-      },
-    });
+    this.state = new State({context: statechart.initialContext});
   }
 
   start(): this {
