@@ -109,7 +109,7 @@ describe('Statechart constructor', () => {
 describe('Statechart#initialState', () => {
   it('is the result of entering the root state', () => {
     const state = sc1.initialState;
-    expect(state.current.map(s => s.path)).toEqual(['/a/c']);
+    expect(state.paths).toEqual(['/a/c']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -129,7 +129,7 @@ describe('Statechart#send', () => {
       to: '/b/f/h',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/b/f/h']);
+    expect(state.paths).toEqual(['/b/f/h']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -152,7 +152,7 @@ describe('Statechart#send', () => {
       to: '/b/f/i/j',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/b/f/i/j']);
+    expect(state.paths).toEqual(['/b/f/i/j']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -176,7 +176,7 @@ describe('Statechart#send', () => {
       to: '../d',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/a/d']);
+    expect(state.paths).toEqual(['/a/d']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -196,7 +196,7 @@ describe('Statechart#send', () => {
       to: '/b/f',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/b/f/g']);
+    expect(state.paths).toEqual(['/b/f/g']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -219,7 +219,7 @@ describe('Statechart#send', () => {
       to: '/b/f/i',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/b/f/i/k/l']);
+    expect(state.paths).toEqual(['/b/f/i/k/l']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -244,11 +244,7 @@ describe('Statechart#send', () => {
       to: '/b',
     });
 
-    expect(state.current.map(n => n.path)).toEqual([
-      '/b/b1/c',
-      '/b/b2/e',
-      '/b/b3/g',
-    ]);
+    expect(state.paths).toEqual(['/b/b1/c', '/b/b2/e', '/b/b3/g']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -273,11 +269,7 @@ describe('Statechart#send', () => {
       to: ['/b/b1/d', '/b/b3/h'],
     });
 
-    expect(state.current.map(n => n.path)).toEqual([
-      '/b/b1/d',
-      '/b/b2/e',
-      '/b/b3/h',
-    ]);
+    expect(state.paths).toEqual(['/b/b1/d', '/b/b2/e', '/b/b3/h']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -308,7 +300,7 @@ describe('Statechart#send', () => {
       to: '/a',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/a']);
+    expect(state.paths).toEqual(['/a']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -341,7 +333,7 @@ describe('Statechart#send', () => {
       to: '.',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+    expect(state.paths).toEqual(['/a/c']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -359,7 +351,7 @@ describe('Statechart#send', () => {
   it('does nothing on events that are not handled', () => {
     const state = sc1.send(sc1.initialState, {type: 'noop'});
 
-    expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+    expect(state.paths).toEqual(['/a/c']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -377,11 +369,7 @@ describe('Statechart#send', () => {
       to: '/b',
     });
 
-    expect(state.current.map(n => n.path)).toEqual([
-      '/b/b1/c',
-      '/b/b2/e',
-      '/b/b3/g',
-    ]);
+    expect(state.paths).toEqual(['/b/b1/c', '/b/b2/e', '/b/b3/g']);
 
     state = sc2.send(state, {
       type: 'goto',
@@ -389,11 +377,7 @@ describe('Statechart#send', () => {
       to: '../h',
     });
 
-    expect(state.current.map(n => n.path)).toEqual([
-      '/b/b1/c',
-      '/b/b2/e',
-      '/b/b3/h',
-    ]);
+    expect(state.paths).toEqual(['/b/b1/c', '/b/b2/e', '/b/b3/h']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -441,11 +425,7 @@ describe('Statechart#send', () => {
 
     const state = sc.send(sc.initialState, {type: 'foo'});
 
-    expect(state.current.map(n => n.path)).toEqual([
-      '/b/b2/x',
-      '/b/b1/y',
-      '/b/b3/y',
-    ]);
+    expect(state.paths).toEqual(['/b/b2/x', '/b/b1/y', '/b/b3/y']);
   });
 
   it('handles shallow history states', () => {
@@ -455,7 +435,7 @@ describe('Statechart#send', () => {
       to: '/b/c/f',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/b/c/f']);
+    expect(state.paths).toEqual(['/b/c/f']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -473,7 +453,7 @@ describe('Statechart#send', () => {
       to: '/a',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/a']);
+    expect(state.paths).toEqual(['/a']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -495,7 +475,7 @@ describe('Statechart#send', () => {
       to: '/b/c',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/b/c/f']);
+    expect(state.paths).toEqual(['/b/c/f']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -523,7 +503,7 @@ describe('Statechart#send', () => {
       to: '/b/d/i/m',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/b/d/i/m']);
+    expect(state.paths).toEqual(['/b/d/i/m']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -542,7 +522,7 @@ describe('Statechart#send', () => {
       to: '/a',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/a']);
+    expect(state.paths).toEqual(['/a']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -566,7 +546,7 @@ describe('Statechart#send', () => {
       to: '/b/d',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/b/d/i/m']);
+    expect(state.paths).toEqual(['/b/d/i/m']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},
@@ -611,11 +591,7 @@ describe('Statechart#send', () => {
       to: '/b',
     });
 
-    expect(state.current.map(n => n.path)).toEqual([
-      '/b/b1/c',
-      '/b/b2/e',
-      '/b/b3/g',
-    ]);
+    expect(state.paths).toEqual(['/b/b1/c', '/b/b2/e', '/b/b3/g']);
 
     expect(() => {
       sc2.send(state, {
@@ -700,32 +676,32 @@ describe('Statechart#send', () => {
 
     it('gathers actions from enter and exit handlers', () => {
       let state = sc.initialState;
-      expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+      expect(state.paths).toEqual(['/a/c']);
       expect(state.actions).toEqual([actc1]);
 
       state = sc.send(state, {type: 'x'});
-      expect(state.current.map(n => n.path)).toEqual(['/a/d']);
+      expect(state.paths).toEqual(['/a/d']);
       expect(state.actions).toEqual([actc2, actd1, actd2]);
 
       state = sc.send(state, {type: 'x'});
-      expect(state.current.map(n => n.path)).toEqual(['/b/e/g', '/b/f/i']);
+      expect(state.paths).toEqual(['/b/e/g', '/b/f/i']);
       expect(state.actions).toEqual([actb1, actg1, acti1, acti2]);
 
       state = sc.send(state, {type: 'x'});
-      expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+      expect(state.paths).toEqual(['/a/c']);
       expect(state.actions).toEqual([actg2, acti3, actc1]);
     });
 
     it('gathers actions from event handlers', () => {
       let state = sc.initialState;
-      expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+      expect(state.paths).toEqual(['/a/c']);
 
       state = sc.send(state, {type: 'y'});
-      expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+      expect(state.paths).toEqual(['/a/c']);
       expect(state.actions).toEqual([actc3]);
 
       state = sc.send(state, {type: 'z'});
-      expect(state.current.map(n => n.path)).toEqual(['/b/e/g', '/b/f/i']);
+      expect(state.paths).toEqual(['/b/e/g', '/b/f/i']);
       expect(state.actions).toEqual([actc4, actc2, actb1, actg1, acti1, acti2]);
     });
   });
@@ -778,7 +754,7 @@ describe('Statechart#send', () => {
 
     it('adds activities to activities.current and activities.start as states are entered and moves them to stop when states are exited', () => {
       let state = sc.initialState;
-      expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+      expect(state.paths).toEqual(['/a/c']);
       expect(state.activities.current).toEqual({
         '/a': [acta1],
         '/a/c': [actc1, actc2],
@@ -787,7 +763,7 @@ describe('Statechart#send', () => {
       expect(state.activities.stop).toEqual([]);
 
       state = sc.send(state, {type: 'x'});
-      expect(state.current.map(n => n.path)).toEqual(['/a/d']);
+      expect(state.paths).toEqual(['/a/d']);
       expect(state.activities.current).toEqual({
         '/a': [acta1],
         '/a/d': [actd1],
@@ -796,7 +772,7 @@ describe('Statechart#send', () => {
       expect(state.activities.stop).toEqual([actc1, actc2]);
 
       state = sc.send(state, {type: 'x'});
-      expect(state.current.map(n => n.path)).toEqual(['/b/e/g', '/b/f/i']);
+      expect(state.paths).toEqual(['/b/e/g', '/b/f/i']);
       expect(state.activities.current).toEqual({
         '/b': [actb1],
         '/b/e/g': [actg1],
@@ -806,7 +782,7 @@ describe('Statechart#send', () => {
       expect(state.activities.stop).toEqual([actd1, acta1]);
 
       state = sc.send(state, {type: 'x'});
-      expect(state.current.map(n => n.path)).toEqual(['/a/c']);
+      expect(state.paths).toEqual(['/a/c']);
       expect(state.activities.current).toEqual({
         '/a': [acta1],
         '/a/c': [actc1, actc2],
@@ -936,7 +912,7 @@ describe('Statechart#stop', () => {
       to: '/b/f/h',
     });
 
-    expect(state.current.map(n => n.path)).toEqual(['/b/f/h']);
+    expect(state.paths).toEqual(['/b/f/h']);
     expect(state.context).toEqual({
       ops: [
         {type: 'enter', path: '/'},

@@ -36,6 +36,10 @@ export default class State<C, E extends Event> {
     this.activities = activities;
   }
 
+  get paths(): string[] {
+    return this.current.map(n => n.path);
+  }
+
   update(data: Partial<this>): State<C, E> {
     return new State({...this, ...data});
   }

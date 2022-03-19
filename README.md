@@ -29,11 +29,11 @@ const toggle = new Statechart<Ctx, Evt>({}, s => {
 });
 
 let state = toggle.initialState;
-console.log(state.current.map(n => n.path)); //  ['/on']
+console.log(state.paths); // ['/on']
 state = toggle.send(state, {type: 'toggle'});
-console.log(state.current.map(n => n.path)); //  ['/off']
+console.log(state.paths); // ['/off']
 state = toggle.send(state, {type: 'toggle'});
-console.log(state.current.map(n => n.path)); //  ['/on']
+console.log(state.paths); // ['/on']
 ```
 
 ## Documentation
