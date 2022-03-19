@@ -1,4 +1,5 @@
 import {Event} from './types';
+import Node from './Node';
 import Statechart from './Statechart';
 import State from './State';
 
@@ -40,8 +41,12 @@ export default class Machine<C, E extends Event> {
     return this;
   }
 
-  get current(): string[] {
-    return this.state.current.map(n => n.path);
+  get current(): Node<C, E>[] {
+    return this.state.current;
+  }
+
+  get paths(): string[] {
+    return this.state.paths;
   }
 
   get context(): C {
