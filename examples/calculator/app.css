@@ -1,0 +1,31 @@
+.Calculator {
+  padding: 4px;
+  width: 300px;
+  height: 600px;
+  border: 1px solid #ccc;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-areas:
+    'display display display display'
+    'btnC    btnCE   btnPct  btnDiv'
+    'btn7    btn8    btn9    btnMul'
+    'btn4    btn5    btn6    btnSub'
+    'btn1    btn2    btn3    btnAdd'
+    'btn0    btn0    btnDot  btnEq';
+}
+
+.Calculator-display {
+  grid-area: display;
+  width: 100%;
+  font-size: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  padding: 8px;
+}
+
+.Calculator-button {
+  font-size: 24px;
+}
