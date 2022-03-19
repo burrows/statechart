@@ -38,6 +38,8 @@ const display = (state: State<Ctx, Evt>): string => {
   }
 };
 
+// Statechart design is from the book "Contructing the User Interface with
+// Statecharts" by Ian Horrocks: https://www.amazon.com/dp/0201342782.
 const statechart = new Statechart<Ctx, Evt>(initCtx, s => {
   s.state('ready', s => {
     s.state('start', s => {
