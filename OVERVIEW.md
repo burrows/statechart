@@ -670,13 +670,19 @@ setTimeout(() => {
 
 ## Bringing it all together
 
-* Create states to represent each possible system configuration
+Statecharts provide a simple and powerful pattern for managing complex state,
+particularly in user interface applications. Here are some general guidelines
+for their use in user interface applications:
+
+* Create states to represent each possible view configuration
+  * Use clustered states to capture common behavior between states
+  * Use concurrent states to model indendent parts of the app
 * Design the state context to be a minimal, flat, and fully normalized
-  representation of the data needed by the system
-* Use selector functions over the state contex to compute derived data
+  representation of the data needed by the application
+* Use selector functions over the state context to compute derived data
 * Use `enter` handlers to update the state context appropriate for the state's
-  particular system configuration
+  particular view configuration
 * Use `enter` handlers to queue any necessary side effects that the state needs
-  (e.g. load data)
+  (e.g. load data, start pollers)
 * Use `exit` handlers to clean up the context
 
