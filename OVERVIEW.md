@@ -45,11 +45,11 @@ const toggle = new Statechart<{}, Evt>({}, s => {
 });
 
 let state = toggle.initialState;
-console.log(state.current.map(n => n.path)); // ['/on']
+console.log(state.paths); // ['/on']
 state = toggle.send(state, {type: 'toggle'});
-console.log(state.current.map(n => n.path)); // ['/off']
+console.log(state.paths); // ['/off']
 state = toggle.send(state, {type: 'toggle'});
-console.log(state.current.map(n => n.path)); // ['/on']
+console.log(state.paths); // ['/on']
 ```
 
 This makes testing very easy because you are just testing a pure function that
@@ -99,15 +99,9 @@ const statechart = new Statechart<Ctx, Evt>({}, s => {
 });
 
 let state = statechart.initialState;
-console.log(
-  state.current.map(n => n.path),
-  state.context,
-); // [ '/home' ] {}
+console.log(state.paths, state.context); // [ '/home' ] {}
 state = statechart.send(state, {type: 'SELECT_WIDGET', id: 123});
-console.log(
-  state.current.map(n => n.path),
-  state.context,
-); // [ '/widgets' ] { widgetId: 123 }
+console.log(state.paths, state.context); // [ '/widgets' ] { widgetId: 123 }
 ```
 
 If you need to update the context and trigger a transition from an event
@@ -150,9 +144,9 @@ const statechart = new Statechart<Ctx, Evt>({}, s => {
 });
 
 let state = statechart.initialState;
-console.log(state.current.map(n => n.path)); // ['/A/C']
+console.log(state.paths); // ['/A/C']
 state = statechart.send(state, {type: 'three'});
-console.log(state.current.map(n => n.path)); // ['/B']
+console.log(state.paths); // ['/B']
 ```
 
 We can see here that states `C` and `D` are refinements of state `A`. The event
@@ -180,7 +174,7 @@ As described above, condition functions can be defined on states to control
 which child state gets entered based on either the current context or the event
 that triggered the transition or a combination of both:
 
-```
+```typescript
 interface Ctx {}
 type Evt = {type: 'x'; value: number};
 
@@ -197,9 +191,9 @@ const statechart = new Statechart<Ctx, Evt>({}, s => {
 });
 
 let s1 = statechart.send(statechart.initialState, {type: 'x', value: 1});
-console.log(s1.current.map(n => n.path)); // ['/B/D']
+console.log(s1.paths); // ['/B/D']
 let s2 = statechart.send(statechart.initialState, {type: 'x', value: 2});
-console.log(s2.current.map(n => n.path)); // ['/B/C']
+console.log(s2.paths); // ['/B/C']
 ```
 
 The `C` method of the state accepts a `ConditionFn` which must return the name
@@ -212,7 +206,7 @@ Clustered states can also be marked as history states using the `H` method.
 History states remember their most recently exited child state and will enter
 that state when re-entered.
 
-```
+```typescript
 interface Ctx {}
 type Evt = {type: 'x'} | {type: 'y'} | {type: 'z'};
 
@@ -231,13 +225,13 @@ const statechart = new Statechart<Ctx, Evt>({}, s => {
 });
 
 let state = statechart.initialState;
-console.log(state.current.map(n => n.path)); // ['/A']
+console.log(state.paths); // ['/A']
 state = statechart.send(state, {type: 'x'});
-console.log(state.current.map(n => n.path)); // ['/B/D']
+console.log(state.paths); // ['/B/D']
 state = statechart.send(state, {type: 'z'});
-console.log(state.current.map(n => n.path)); // ['/A']
+console.log(state.paths); // ['/A']
 state = statechart.send(state, {type: 'y'});
-console.log(state.current.map(n => n.path)); // ['/B/D']
+console.log(state.paths); // ['/B/D']
 ```
 
 The `y` event handler only specifies a transtion to the `/B` state, but instead
@@ -345,35 +339,107 @@ const statechart = new Statechart<Ctx, Evt>({}, s => {
 });
 
 let state = statechart.initialState;
-console.log(state.current.map(n => n.path));
+console.log(state.paths);
 // [ '/bold/off', '/underline/off', '/align/left', '/bullets/none' ]
 state = statechart.send(state, {type: 'toggleBold'});
-console.log(state.current.map(n => n.path));
+console.log(state.paths);
 // [ '/underline/off', '/align/left', '/bullets/none', '/bold/on' ]
 state = statechart.send(state, {type: 'toggleUnderline'});
-console.log(state.current.map(n => n.path));
+console.log(state.paths);
 // [ '/align/left', '/bullets/none', '/bold/on', '/underline/on' ]
 state = statechart.send(state, {type: 'rightClicked'});
-console.log(state.current.map(n => n.path));
+console.log(state.paths);
 // [ '/bullets/none', '/bold/on', '/underline/on', '/align/right' ]
 state = statechart.send(state, {type: 'justifyClicked'});
-console.log(state.current.map(n => n.path));
+console.log(state.paths);
 // [ '/bullets/none', '/bold/on', '/underline/on', '/align/justify' ]
 state = statechart.send(state, {type: 'regularClicked'});
-console.log(state.current.map(n => n.path));
+console.log(state.paths);
 // [ '/bold/on', '/underline/on', '/align/justify', '/bullets/regular' ]
 state = statechart.send(state, {type: 'regularClicked'});
-console.log(state.current.map(n => n.path));
+console.log(state.paths);
 // [ '/bold/on', '/underline/on', '/align/justify', '/bullets/none' ]
 state = statechart.send(state, {type: 'numberClicked'});
-console.log(state.current.map(n => n.path));
+console.log(state.paths);
 // [ '/bold/on', '/underline/on', '/align/justify', '/bullets/number' ]
 state = statechart.send(state, {type: 'resetClicked'});
-console.log(state.current.map(n => n.path));
+console.log(state.paths);
 // [ '/bold/off', '/underline/off', '/align/left', '/bullets/none' ]
 ```
 
 ## Transitions
+
+Transitions are how a statechart moves between states. They occur when an event
+is sent to a statechart with a current state that handles the event and
+indicates a transition should be made using the `on` method.
+
+A transition always involves one or more current states and one or more
+destination states. They work by first running the event handler on the current
+state and then exiting the current state up to, but not including, a pivot
+state. The pivot state is the nearest common ancestor between the current state
+and the destination state. Once the pivot state has been reached, the
+destination states are entered down to the final leaf states.
+
+```typescript
+type Ctx = string[];
+type Evt = {type: 'x'};
+
+const statechart = new Statechart<Ctx, Evt>([], s => {
+  s.state('a', s => {
+    s.enter(ctx => ({context: [...ctx, 'enter:a']}));
+    s.exit(ctx => ({context: [...ctx, 'exit:a']}));
+
+    s.state('c', s => {
+      s.enter(ctx => ({context: [...ctx, 'enter:c']}));
+      s.exit(ctx => ({context: [...ctx, 'exit:c']}));
+
+      s.on('x', (ctx, evt) => ({context: [...ctx, 'handle:x'], goto: '/b/f'}));
+    });
+
+    s.state('d', s => {
+      s.enter(ctx => ({context: [...ctx, 'enter:d']}));
+      s.exit(ctx => ({context: [...ctx, 'exit:d']}));
+    });
+  });
+
+  s.state('b', s => {
+    s.enter(ctx => ({context: [...ctx, 'enter:b']}));
+    s.exit(ctx => ({context: [...ctx, 'exit:b']}));
+
+    s.state('e', s => {
+      s.enter(ctx => ({context: [...ctx, 'enter:e']}));
+      s.exit(ctx => ({context: [...ctx, 'exit:e']}));
+    });
+
+    s.state('f', s => {
+      s.enter(ctx => ({context: [...ctx, 'enter:f']}));
+      s.exit(ctx => ({context: [...ctx, 'exit:f']}));
+    });
+  });
+});
+
+let state = statechart.initialState;
+
+console.log(state.paths);
+// [ '/a/c' ]
+console.log(state.context);
+// [ 'enter:a', 'enter:c' ]
+state = statechart.send(state, {type: 'x'});
+console.log(state.paths);
+// [ '/b/f' ]
+console.log(state.context);
+// ['enter:a', 'enter:c', 'handle:x', 'exit:c', 'exit:a', 'enter:b', 'enter:f'];
+```
+
+In addition to triggering a transition with the `goto` key, event handlers can
+also update the context (as shown above) and queue actions. 
+
+For simple transitions, you can also specify just the destination state(s):
+
+```typescript
+s.on('x', '../a');
+s.on('y', ['../b/c', '../b/d']);
+```
 
 ## Side Effects
 
