@@ -79,6 +79,8 @@ careful to not perform mutable updates to the context object since that would
 create a side effect.**:
 
 ```typescript
+import Statechart from '@corey.burrows/statechart';
+
 interface Ctx {
   widgetId?: number;
 }
@@ -122,6 +124,8 @@ the same destination state on the same event, then you could group those states
 together under a clustered parent state and define the transition on the parent.
 
 ```typescript
+import Statechart from '@corey.burrows/statechart';
+
 interface Ctx {}
 type Evt = {type: 'one'} | {type: 'two'} | {type: 'three'} | {type: 'four'};
 
@@ -175,6 +179,8 @@ which child state gets entered based on either the current context or the event
 that triggered the transition or a combination of both:
 
 ```typescript
+import Statechart from '@corey.burrows/statechart';
+
 interface Ctx {}
 type Evt = {type: 'x'; value: number};
 
@@ -207,6 +213,8 @@ History states remember their most recently exited child state and will enter
 that state when re-entered.
 
 ```typescript
+import Statechart from '@corey.burrows/statechart';
+
 interface Ctx {}
 type Evt = {type: 'x'} | {type: 'y'} | {type: 'z'};
 
@@ -266,6 +274,8 @@ between the concurrent sibling states. Similar to entering a concurrent state,
 exiting a concurrent state causes all of its child states to be exited.
 
 ```typescript
+import Statechart from '@corey.burrows/statechart';
+
 interface Ctx {}
 type Evt =
   | {type: 'toggleBold'}
@@ -381,6 +391,8 @@ and the destination state. Once the pivot state has been reached, the
 destination states are entered down to the final leaf states.
 
 ```typescript
+import Statechart from '@corey.burrows/statechart';
+
 type Ctx = string[];
 type Evt = {type: 'x'};
 
@@ -393,7 +405,7 @@ const statechart = new Statechart<Ctx, Evt>([], s => {
       s.enter(ctx => ({context: [...ctx, 'enter:c']}));
       s.exit(ctx => ({context: [...ctx, 'exit:c']}));
 
-      s.on('x', (ctx, evt) => ({context: [...ctx, 'handle:x'], goto: '/b/f'}));
+      s.on('x', (ctx) => ({context: [...ctx, 'handle:x'], goto: '/b/f'}));
     });
 
     s.state('d', s => {
@@ -443,7 +455,109 @@ s.on('y', ['../b/c', '../b/d']);
 
 ## Side Effects
 
+Although explicitly tracking a system's current state and extended state (via
+`context`) in a pure manner is quite useful, systems also often need to perform
+(possibly asynchronous) side effects on the world such as fetching data or
+rendering to the screen. `Statechart` supports two types of side effects:
+
+* Actions: one shot side effects that can be queued by state enter/exit handlers
+  or event handlers
+* Activities: recurrent side effects the run for the duration that the state
+  that queued them are current
+
+Note that the term _queued_ is used to describe how states interact with side
+effects. It is important to understand that a statechart does not actually
+execute the effects, it simply adds them to the `state` object returned by the
+`send` method where they must be executed by either the `Machine` class or a
+custom machine that you provide.
+
 ### Actions
+
+Actions are one shot side effects that can be queued by enter/exit handlers or
+event handlers. An action is simply an object that implements an
+`exec(send: SendFn<E>): void` method. The exec method can perform some
+asynchronous action and then use the given `send` function to pass an event back
+into the statechart.
+
+```typescript
+import Statechart, {SendFn, ActionObj} from '@corey.burrows/statechart';
+
+interface Widget {
+  id: number;
+  name: string;
+}
+
+interface Ctx {
+  loadingWidgets: boolean;
+  widgets: Widget[];
+}
+
+type Evt = {type: 'FETCH_WIDGETS_SUCCESS'; widgets: Widget[]};
+
+class FetchWidgets {
+  exec(send: SendFn<Evt>): void {
+    setTimeout(() => {
+      send({
+        type: 'FETCH_WIDGETS_SUCCESS',
+        widgets: [
+          {id: 1, name: 'foo'},
+          {id: 2, name: 'bar'},
+          {id: 3, name: 'baz'},
+        ],
+      });
+    }, 1);
+  }
+}
+
+const initCtx = {loadingWidgets: false, widgets: []};
+
+const statechart = new Statechart<Ctx, Evt>(initCtx, s => {
+  s.state('widgets', s => {
+    s.state('loading', s => {
+      s.enter(ctx => ({
+        context: {...ctx, loadingWidgets: true},
+        actions: [new FetchWidgets()],
+      }));
+
+      s.exit(ctx => ({context: {...ctx, loadingWidgets: false}}));
+
+      s.on('FETCH_WIDGETS_SUCCESS', '../loaded');
+    });
+
+    s.state('loaded', s => {
+      s.enter((ctx, evt) =>
+        evt.type === 'FETCH_WIDGETS_SUCCESS'
+          ? {context: {...ctx, widgets: evt.widgets}}
+          : {},
+      );
+    });
+  });
+});
+
+let state = statechart.initialState;
+console.log(state.paths);
+// [ '/widgets/loading' ]
+console.log(state.context);
+// { loadingWidgets: true, widgets: [] }
+console.log(state.actions);
+// [ FetchWidgets {} ]
+(state.actions[0] as ActionObj<Evt>).exec((evt: Evt) => {
+  state = statechart.send(state, evt);
+  console.log(state.paths);
+  // [ '/widgets/loaded' ]
+  console.log(state.context);
+  // {
+  //   loadingWidgets: false,
+  //   widgets: [
+  //     { id: 1, name: 'foo' },
+  //     { id: 2, name: 'bar' },
+  //     { id: 3, name: 'baz' }
+  //   ]
+  // }
+  console.log(state.actions);
+  // []
+});
+```
 
 ### Activities
 
