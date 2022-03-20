@@ -6,29 +6,22 @@ import Node from './Node';
  * statechart.
  */
 export default class State<C, E extends Event> {
-  /**
-   * The current context.
-   */
+  /** The current context. */
   context: C;
-  /**
-   * A list of the current leaf state nodes.
-   */
+  /** A list of the current leaf state nodes. */
   current: Node<C, E>[];
   /**
    * A list of [[Action]] objects queued by the last [[default.send | send]].
-   * You must call the `exec` method on these objects for the side effects to
-   * actually run.
+   * You must either call these directly if they are [[ActionFn | functions]] or
+   * call their [[ActionObj.exec | exec]] method if they are
+   * [[ActionObj | objects]] in order for the side effects to actually run.
    */
   actions: Action<E>[];
   /** @internal */
   history: {[path: string]: string};
-  /**
-   * The current [[Activity]] state.
-   */
+  /** The current [[Activity]] state. */
   activities: {
-    /**
-     * The list of activities that are currently running.
-     */
+    /** The list of activities that are currently running. */
     current: {[path: string]: Activity<E>[]};
     /**
      * The list of activities that were queued by the last
@@ -69,9 +62,7 @@ export default class State<C, E extends Event> {
     this.activities = activities;
   }
 
-  /**
-   * Returns the paths of the current states.
-   */
+  /** Returns the paths of the current states. */
   get paths(): string[] {
     return this.current.map(n => n.path);
   }
