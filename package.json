@@ -49,9 +49,9 @@
   },
   "scripts": {
     "test": "npx jest",
-    "build": "npx tsc && npx tsc -p ./tsconfig.umd.json && npm run docs",
+    "build": "npx tsc && npx tsc -p ./tsconfig.umd.json",
     "clean": "rm -rf ./build",
-    "docs": "npx typedoc --plugin typedoc-plugin-markdown --out docs --readme none --excludePrivate --excludeInternal src/index.ts",
+    "docs": "rm -rf ./docs && npx typedoc --plugin typedoc-plugin-markdown --out docs --readme none --excludePrivate --excludeInternal src/index.ts",
     "examples": "npx parcel --dist-dir .parcel examples/index.html",
     "prepare": "npm run clean && npm t && npm run build",
     "postpublish": "git tag v$(npm --loglevel silent run version) && git push --tags",

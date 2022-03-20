@@ -11,9 +11,13 @@ import {
 import State from './State';
 
 export default class Node<C, E extends Event> {
+  /** @internal */
   public name: string;
+  /** @internal */
   public type: 'cluster' | 'concurrent';
+  /** @internal */
   public parent?: Node<C, E>;
+  /** @internal */
   public children: Map<string, Node<C, E>>;
   private history: 'none' | 'shallow' | 'deep';
   private defaultChild?: string;
@@ -28,6 +32,7 @@ export default class Node<C, E extends Event> {
     [evt: string]: (...args: any[]) => EventHandlerResult<C, E> | void;
   };
 
+  /** @internal */
   constructor(name: string, body?: NodeBody<C, E>) {
     this.name = name;
     this.type = 'cluster';
