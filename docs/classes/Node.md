@@ -54,7 +54,7 @@
 
 #### Defined in
 
-[Node.ts:31](https://github.com/burrows/statechart/blob/39f3eaa/src/Node.ts#L31)
+[Node.ts:31](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L31)
 
 ## Properties
 
@@ -64,7 +64,7 @@
 
 #### Defined in
 
-[Node.ts:17](https://github.com/burrows/statechart/blob/39f3eaa/src/Node.ts#L17)
+[Node.ts:17](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L17)
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 #### Defined in
 
-[Node.ts:14](https://github.com/burrows/statechart/blob/39f3eaa/src/Node.ts#L14)
+[Node.ts:14](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L14)
 
 ___
 
@@ -84,7 +84,7 @@ ___
 
 #### Defined in
 
-[Node.ts:16](https://github.com/burrows/statechart/blob/39f3eaa/src/Node.ts#L16)
+[Node.ts:16](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L16)
 
 ___
 
@@ -94,7 +94,7 @@ ___
 
 #### Defined in
 
-[Node.ts:15](https://github.com/burrows/statechart/blob/39f3eaa/src/Node.ts#L15)
+[Node.ts:15](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L15)
 
 ## Methods
 
@@ -114,7 +114,7 @@ ___
 
 #### Defined in
 
-[Node.ts:175](https://github.com/burrows/statechart/blob/39f3eaa/src/Node.ts#L175)
+[Node.ts:175](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L175)
 
 ___
 
@@ -148,7 +148,7 @@ s.state('myHistoryState', (s) => {
 
 #### Defined in
 
-[Node.ts:80](https://github.com/burrows/statechart/blob/39f3eaa/src/Node.ts#L80)
+[Node.ts:80](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L80)
 
 ___
 
@@ -175,7 +175,7 @@ s.state('myConcurrentState', (s) => {
 
 #### Defined in
 
-[Node.ts:60](https://github.com/burrows/statechart/blob/39f3eaa/src/Node.ts#L60)
+[Node.ts:60](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L60)
 
 ___
 
@@ -188,10 +188,10 @@ return an object with the following optional keys to control the behavior
 of the statechart:
 
 * `context`: Update the context
-* `actions`: Queue a list of [Action](../README.md#action) to run after the transition is
-  complete
-* `activities`: Queue a list of [Activity](../interfaces/Activity.md) to start after the transition
+* `actions`: Queue a list of [Action](../README.md#action) objects to run after the transition
   is complete
+* `activities`: Queue a list of [Activity](../interfaces/Activity.md) objects to start after the
+  transition is complete
 
 ```typescript
 s.state('myState', (s) => {
@@ -219,7 +219,7 @@ s.state('myState', (s) => {
 
 #### Defined in
 
-[Node.ts:133](https://github.com/burrows/statechart/blob/39f3eaa/src/Node.ts#L133)
+[Node.ts:133](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L133)
 
 ___
 
@@ -241,7 +241,7 @@ ___
 
 #### Defined in
 
-[Node.ts:150](https://github.com/burrows/statechart/blob/39f3eaa/src/Node.ts#L150)
+[Node.ts:150](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L150)
 
 ___
 
@@ -268,7 +268,7 @@ ___
 
 #### Defined in
 
-[Node.ts:164](https://github.com/burrows/statechart/blob/39f3eaa/src/Node.ts#L164)
+[Node.ts:164](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L164)
 
 ___
 
@@ -303,4 +303,4 @@ new Statechart<Ctx, Evt>(initialContext, (s) => {
 
 #### Defined in
 
-[Node.ts:100](https://github.com/burrows/statechart/blob/39f3eaa/src/Node.ts#L100)
+[Node.ts:100](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L100)

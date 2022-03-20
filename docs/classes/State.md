@@ -61,7 +61,7 @@
 
 #### Defined in
 
-[State.ts:15](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L15)
+[State.ts:15](https://github.com/burrows/statechart/blob/f0db066/src/State.ts#L15)
 
 ## Properties
 
@@ -71,7 +71,7 @@
 
 #### Defined in
 
-[State.ts:7](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L7)
+[State.ts:7](https://github.com/burrows/statechart/blob/f0db066/src/State.ts#L7)
 
 ___
 
@@ -89,7 +89,7 @@ ___
 
 #### Defined in
 
-[State.ts:9](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L9)
+[State.ts:9](https://github.com/burrows/statechart/blob/f0db066/src/State.ts#L9)
 
 ___
 
@@ -99,7 +99,7 @@ ___
 
 #### Defined in
 
-[State.ts:5](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L5)
+[State.ts:5](https://github.com/burrows/statechart/blob/f0db066/src/State.ts#L5)
 
 ___
 
@@ -109,7 +109,7 @@ ___
 
 #### Defined in
 
-[State.ts:6](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L6)
+[State.ts:6](https://github.com/burrows/statechart/blob/f0db066/src/State.ts#L6)
 
 ___
 
@@ -123,7 +123,7 @@ ___
 
 #### Defined in
 
-[State.ts:8](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L8)
+[State.ts:8](https://github.com/burrows/statechart/blob/f0db066/src/State.ts#L8)
 
 ## Accessors
 
@@ -137,7 +137,7 @@ ___
 
 #### Defined in
 
-[State.ts:39](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L39)
+[State.ts:39](https://github.com/burrows/statechart/blob/f0db066/src/State.ts#L39)
 
 ## Methods
 
@@ -157,7 +157,7 @@ ___
 
 #### Defined in
 
-[State.ts:47](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L47)
+[State.ts:47](https://github.com/burrows/statechart/blob/f0db066/src/State.ts#L47)
 
 ___
 
@@ -177,4 +177,4 @@ ___
 
 #### Defined in
 
-[State.ts:43](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L43)
+[State.ts:43](https://github.com/burrows/statechart/blob/f0db066/src/State.ts#L43)

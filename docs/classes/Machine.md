@@ -50,7 +50,7 @@
 
 #### Defined in
 
-[Machine.ts:9](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L9)
+[Machine.ts:9](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L9)
 
 ## Accessors
 
@@ -64,7 +64,7 @@
 
 #### Defined in
 
-[Machine.ts:52](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L52)
+[Machine.ts:52](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L52)
 
 ___
 
@@ -78,7 +78,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:44](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L44)
+[Machine.ts:44](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L44)
 
 ___
 
@@ -92,7 +92,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:48](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L48)
+[Machine.ts:48](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L48)
 
 ## Methods
 
@@ -112,7 +112,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:28](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L28)
+[Machine.ts:28](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L28)
 
 ___
 
@@ -132,7 +132,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:56](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L56)
+[Machine.ts:56](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L56)
 
 ___
 
@@ -152,7 +152,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:23](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L23)
+[Machine.ts:23](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L23)
 
 ___
 
@@ -166,7 +166,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:13](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L13)
+[Machine.ts:13](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L13)
 
 ___
 
@@ -180,4 +180,4 @@ ___
 
 #### Defined in
 
-[Machine.ts:18](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L18)
+[Machine.ts:18](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L18)
