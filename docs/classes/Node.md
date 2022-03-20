@@ -54,7 +54,7 @@ s.state('myState', (s) => {
 
 #### Defined in
 
-[Node.ts:240](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L240)
+[Node.ts:240](https://github.com/burrows/statechart/blob/8529b0f/src/Node.ts#L240)
 
 ___
 
@@ -88,7 +88,7 @@ s.state('myHistoryState', (s) => {
 
 #### Defined in
 
-[Node.ts:85](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L85)
+[Node.ts:85](https://github.com/burrows/statechart/blob/8529b0f/src/Node.ts#L85)
 
 ___
 
@@ -115,7 +115,7 @@ s.state('myConcurrentState', (s) => {
 
 #### Defined in
 
-[Node.ts:65](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L65)
+[Node.ts:65](https://github.com/burrows/statechart/blob/8529b0f/src/Node.ts#L65)
 
 ___
 
@@ -159,7 +159,7 @@ s.state('myState', (s) => {
 
 #### Defined in
 
-[Node.ts:138](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L138)
+[Node.ts:138](https://github.com/burrows/statechart/blob/8529b0f/src/Node.ts#L138)
 
 ___
 
@@ -200,7 +200,7 @@ s.state('myState', (s) => {
 
 #### Defined in
 
-[Node.ts:175](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L175)
+[Node.ts:175](https://github.com/burrows/statechart/blob/8529b0f/src/Node.ts#L175)
 
 ___
 
@@ -250,7 +250,7 @@ s.on('SOME_EVENT', (ctx, evt) => {
 
 #### Defined in
 
-[Node.ts:213](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L213)
+[Node.ts:213](https://github.com/burrows/statechart/blob/8529b0f/src/Node.ts#L213)
 
 ___
 
@@ -285,4 +285,4 @@ new Statechart<Ctx, Evt>(initialContext, (s) => {
 
 #### Defined in
 
-[Node.ts:105](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L105)
+[Node.ts:105](https://github.com/burrows/statechart/blob/8529b0f/src/Node.ts#L105)

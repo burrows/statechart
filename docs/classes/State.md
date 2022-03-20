@@ -35,12 +35,13 @@ statechart.
 
 • **actions**: [`Action`](../README.md#action)<`E`\>[]
 
-A list of [Action](../README.md#action) objects queued by the last `send`. You must call the
-`exec` method on these objects for the side effects to actually run.
+A list of [Action](../README.md#action) objects queued by the last [send](default.md#send).
+You must call the `exec` method on these objects for the side effects to
+actually run.
 
 #### Defined in
 
-[State.ts:21](https://github.com/burrows/statechart/blob/f1380e4/src/State.ts#L21)
+[State.ts:22](https://github.com/burrows/statechart/blob/8529b0f/src/State.ts#L22)
 
 ___
 
@@ -55,12 +56,12 @@ The current [Activity](../interfaces/Activity.md) state.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `current` | { `[path: string]`: [`Activity`](../interfaces/Activity.md)<`E`\>[];  } | The list of activities that are currently running. |
-| `start` | [`Activity`](../interfaces/Activity.md)<`E`\>[] | The list of activities that were queued by the last `send` and thus must be started by calling their `start` method. |
-| `stop` | [`Activity`](../interfaces/Activity.md)<`E`\>[] | The list of activities that must be stopped by calling their `stop` method since the state that originally queued them is no longer current. |
+| `start` | [`Activity`](../interfaces/Activity.md)<`E`\>[] | The list of activities that were queued by the last [send](default.md#send) and thus must be started by calling their [start](../interfaces/Activity.md#start) method. |
+| `stop` | [`Activity`](../interfaces/Activity.md)<`E`\>[] | The list of activities that must be stopped by calling their [stop](../interfaces/Activity.md#stop) method since the state that originally queued them is no longer current. |
 
 #### Defined in
 
-[State.ts:27](https://github.com/burrows/statechart/blob/f1380e4/src/State.ts#L27)
+[State.ts:28](https://github.com/burrows/statechart/blob/8529b0f/src/State.ts#L28)
 
 ___
 
@@ -72,7 +73,7 @@ The current context.
 
 #### Defined in
 
-[State.ts:12](https://github.com/burrows/statechart/blob/f1380e4/src/State.ts#L12)
+[State.ts:12](https://github.com/burrows/statechart/blob/8529b0f/src/State.ts#L12)
 
 ___
 
@@ -84,7 +85,7 @@ A list of the current leaf state nodes.
 
 #### Defined in
 
-[State.ts:16](https://github.com/burrows/statechart/blob/f1380e4/src/State.ts#L16)
+[State.ts:16](https://github.com/burrows/statechart/blob/8529b0f/src/State.ts#L16)
 
 ## Accessors
 
@@ -100,7 +101,7 @@ Returns the paths of the current states.
 
 #### Defined in
 
-[State.ts:72](https://github.com/burrows/statechart/blob/f1380e4/src/State.ts#L72)
+[State.ts:75](https://github.com/burrows/statechart/blob/8529b0f/src/State.ts#L75)
 
 ## Methods
 
@@ -124,4 +125,4 @@ if the given path cannot be resolved.
 
 #### Defined in
 
-[State.ts:81](https://github.com/burrows/statechart/blob/f1380e4/src/State.ts#L81)
+[State.ts:84](https://github.com/burrows/statechart/blob/8529b0f/src/State.ts#L84)
