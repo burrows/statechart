@@ -2,6 +2,10 @@
 
 # Class: Machine<C, E\>
 
+Provides a reference `Machine` class for maintaining the current state of a
+statechart and executing side effects. It's perfectly valid choose to
+implement this logic for yourself if this class doesn't suit your needs.
+
 ## Type parameters
 
 | Name | Type |
@@ -50,7 +54,7 @@
 
 #### Defined in
 
-[Machine.ts:9](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L9)
+[Machine.ts:14](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L14)
 
 ## Accessors
 
@@ -64,7 +68,7 @@
 
 #### Defined in
 
-[Machine.ts:52](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L52)
+[Machine.ts:57](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L57)
 
 ___
 
@@ -78,7 +82,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:44](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L44)
+[Machine.ts:49](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L49)
 
 ___
 
@@ -92,7 +96,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:48](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L48)
+[Machine.ts:53](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L53)
 
 ## Methods
 
@@ -112,7 +116,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:28](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L28)
+[Machine.ts:33](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L33)
 
 ___
 
@@ -132,7 +136,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:56](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L56)
+[Machine.ts:61](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L61)
 
 ___
 
@@ -152,7 +156,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:23](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L23)
+[Machine.ts:28](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L28)
 
 ___
 
@@ -166,7 +170,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:13](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L13)
+[Machine.ts:18](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L18)
 
 ___
 
@@ -180,4 +184,4 @@ ___
 
 #### Defined in
 
-[Machine.ts:18](https://github.com/burrows/statechart/blob/f0db066/src/Machine.ts#L18)
+[Machine.ts:23](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L23)

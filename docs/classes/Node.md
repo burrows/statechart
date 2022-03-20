@@ -54,7 +54,7 @@
 
 #### Defined in
 
-[Node.ts:31](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L31)
+[Node.ts:31](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L31)
 
 ## Properties
 
@@ -64,7 +64,7 @@
 
 #### Defined in
 
-[Node.ts:17](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L17)
+[Node.ts:17](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L17)
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 #### Defined in
 
-[Node.ts:14](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L14)
+[Node.ts:14](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L14)
 
 ___
 
@@ -84,7 +84,7 @@ ___
 
 #### Defined in
 
-[Node.ts:16](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L16)
+[Node.ts:16](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L16)
 
 ___
 
@@ -94,13 +94,28 @@ ___
 
 #### Defined in
 
-[Node.ts:15](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L15)
+[Node.ts:15](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L15)
 
 ## Methods
 
 ### C
 
 ▸ **C**(`f`): [`Node`](Node.md)<`C`, `E`\>
+
+Define a condition function for this state. The condition function is
+called to determine which child state to enter when not otherwise
+specified. It must return the name of a child state.
+
+```typescript
+s.state('myState', (s) => {
+  s.C((ctx, evt) => {
+    return ctx.foo ? 'a' : 'b';
+  });
+
+  s.state('a');
+  s.state('b');
+});
+```
 
 #### Parameters
 
@@ -114,7 +129,7 @@ ___
 
 #### Defined in
 
-[Node.ts:175](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L175)
+[Node.ts:235](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L235)
 
 ___
 
@@ -148,7 +163,7 @@ s.state('myHistoryState', (s) => {
 
 #### Defined in
 
-[Node.ts:80](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L80)
+[Node.ts:80](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L80)
 
 ___
 
@@ -175,7 +190,7 @@ s.state('myConcurrentState', (s) => {
 
 #### Defined in
 
-[Node.ts:60](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L60)
+[Node.ts:60](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L60)
 
 ___
 
@@ -219,13 +234,32 @@ s.state('myState', (s) => {
 
 #### Defined in
 
-[Node.ts:133](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L133)
+[Node.ts:133](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L133)
 
 ___
 
 ### exit
 
 ▸ **exit**(`handler`, `__namedParameters?`): [`Node`](Node.md)<`C`, `E`\>
+
+Define an exit handler for this state. The given [ExitHandler](../README.md#exithandler) can
+return an object with the following optional keys to control the behavior
+of the statechart:
+
+* `context`: Update the context
+* `actions`: Queue a list of [Action](../README.md#action) objects to run after the transition
+  is complete
+
+```typescript
+s.state('myState', (s) => {
+  s.exit((ctx, evt) => {
+    return {
+      context: {...ctx, foo: 'bar'},
+      actions: [new SomeAction()],
+    };
+  });
+});
+```
 
 #### Parameters
 
@@ -241,13 +275,36 @@ ___
 
 #### Defined in
 
-[Node.ts:150](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L150)
+[Node.ts:170](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L170)
 
 ___
 
 ### on
 
 ▸ **on**<`T`\>(`type`, `handler`): [`Node`](Node.md)<`C`, `E`\>
+
+Define an event handler for this state. The given `type` string must match
+a `type` from your statechart's [Event](../interfaces/Event.md) type. The given [EventHandler](../README.md#eventhandler)
+function can return an object with the following keys to control the
+behavior of the statechart:
+
+* `context`: Update the context
+* `actions`: Queue a list of [Action](../README.md#action) objects to run after the transition
+  is complete
+* `goto`: Trigger a transition to the given state path. The state path must
+  either be a full path starting from the root of the statechart or a
+  relative path starting from the current state.
+
+```typescript
+s.on('SOME_EVENT', (ctx, evt) => {
+  // evt type will be narrowed to the event with `{type: 'SOME_EVENT'}`
+  return {
+    context: {...ctx, foo: 'bar'},
+    actions: [new SomeAction()],
+    goto: '../some/other/state',
+  };
+});
+```
 
 #### Type parameters
 
@@ -268,7 +325,7 @@ ___
 
 #### Defined in
 
-[Node.ts:164](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L164)
+[Node.ts:208](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L208)
 
 ___
 
@@ -303,4 +360,4 @@ new Statechart<Ctx, Evt>(initialContext, (s) => {
 
 #### Defined in
 
-[Node.ts:100](https://github.com/burrows/statechart/blob/f0db066/src/Node.ts#L100)
+[Node.ts:100](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L100)
