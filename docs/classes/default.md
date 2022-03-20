@@ -2,12 +2,19 @@
 
 # Class: default<C, E\>
 
+```typescript
+const statechart = new Statechart<Ctx, Evt>(initialContext, (s) => {
+  s.state('a');
+  s.state('b');
+});
+```
+
 ## Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `C` | `C` |
-| `E` | extends [`Event`](../interfaces/Event.md) |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `C` | `C` | The type of the statechart context. This can be any aribitray object. |
+| `E` | extends [`Event`](../interfaces/Event.md) | The event type. This must be a discriminated union with a string `type` field. |
 
 ## Table of contents
 
@@ -51,7 +58,7 @@
 
 #### Defined in
 
-[Statechart.ts:10](https://github.com/burrows/statechart/blob/a7b3e7e/src/Statechart.ts#L10)
+[Statechart.ts:23](https://github.com/burrows/statechart/blob/39f3eaa/src/Statechart.ts#L23)
 
 ## Properties
 
@@ -61,7 +68,7 @@
 
 #### Defined in
 
-[Statechart.ts:6](https://github.com/burrows/statechart/blob/a7b3e7e/src/Statechart.ts#L6)
+[Statechart.ts:19](https://github.com/burrows/statechart/blob/39f3eaa/src/Statechart.ts#L19)
 
 ## Accessors
 
@@ -69,19 +76,26 @@
 
 • `get` **initialState**(): [`State`](State.md)<`C`, `E`\>
 
+Returns the initial state of the statechart by entering from the root
+state. Enter handlers will be passed an internal event with the type
+`__start__`.
+
 #### Returns
 
 [`State`](State.md)<`C`, `E`\>
 
 #### Defined in
 
-[Statechart.ts:15](https://github.com/burrows/statechart/blob/a7b3e7e/src/Statechart.ts#L15)
+[Statechart.ts:33](https://github.com/burrows/statechart/blob/39f3eaa/src/Statechart.ts#L33)
 
 ## Methods
 
 ### inspect
 
 ▸ **inspect**(`state?`): `string`
+
+Returns a string representation of the statechart. If a `State` instance is
+passed then the current state(s) will be marked in the output.
 
 #### Parameters
 
@@ -95,13 +109,17 @@
 
 #### Defined in
 
-[Statechart.ts:117](https://github.com/burrows/statechart/blob/a7b3e7e/src/Statechart.ts#L117)
+[Statechart.ts:139](https://github.com/burrows/statechart/blob/39f3eaa/src/Statechart.ts#L139)
 
 ___
 
 ### send
 
 ▸ **send**(`state`, `evt`): [`State`](State.md)<`C`, `E`\>
+
+Send an event to the statechart, possibily causing a transition. The event
+will be sent to the current states as defined by the `state` param and the
+updated state is returned.
 
 #### Parameters
 
@@ -116,13 +134,17 @@ ___
 
 #### Defined in
 
-[Statechart.ts:40](https://github.com/burrows/statechart/blob/a7b3e7e/src/Statechart.ts#L40)
+[Statechart.ts:58](https://github.com/burrows/statechart/blob/39f3eaa/src/Statechart.ts#L58)
 
 ___
 
 ### stop
 
 ▸ **stop**(`state`): [`State`](State.md)<`C`, `E`\>
+
+Stop the statechart by exiting from the given stte up through the root
+state. Exit handlers will be passed an internal event with the type
+`__stop__`.
 
 #### Parameters
 
@@ -136,4 +158,4 @@ ___
 
 #### Defined in
 
-[Statechart.ts:36](https://github.com/burrows/statechart/blob/a7b3e7e/src/Statechart.ts#L36)
+[Statechart.ts:49](https://github.com/burrows/statechart/blob/39f3eaa/src/Statechart.ts#L49)

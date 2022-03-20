@@ -19,6 +19,7 @@
 
 - [context](Machine.md#context)
 - [current](Machine.md#current)
+- [paths](Machine.md#paths)
 
 ### Methods
 
@@ -49,7 +50,7 @@
 
 #### Defined in
 
-[Machine.ts:8](https://github.com/burrows/statechart/blob/a7b3e7e/src/Machine.ts#L8)
+[Machine.ts:9](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L9)
 
 ## Accessors
 
@@ -63,13 +64,27 @@
 
 #### Defined in
 
-[Machine.ts:57](https://github.com/burrows/statechart/blob/a7b3e7e/src/Machine.ts#L57)
+[Machine.ts:52](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L52)
 
 ___
 
 ### current
 
-• `get` **current**(): `string`[]
+• `get` **current**(): [`Node`](Node.md)<`C`, `E`\>[]
+
+#### Returns
+
+[`Node`](Node.md)<`C`, `E`\>[]
+
+#### Defined in
+
+[Machine.ts:44](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L44)
+
+___
+
+### paths
+
+• `get` **paths**(): `string`[]
 
 #### Returns
 
@@ -77,7 +92,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:53](https://github.com/burrows/statechart/blob/a7b3e7e/src/Machine.ts#L53)
+[Machine.ts:48](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L48)
 
 ## Methods
 
@@ -97,7 +112,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:37](https://github.com/burrows/statechart/blob/a7b3e7e/src/Machine.ts#L37)
+[Machine.ts:28](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L28)
 
 ___
 
@@ -117,7 +132,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:61](https://github.com/burrows/statechart/blob/a7b3e7e/src/Machine.ts#L61)
+[Machine.ts:56](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L56)
 
 ___
 
@@ -137,7 +152,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:32](https://github.com/burrows/statechart/blob/a7b3e7e/src/Machine.ts#L32)
+[Machine.ts:23](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L23)
 
 ___
 
@@ -151,7 +166,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:22](https://github.com/burrows/statechart/blob/a7b3e7e/src/Machine.ts#L22)
+[Machine.ts:13](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L13)
 
 ___
 
@@ -165,4 +180,4 @@ ___
 
 #### Defined in
 
-[Machine.ts:27](https://github.com/burrows/statechart/blob/a7b3e7e/src/Machine.ts#L27)
+[Machine.ts:18](https://github.com/burrows/statechart/blob/39f3eaa/src/Machine.ts#L18)

@@ -23,6 +23,10 @@
 - [current](State.md#current)
 - [history](State.md#history)
 
+### Accessors
+
+- [paths](State.md#paths)
+
 ### Methods
 
 - [matches](State.md#matches)
@@ -46,18 +50,18 @@
 | Name | Type |
 | :------ | :------ |
 | `__namedParameters` | `Object` |
-| `__namedParameters.actions` | [`Action`](../README.md#action)<`E`\>[] |
-| `__namedParameters.activities` | `Object` |
+| `__namedParameters.actions?` | [`Action`](../README.md#action)<`E`\>[] |
+| `__namedParameters.activities?` | `Object` |
 | `__namedParameters.activities.current` | `Object` |
 | `__namedParameters.activities.start` | [`Activity`](../interfaces/Activity.md)<`E`\>[] |
 | `__namedParameters.activities.stop` | [`Activity`](../interfaces/Activity.md)<`E`\>[] |
 | `__namedParameters.context` | `C` |
-| `__namedParameters.current` | [`Node`](Node.md)<`C`, `E`\>[] |
-| `__namedParameters.history` | `Object` |
+| `__namedParameters.current?` | [`Node`](Node.md)<`C`, `E`\>[] |
+| `__namedParameters.history?` | `Object` |
 
 #### Defined in
 
-[State.ts:15](https://github.com/burrows/statechart/blob/a7b3e7e/src/State.ts#L15)
+[State.ts:15](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L15)
 
 ## Properties
 
@@ -67,7 +71,7 @@
 
 #### Defined in
 
-[State.ts:7](https://github.com/burrows/statechart/blob/a7b3e7e/src/State.ts#L7)
+[State.ts:7](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L7)
 
 ___
 
@@ -85,7 +89,7 @@ ___
 
 #### Defined in
 
-[State.ts:9](https://github.com/burrows/statechart/blob/a7b3e7e/src/State.ts#L9)
+[State.ts:9](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L9)
 
 ___
 
@@ -95,7 +99,7 @@ ___
 
 #### Defined in
 
-[State.ts:6](https://github.com/burrows/statechart/blob/a7b3e7e/src/State.ts#L6)
+[State.ts:5](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L5)
 
 ___
 
@@ -105,7 +109,7 @@ ___
 
 #### Defined in
 
-[State.ts:5](https://github.com/burrows/statechart/blob/a7b3e7e/src/State.ts#L5)
+[State.ts:6](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L6)
 
 ___
 
@@ -119,7 +123,21 @@ ___
 
 #### Defined in
 
-[State.ts:8](https://github.com/burrows/statechart/blob/a7b3e7e/src/State.ts#L8)
+[State.ts:8](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L8)
+
+## Accessors
+
+### paths
+
+• `get` **paths**(): `string`[]
+
+#### Returns
+
+`string`[]
+
+#### Defined in
+
+[State.ts:39](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L39)
 
 ## Methods
 
@@ -139,7 +157,7 @@ ___
 
 #### Defined in
 
-[State.ts:43](https://github.com/burrows/statechart/blob/a7b3e7e/src/State.ts#L43)
+[State.ts:47](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L47)
 
 ___
 
@@ -159,4 +177,4 @@ ___
 
 #### Defined in
 
-[State.ts:39](https://github.com/burrows/statechart/blob/a7b3e7e/src/State.ts#L39)
+[State.ts:43](https://github.com/burrows/statechart/blob/39f3eaa/src/State.ts#L43)
