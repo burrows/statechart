@@ -46,7 +46,7 @@
 
 #### Defined in
 
-[types.ts:17](https://github.com/burrows/statechart/blob/dbd54f1/src/types.ts#L17)
+[types.ts:17](https://github.com/burrows/statechart/blob/f1380e4/src/types.ts#L17)
 
 ___
 
@@ -76,7 +76,7 @@ ___
 
 #### Defined in
 
-[types.ts:15](https://github.com/burrows/statechart/blob/dbd54f1/src/types.ts#L15)
+[types.ts:15](https://github.com/burrows/statechart/blob/f1380e4/src/types.ts#L15)
 
 ___
 
@@ -108,7 +108,7 @@ ___
 
 #### Defined in
 
-[types.ts:59](https://github.com/burrows/statechart/blob/dbd54f1/src/types.ts#L59)
+[types.ts:59](https://github.com/burrows/statechart/blob/f1380e4/src/types.ts#L59)
 
 ___
 
@@ -140,7 +140,7 @@ ___
 
 #### Defined in
 
-[types.ts:42](https://github.com/burrows/statechart/blob/dbd54f1/src/types.ts#L42)
+[types.ts:42](https://github.com/burrows/statechart/blob/f1380e4/src/types.ts#L42)
 
 ___
 
@@ -173,7 +173,7 @@ ___
 
 #### Defined in
 
-[types.ts:53](https://github.com/burrows/statechart/blob/dbd54f1/src/types.ts#L53)
+[types.ts:53](https://github.com/burrows/statechart/blob/f1380e4/src/types.ts#L53)
 
 ___
 
@@ -198,7 +198,7 @@ ___
 
 #### Defined in
 
-[types.ts:47](https://github.com/burrows/statechart/blob/dbd54f1/src/types.ts#L47)
+[types.ts:47](https://github.com/burrows/statechart/blob/f1380e4/src/types.ts#L47)
 
 ___
 
@@ -230,7 +230,7 @@ ___
 
 #### Defined in
 
-[types.ts:31](https://github.com/burrows/statechart/blob/dbd54f1/src/types.ts#L31)
+[types.ts:31](https://github.com/burrows/statechart/blob/f1380e4/src/types.ts#L31)
 
 ___
 
@@ -240,7 +240,7 @@ ___
 
 #### Defined in
 
-[types.ts:7](https://github.com/burrows/statechart/blob/dbd54f1/src/types.ts#L7)
+[types.ts:7](https://github.com/burrows/statechart/blob/f1380e4/src/types.ts#L7)
 
 ___
 
@@ -271,7 +271,7 @@ ___
 
 #### Defined in
 
-[types.ts:24](https://github.com/burrows/statechart/blob/dbd54f1/src/types.ts#L24)
+[types.ts:24](https://github.com/burrows/statechart/blob/f1380e4/src/types.ts#L24)
 
 ___
 
@@ -301,4 +301,4 @@ ___
 
 #### Defined in
 
-[types.ts:9](https://github.com/burrows/statechart/blob/dbd54f1/src/types.ts#L9)
+[types.ts:9](https://github.com/burrows/statechart/blob/f1380e4/src/types.ts#L9)

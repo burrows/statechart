@@ -2,6 +2,9 @@
 
 # Class: State<C, E\>
 
+`State` objects are immutable objects that track the current state of a
+statechart.
+
 ## Type parameters
 
 | Name | Type |
@@ -11,17 +14,12 @@
 
 ## Table of contents
 
-### Constructors
-
-- [constructor](State.md#constructor)
-
 ### Properties
 
 - [actions](State.md#actions)
 - [activities](State.md#activities)
 - [context](State.md#context)
 - [current](State.md#current)
-- [history](State.md#history)
 
 ### Accessors
 
@@ -30,38 +28,6 @@
 ### Methods
 
 - [matches](State.md#matches)
-- [update](State.md#update)
-
-## Constructors
-
-### constructor
-
-• **new State**<`C`, `E`\>(`__namedParameters`)
-
-#### Type parameters
-
-| Name | Type |
-| :------ | :------ |
-| `C` | `C` |
-| `E` | extends [`Event`](../interfaces/Event.md) |
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `__namedParameters` | `Object` |
-| `__namedParameters.actions?` | [`Action`](../README.md#action)<`E`\>[] |
-| `__namedParameters.activities?` | `Object` |
-| `__namedParameters.activities.current` | `Object` |
-| `__namedParameters.activities.start` | [`Activity`](../interfaces/Activity.md)<`E`\>[] |
-| `__namedParameters.activities.stop` | [`Activity`](../interfaces/Activity.md)<`E`\>[] |
-| `__namedParameters.context` | `C` |
-| `__namedParameters.current?` | [`Node`](Node.md)<`C`, `E`\>[] |
-| `__namedParameters.history?` | `Object` |
-
-#### Defined in
-
-[State.ts:15](https://github.com/burrows/statechart/blob/dbd54f1/src/State.ts#L15)
 
 ## Properties
 
@@ -69,9 +35,12 @@
 
 • **actions**: [`Action`](../README.md#action)<`E`\>[]
 
+A list of [Action](../README.md#action) objects queued by the last `send`. You must call the
+`exec` method on these objects for the side effects to actually run.
+
 #### Defined in
 
-[State.ts:7](https://github.com/burrows/statechart/blob/dbd54f1/src/State.ts#L7)
+[State.ts:21](https://github.com/burrows/statechart/blob/f1380e4/src/State.ts#L21)
 
 ___
 
@@ -79,17 +48,19 @@ ___
 
 • **activities**: `Object`
 
+The current [Activity](../interfaces/Activity.md) state.
+
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
-| `current` | { `[path: string]`: [`Activity`](../interfaces/Activity.md)<`E`\>[];  } |
-| `start` | [`Activity`](../interfaces/Activity.md)<`E`\>[] |
-| `stop` | [`Activity`](../interfaces/Activity.md)<`E`\>[] |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `current` | { `[path: string]`: [`Activity`](../interfaces/Activity.md)<`E`\>[];  } | The list of activities that are currently running. |
+| `start` | [`Activity`](../interfaces/Activity.md)<`E`\>[] | The list of activities that were queued by the last `send` and thus must be started by calling their `start` method. |
+| `stop` | [`Activity`](../interfaces/Activity.md)<`E`\>[] | The list of activities that must be stopped by calling their `stop` method since the state that originally queued them is no longer current. |
 
 #### Defined in
 
-[State.ts:9](https://github.com/burrows/statechart/blob/dbd54f1/src/State.ts#L9)
+[State.ts:27](https://github.com/burrows/statechart/blob/f1380e4/src/State.ts#L27)
 
 ___
 
@@ -97,9 +68,11 @@ ___
 
 • **context**: `C`
 
+The current context.
+
 #### Defined in
 
-[State.ts:5](https://github.com/burrows/statechart/blob/dbd54f1/src/State.ts#L5)
+[State.ts:12](https://github.com/burrows/statechart/blob/f1380e4/src/State.ts#L12)
 
 ___
 
@@ -107,23 +80,11 @@ ___
 
 • **current**: [`Node`](Node.md)<`C`, `E`\>[]
 
-#### Defined in
-
-[State.ts:6](https://github.com/burrows/statechart/blob/dbd54f1/src/State.ts#L6)
-
-___
-
-### history
-
-• **history**: `Object`
-
-#### Index signature
-
-▪ [path: `string`]: `string`
+A list of the current leaf state nodes.
 
 #### Defined in
 
-[State.ts:8](https://github.com/burrows/statechart/blob/dbd54f1/src/State.ts#L8)
+[State.ts:16](https://github.com/burrows/statechart/blob/f1380e4/src/State.ts#L16)
 
 ## Accessors
 
@@ -131,19 +92,25 @@ ___
 
 • `get` **paths**(): `string`[]
 
+Returns the paths of the current states.
+
 #### Returns
 
 `string`[]
 
 #### Defined in
 
-[State.ts:39](https://github.com/burrows/statechart/blob/dbd54f1/src/State.ts#L39)
+[State.ts:72](https://github.com/burrows/statechart/blob/f1380e4/src/State.ts#L72)
 
 ## Methods
 
 ### matches
 
 ▸ **matches**(`path`): `boolean`
+
+Used to check if some state is current. The `path` parameter can be a path
+to any state in the statechart (leaf state or otherwise). Throws an `Error`
+if the given path cannot be resolved.
 
 #### Parameters
 
@@ -157,24 +124,4 @@ ___
 
 #### Defined in
 
-[State.ts:47](https://github.com/burrows/statechart/blob/dbd54f1/src/State.ts#L47)
-
-___
-
-### update
-
-▸ **update**(`data`): [`State`](State.md)<`C`, `E`\>
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `data` | `Partial`<[`State`](State.md)<`C`, `E`\>\> |
-
-#### Returns
-
-[`State`](State.md)<`C`, `E`\>
-
-#### Defined in
-
-[State.ts:43](https://github.com/burrows/statechart/blob/dbd54f1/src/State.ts#L43)
+[State.ts:81](https://github.com/burrows/statechart/blob/f1380e4/src/State.ts#L81)

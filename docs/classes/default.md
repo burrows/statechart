@@ -58,7 +58,7 @@ const statechart = new Statechart<Ctx, Evt>(initialContext, (s) => {
 
 #### Defined in
 
-[Statechart.ts:23](https://github.com/burrows/statechart/blob/dbd54f1/src/Statechart.ts#L23)
+[Statechart.ts:23](https://github.com/burrows/statechart/blob/f1380e4/src/Statechart.ts#L23)
 
 ## Properties
 
@@ -68,7 +68,7 @@ const statechart = new Statechart<Ctx, Evt>(initialContext, (s) => {
 
 #### Defined in
 
-[Statechart.ts:19](https://github.com/burrows/statechart/blob/dbd54f1/src/Statechart.ts#L19)
+[Statechart.ts:19](https://github.com/burrows/statechart/blob/f1380e4/src/Statechart.ts#L19)
 
 ## Accessors
 
@@ -86,7 +86,7 @@ state. Enter handlers will be passed an internal event with the type
 
 #### Defined in
 
-[Statechart.ts:33](https://github.com/burrows/statechart/blob/dbd54f1/src/Statechart.ts#L33)
+[Statechart.ts:33](https://github.com/burrows/statechart/blob/f1380e4/src/Statechart.ts#L33)
 
 ## Methods
 
@@ -109,7 +109,7 @@ passed then the current state(s) will be marked in the output.
 
 #### Defined in
 
-[Statechart.ts:139](https://github.com/burrows/statechart/blob/dbd54f1/src/Statechart.ts#L139)
+[Statechart.ts:139](https://github.com/burrows/statechart/blob/f1380e4/src/Statechart.ts#L139)
 
 ___
 
@@ -134,7 +134,7 @@ updated state is returned.
 
 #### Defined in
 
-[Statechart.ts:58](https://github.com/burrows/statechart/blob/dbd54f1/src/Statechart.ts#L58)
+[Statechart.ts:58](https://github.com/burrows/statechart/blob/f1380e4/src/Statechart.ts#L58)
 
 ___
 
@@ -158,4 +158,4 @@ state. Exit handlers will be passed an internal event with the type
 
 #### Defined in
 
-[Statechart.ts:49](https://github.com/burrows/statechart/blob/dbd54f1/src/Statechart.ts#L49)
+[Statechart.ts:49](https://github.com/burrows/statechart/blob/f1380e4/src/Statechart.ts#L49)

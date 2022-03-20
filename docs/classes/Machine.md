@@ -54,7 +54,7 @@ implement this logic for yourself if this class doesn't suit your needs.
 
 #### Defined in
 
-[Machine.ts:14](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L14)
+[Machine.ts:14](https://github.com/burrows/statechart/blob/f1380e4/src/Machine.ts#L14)
 
 ## Accessors
 
@@ -68,7 +68,7 @@ implement this logic for yourself if this class doesn't suit your needs.
 
 #### Defined in
 
-[Machine.ts:57](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L57)
+[Machine.ts:57](https://github.com/burrows/statechart/blob/f1380e4/src/Machine.ts#L57)
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:49](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L49)
+[Machine.ts:49](https://github.com/burrows/statechart/blob/f1380e4/src/Machine.ts#L49)
 
 ___
 
@@ -96,7 +96,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:53](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L53)
+[Machine.ts:53](https://github.com/burrows/statechart/blob/f1380e4/src/Machine.ts#L53)
 
 ## Methods
 
@@ -116,7 +116,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:33](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L33)
+[Machine.ts:33](https://github.com/burrows/statechart/blob/f1380e4/src/Machine.ts#L33)
 
 ___
 
@@ -136,7 +136,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:61](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L61)
+[Machine.ts:61](https://github.com/burrows/statechart/blob/f1380e4/src/Machine.ts#L61)
 
 ___
 
@@ -156,7 +156,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:28](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L28)
+[Machine.ts:28](https://github.com/burrows/statechart/blob/f1380e4/src/Machine.ts#L28)
 
 ___
 
@@ -170,7 +170,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:18](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L18)
+[Machine.ts:18](https://github.com/burrows/statechart/blob/f1380e4/src/Machine.ts#L18)
 
 ___
 
@@ -184,4 +184,4 @@ ___
 
 #### Defined in
 
-[Machine.ts:23](https://github.com/burrows/statechart/blob/dbd54f1/src/Machine.ts#L23)
+[Machine.ts:23](https://github.com/burrows/statechart/blob/f1380e4/src/Machine.ts#L23)

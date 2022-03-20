@@ -11,17 +11,6 @@
 
 ## Table of contents
 
-### Constructors
-
-- [constructor](Node.md#constructor)
-
-### Properties
-
-- [children](Node.md#children)
-- [name](Node.md#name)
-- [parent](Node.md#parent)
-- [type](Node.md#type)
-
 ### Methods
 
 - [C](Node.md#c)
@@ -31,70 +20,6 @@
 - [exit](Node.md#exit)
 - [on](Node.md#on)
 - [state](Node.md#state)
-
-## Constructors
-
-### constructor
-
-• **new Node**<`C`, `E`\>(`name`, `body?`)
-
-#### Type parameters
-
-| Name | Type |
-| :------ | :------ |
-| `C` | `C` |
-| `E` | extends [`Event`](../interfaces/Event.md) |
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `name` | `string` |
-| `body?` | [`NodeBody`](../README.md#nodebody)<`C`, `E`\> |
-
-#### Defined in
-
-[Node.ts:31](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L31)
-
-## Properties
-
-### children
-
-• **children**: `Map`<`string`, [`Node`](Node.md)<`C`, `E`\>\>
-
-#### Defined in
-
-[Node.ts:17](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L17)
-
-___
-
-### name
-
-• **name**: `string`
-
-#### Defined in
-
-[Node.ts:14](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L14)
-
-___
-
-### parent
-
-• `Optional` **parent**: [`Node`](Node.md)<`C`, `E`\>
-
-#### Defined in
-
-[Node.ts:16](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L16)
-
-___
-
-### type
-
-• **type**: ``"cluster"`` \| ``"concurrent"``
-
-#### Defined in
-
-[Node.ts:15](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L15)
 
 ## Methods
 
@@ -129,7 +54,7 @@ s.state('myState', (s) => {
 
 #### Defined in
 
-[Node.ts:235](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L235)
+[Node.ts:240](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L240)
 
 ___
 
@@ -163,7 +88,7 @@ s.state('myHistoryState', (s) => {
 
 #### Defined in
 
-[Node.ts:80](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L80)
+[Node.ts:85](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L85)
 
 ___
 
@@ -190,7 +115,7 @@ s.state('myConcurrentState', (s) => {
 
 #### Defined in
 
-[Node.ts:60](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L60)
+[Node.ts:65](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L65)
 
 ___
 
@@ -234,7 +159,7 @@ s.state('myState', (s) => {
 
 #### Defined in
 
-[Node.ts:133](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L133)
+[Node.ts:138](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L138)
 
 ___
 
@@ -275,7 +200,7 @@ s.state('myState', (s) => {
 
 #### Defined in
 
-[Node.ts:170](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L170)
+[Node.ts:175](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L175)
 
 ___
 
@@ -325,7 +250,7 @@ s.on('SOME_EVENT', (ctx, evt) => {
 
 #### Defined in
 
-[Node.ts:208](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L208)
+[Node.ts:213](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L213)
 
 ___
 
@@ -360,4 +285,4 @@ new Statechart<Ctx, Evt>(initialContext, (s) => {
 
 #### Defined in
 
-[Node.ts:100](https://github.com/burrows/statechart/blob/dbd54f1/src/Node.ts#L100)
+[Node.ts:105](https://github.com/burrows/statechart/blob/f1380e4/src/Node.ts#L105)
