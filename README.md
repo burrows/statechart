@@ -43,6 +43,11 @@ console.log(state.paths); // ['/on']
 * [Statecharts paper](http://www.wisdom.weizmann.ac.il/~harel/papers/Statecharts.pdf)
 * [Statecharts History paper](http://www.wisdom.weizmann.ac.il/~harel/papers/Statecharts.History.pdf)
 
+## Related Projects
+
+* [useStatechart](https://github.com/burrows/react-use-statechart)
+  * Use a statechart to manage a React component's state
+
 ## License
 
 Statechart is [MIT licensed](LICENSE).
