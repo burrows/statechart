@@ -1,73 +1,304 @@
-# Statechart
+@corey.burrows/statechart
 
-## What are statecharts?
+# @corey.burrows/statechart
 
-A statechart is like a traditional state machine with states, events, and
-transitions, but it adds two features that make them much better at modeling
-complex systems: hierarchical/clustered states and concurrent states.
+## Table of contents
 
-Hierarchical (or clustered) states allow you to abstract common features from a
-collection of states so that the common behavior can be implemented in a single
-place. Each state in your statechart can actually be a tree of states with all
-child states sharing the behavior of their parent states.
+### Classes
 
-Concurrent states solve the state explosion problem that is so common in
-traditional state machines. With a traditional state machine, whenever the
-system has sub-systems with independent behavior, you need to create states that
-represent each possible combination of the sub-system states. This can easily
-get out of hand with even moderately complex systems, but statecharts solve this
-by allowing child states that operate independently. This means that the current
-state of a statechart is not a single state, but a vector of states whose length
-is not fixed.
+- [Machine](classes/Machine.md)
+- [Node](classes/Node.md)
+- [State](classes/State.md)
+- [default](classes/default.md)
 
-## _Stateless_ statecharts
+### Interfaces
 
-The `Statechart` class allows you to build _stateless_ statecharts. This may
-seem counterintuitive at first, but it has many practical benefits. A
-`Statechart` instance is an object with a `send` method that accepts a current
-state and an event and returns a new state. The `send` method does not mutate
-the `Statechart` instance, so you are responsible for maintaining the current
-state elsewhere.
+- [ActionObj](interfaces/ActionObj.md)
+- [Activity](interfaces/Activity.md)
+- [EnterHandlerResult](interfaces/EnterHandlerResult.md)
+- [Event](interfaces/Event.md)
+- [ExitHandlerResult](interfaces/ExitHandlerResult.md)
 
-```typescript
-import Statechart from '@corey.burrows/statechart';
+### Type aliases
 
-type Evt = {type: 'toggle'};
+- [Action](README.md#action)
+- [ActionFn](README.md#actionfn)
+- [ConditionFn](README.md#conditionfn)
+- [EnterHandler](README.md#enterhandler)
+- [EventHandler](README.md#eventhandler)
+- [EventHandlerResult](README.md#eventhandlerresult)
+- [ExitHandler](README.md#exithandler)
+- [InternalEvent](README.md#internalevent)
+- [NodeBody](README.md#nodebody)
+- [SendFn](README.md#sendfn)
 
-const toggle = new Statechart<{}, Evt>({}, s => {
-  s.state('on', s => {
-    s.on('toggle', '../off');
-  });
+## Type aliases
 
-  s.state('off', s => {
-    s.on('toggle', '../on');
-  });
-});
+### Action
 
-let state = toggle.initialState;
-console.log(state.current.map(n => n.path)); //  ['/on']
-state = toggle.send(state, {type: 'toggle'});
-console.log(state.current.map(n => n.path)); //  ['/off']
-state = toggle.send(state, {type: 'toggle'});
-console.log(state.current.map(n => n.path)); //  ['/on']
-```
+Ƭ **Action**<`E`\>: [`ActionObj`](interfaces/ActionObj.md)<`E`\> \| [`ActionFn`](README.md#actionfn)<`E`\>
 
-This makes testing very easy because you are just testing a pure function that
-takes some inputs (current state and an event) and produces a result (the next
-state). We'll see later how side effects are handled.
+#### Type parameters
 
-A mutable `Machine` class is provided that will maintain the
-current state of a statechart, but this is mainly provided as an example of how
-to do it and you will most likely want to roll your own state manager (it's
-quite easy).
+| Name |
+| :------ |
+| `E` |
 
-```typescript
-const toggleMachine = new Machine(toggle);
+#### Defined in
 
-toggleMachine.start();
-console.log(toggleMachine.current); // ['/on']
-toggleMachine.send({type: 'toggle'});
-console.log(toggleMachine.current); // ['/off']
-toggleMachine.send({type: 'toggle'});
-console.log(toggleMachine.current); // ['/on']
-```
+[types.ts:17](https://github.com/burrows/statechart/blob/364aac9/src/types.ts#L17)
+
+___
+
+### ActionFn
+
+Ƭ **ActionFn**<`E`\>: (`send`: [`SendFn`](README.md#sendfn)<`E`\>) => `void`
+
+#### Type parameters
+
+| Name |
+| :------ |
+| `E` |
+
+#### Type declaration
+
+▸ (`send`): `void`
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `send` | [`SendFn`](README.md#sendfn)<`E`\> |
+
+##### Returns
+
+`void`
+
+#### Defined in
+
+[types.ts:15](https://github.com/burrows/statechart/blob/364aac9/src/types.ts#L15)
+
+___
+
+### ConditionFn
+
+Ƭ **ConditionFn**<`C`, `E`\>: (`ctx`: `C`, `evt`: [`InternalEvent`](README.md#internalevent) \| `E`) => `string`
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `C` | `C` |
+| `E` | extends [`Event`](interfaces/Event.md) |
+
+#### Type declaration
+
+▸ (`ctx`, `evt`): `string`
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `ctx` | `C` |
+| `evt` | [`InternalEvent`](README.md#internalevent) \| `E` |
+
+##### Returns
+
+`string`
+
+#### Defined in
+
+[types.ts:59](https://github.com/burrows/statechart/blob/364aac9/src/types.ts#L59)
+
+___
+
+### EnterHandler
+
+Ƭ **EnterHandler**<`C`, `E`\>: (`ctx`: `C`, `evt`: [`InternalEvent`](README.md#internalevent) \| `E`) => [`EnterHandlerResult`](interfaces/EnterHandlerResult.md)<`C`, `E`\> \| `void`
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `C` | `C` |
+| `E` | extends [`Event`](interfaces/Event.md) |
+
+#### Type declaration
+
+▸ (`ctx`, `evt`): [`EnterHandlerResult`](interfaces/EnterHandlerResult.md)<`C`, `E`\> \| `void`
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `ctx` | `C` |
+| `evt` | [`InternalEvent`](README.md#internalevent) \| `E` |
+
+##### Returns
+
+[`EnterHandlerResult`](interfaces/EnterHandlerResult.md)<`C`, `E`\> \| `void`
+
+#### Defined in
+
+[types.ts:42](https://github.com/burrows/statechart/blob/364aac9/src/types.ts#L42)
+
+___
+
+### EventHandler
+
+Ƭ **EventHandler**<`C`, `E`, `T`\>: (`ctx`: `C`, `evt`: `Extract`<`E`, { `type`: `T`  }\>) => [`EventHandlerResult`](README.md#eventhandlerresult)<`C`, `E`\> \| `void`
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `C` | `C` |
+| `E` | extends [`Event`](interfaces/Event.md) |
+| `T` | extends `E`[``"type"``] \| [`InternalEvent`](README.md#internalevent)[``"type"``] |
+
+#### Type declaration
+
+▸ (`ctx`, `evt`): [`EventHandlerResult`](README.md#eventhandlerresult)<`C`, `E`\> \| `void`
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `ctx` | `C` |
+| `evt` | `Extract`<`E`, { `type`: `T`  }\> |
+
+##### Returns
+
+[`EventHandlerResult`](README.md#eventhandlerresult)<`C`, `E`\> \| `void`
+
+#### Defined in
+
+[types.ts:53](https://github.com/burrows/statechart/blob/364aac9/src/types.ts#L53)
+
+___
+
+### EventHandlerResult
+
+Ƭ **EventHandlerResult**<`C`, `E`\>: `Object`
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `C` | `C` |
+| `E` | extends [`Event`](interfaces/Event.md) |
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `actions?` | [`Action`](README.md#action)<`E`\>[] |
+| `context?` | `C` |
+| `goto?` | `string` \| `string`[] |
+
+#### Defined in
+
+[types.ts:47](https://github.com/burrows/statechart/blob/364aac9/src/types.ts#L47)
+
+___
+
+### ExitHandler
+
+Ƭ **ExitHandler**<`C`, `E`\>: (`ctx`: `C`, `evt`: [`InternalEvent`](README.md#internalevent) \| `E`) => [`ExitHandlerResult`](interfaces/ExitHandlerResult.md)<`C`, `E`\> \| `void`
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `C` | `C` |
+| `E` | extends [`Event`](interfaces/Event.md) |
+
+#### Type declaration
+
+▸ (`ctx`, `evt`): [`ExitHandlerResult`](interfaces/ExitHandlerResult.md)<`C`, `E`\> \| `void`
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `ctx` | `C` |
+| `evt` | [`InternalEvent`](README.md#internalevent) \| `E` |
+
+##### Returns
+
+[`ExitHandlerResult`](interfaces/ExitHandlerResult.md)<`C`, `E`\> \| `void`
+
+#### Defined in
+
+[types.ts:31](https://github.com/burrows/statechart/blob/364aac9/src/types.ts#L31)
+
+___
+
+### InternalEvent
+
+Ƭ **InternalEvent**: { `type`: ``"__start__"``  } \| { `type`: ``"__stop__"``  }
+
+#### Defined in
+
+[types.ts:7](https://github.com/burrows/statechart/blob/364aac9/src/types.ts#L7)
+
+___
+
+### NodeBody
+
+Ƭ **NodeBody**<`C`, `E`\>: (`n`: [`Node`](classes/Node.md)<`C`, `E`\>) => `void`
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `C` | `C` |
+| `E` | extends [`Event`](interfaces/Event.md) |
+
+#### Type declaration
+
+▸ (`n`): `void`
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `n` | [`Node`](classes/Node.md)<`C`, `E`\> |
+
+##### Returns
+
+`void`
+
+#### Defined in
+
+[types.ts:24](https://github.com/burrows/statechart/blob/364aac9/src/types.ts#L24)
+
+___
+
+### SendFn
+
+Ƭ **SendFn**<`E`\>: (`event`: `E`) => `void`
+
+#### Type parameters
+
+| Name |
+| :------ |
+| `E` |
+
+#### Type declaration
+
+▸ (`event`): `void`
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `event` | `E` |
+
+##### Returns
+
+`void`
+
+#### Defined in
+
+[types.ts:9](https://github.com/burrows/statechart/blob/364aac9/src/types.ts#L9)

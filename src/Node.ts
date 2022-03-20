@@ -11,9 +11,13 @@ import {
 import State from './State';
 
 export default class Node<C, E extends Event> {
+  /** @internal */
   public name: string;
+  /** @internal */
   public type: 'cluster' | 'concurrent';
+  /** @internal */
   public parent?: Node<C, E>;
+  /** @internal */
   public children: Map<string, Node<C, E>>;
   private history: 'none' | 'shallow' | 'deep';
   private defaultChild?: string;
@@ -28,6 +32,7 @@ export default class Node<C, E extends Event> {
     [evt: string]: (...args: any[]) => EventHandlerResult<C, E> | void;
   };
 
+  /** @internal */
   constructor(name: string, body?: NodeBody<C, E>) {
     this.name = name;
     this.type = 'cluster';
@@ -43,16 +48,60 @@ export default class Node<C, E extends Event> {
     if (body) body(this);
   }
 
+  /**
+   * Make the state concurrent.
+   *
+   * ```typescript
+   * s.state('myConcurrentState', (s) => {
+   *   s.concurrent();
+   *
+   *   // a, b, and c will all operate independently
+   *   s.state('a');
+   *   s.state('b');
+   *   s.state('c');
+   * });
+   * ```
+   */
   concurrent(): this {
     this.type = 'concurrent';
     return this;
   }
 
+  /**
+   * Make the state a history state. A history state remembers its most recently
+   * exited substate and uses that as the default substate on the next entry.
+   * Pass `'*'` to make it a deep history state.
+   *
+   * ```typescript
+   * s.state('myHistoryState', (s) => {
+   *   s.H();
+   *
+   *   s.state('a');
+   *   s.state('b');
+   *   s.state('c');
+   * });
+   * ```
+   */
   H(star?: '*'): this {
     this.history = star ? 'deep' : 'shallow';
     return this;
   }
 
+  /**
+   * Create a substate of the current state.
+   *
+   * ```typescript
+   * new Statechart<Ctx, Evt>(initialContext, (s) => {
+   *   s.state('a', (s) => {
+   *     // state a's body
+   *   });
+   *
+   *   s.state('b', (s) => {
+   *     // state b's body
+   *   });
+   * });
+   * ```
+   */
   state(name: string, body?: NodeBody<C, E>): this {
     if (!name) throw new Error('Node#state: state must have a name');
 
@@ -63,6 +112,29 @@ export default class Node<C, E extends Event> {
     return this;
   }
 
+  /**
+   * Define an enter handler for this state. The given [[EnterHandler]] can
+   * return an object with the following optional keys to control the behavior
+   * of the statechart:
+   *
+   * * `context`: Update the context
+   * * `actions`: Queue a list of [[Action]] objects to run after the transition
+   *   is complete
+   * * `activities`: Queue a list of [[Activity]] objects to start after the
+   *   transition is complete
+   *
+   * ```typescript
+   * s.state('myState', (s) => {
+   *   s.enter((ctx, evt) => {
+   *     return {
+   *       context: {...ctx, foo: 'bar'},
+   *       actions: [new SomeAction()],
+   *       activities: [new SomeActivity()],
+   *     };
+   *   });
+   * });
+   * ```
+   */
   enter(
     handler: EnterHandler<C, E>,
     {type}: {type?: 'pre' | 'post'} = {},
@@ -80,6 +152,26 @@ export default class Node<C, E extends Event> {
     return this;
   }
 
+  /**
+   * Define an exit handler for this state. The given [[ExitHandler]] can
+   * return an object with the following optional keys to control the behavior
+   * of the statechart:
+   *
+   * * `context`: Update the context
+   * * `actions`: Queue a list of [[Action]] objects to run after the transition
+   *   is complete
+   *
+   * ```typescript
+   * s.state('myState', (s) => {
+   *   s.exit((ctx, evt) => {
+   *     return {
+   *       context: {...ctx, foo: 'bar'},
+   *       actions: [new SomeAction()],
+   *     };
+   *   });
+   * });
+   * ```
+   */
   exit(handler: ExitHandler<C, E>, {type}: {type?: 'pre' | 'post'} = {}): this {
     switch (type) {
       case 'pre':
@@ -94,6 +186,30 @@ export default class Node<C, E extends Event> {
     return this;
   }
 
+  /**
+   * Define an event handler for this state. The given `type` string must match
+   * a `type` from your statechart's [[Event]] type. The given [[EventHandler]]
+   * function can return an object with the following keys to control the
+   * behavior of the statechart:
+   *
+   * * `context`: Update the context
+   * * `actions`: Queue a list of [[Action]] objects to run after the transition
+   *   is complete
+   * * `goto`: Trigger a transition to the given state path. The state path must
+   *   either be a full path starting from the root of the statechart or a
+   *   relative path starting from the current state.
+   *
+   * ```typescript
+   * s.on('SOME_EVENT', (ctx, evt) => {
+   *   // evt type will be narrowed to the event with `{type: 'SOME_EVENT'}`
+   *   return {
+   *     context: {...ctx, foo: 'bar'},
+   *     actions: [new SomeAction()],
+   *     goto: '../some/other/state',
+   *   };
+   * });
+   * ```
+   */
   on<T extends E['type']>(
     type: T,
     handler: EventHandler<C, E, T> | string | string[],
@@ -105,35 +221,58 @@ export default class Node<C, E extends Event> {
     return this;
   }
 
+  /**
+   * Define a condition function for this state. The condition function is
+   * called to determine which child state to enter when not otherwise
+   * specified. It must return the name of a child state.
+   *
+   * ```typescript
+   * s.state('myState', (s) => {
+   *   s.C((ctx, evt) => {
+   *     return ctx.foo ? 'a' : 'b';
+   *   });
+   *
+   *   s.state('a');
+   *   s.state('b');
+   * });
+   * ```
+   */
   C(f: ConditionFn<C, E>): this {
     this.condition = f;
     return this;
   }
 
+  /** @internal */
   get root(): Node<C, E> {
     return this.parent?.root || this;
   }
 
+  /** @internal */
   get isRoot(): boolean {
     return !this.parent;
   }
 
+  /** @internal */
   get isLeaf(): boolean {
     return this.children.size === 0;
   }
 
+  /** @internal */
   get lineage(): Node<C, E>[] {
     return (this.parent?.lineage || []).concat([this]);
   }
 
+  /** @internal */
   get depth(): number {
     return this.lineage.length - 1;
   }
 
+  /** @internal */
   get path(): string {
     return this.isRoot ? '/' : this.lineage.map(n => n.name).join('/');
   }
 
+  /** @internal */
   get isHistory(): boolean {
     if (this.history !== 'none') return true;
     let n = this.parent;
@@ -144,6 +283,7 @@ export default class Node<C, E extends Event> {
     return false;
   }
 
+  /** @internal */
   matches(path: string): boolean {
     if (!this.resolve(path)) {
       throw new Error(`Node#matches: ${path} does not resolve`);
@@ -156,10 +296,12 @@ export default class Node<C, E extends Event> {
     return !!this.path.match(path);
   }
 
+  /** @internal */
   toString(): string {
     return this.path;
   }
 
+  /** @internal */
   inspect({
     prefix = '',
     state,
@@ -187,6 +329,7 @@ export default class Node<C, E extends Event> {
     return s;
   }
 
+  /** @internal */
   send(
     state: State<C, E>,
     evt: InternalEvent | E,
@@ -216,6 +359,7 @@ export default class Node<C, E extends Event> {
     };
   }
 
+  /** @internal */
   pivot(other: Node<C, E>): Node<C, E> | undefined {
     if (this === other) return this;
 
@@ -235,7 +379,7 @@ export default class Node<C, E extends Event> {
     return pivot;
   }
 
-  // Exit from the given `from` nodes to the receiver pivot node.
+  /** @internal */
   pivotExit(state: State<C, E>, evt: InternalEvent | E): State<C, E> {
     const child = this.childToExit(state.current);
 
@@ -248,7 +392,7 @@ export default class Node<C, E extends Event> {
     return child._exit(state, evt);
   }
 
-  // Enter from the receiver pivot node to the given `to` nodes.
+  /** @internal */
   pivotEnter(
     state: State<C, E>,
     evt: InternalEvent | E,
@@ -265,6 +409,7 @@ export default class Node<C, E extends Event> {
     return child._enter(state, evt, to);
   }
 
+  /** @internal */
   _exit(state: State<C, E>, evt: InternalEvent | E): State<C, E> {
     if (!this.isLeaf) {
       state = this[
@@ -305,6 +450,7 @@ export default class Node<C, E extends Event> {
     return state;
   }
 
+  /** @internal */
   _enter(
     state: State<C, E>,
     evt: InternalEvent | E,
@@ -343,6 +489,7 @@ export default class Node<C, E extends Event> {
     ](state, evt, to);
   }
 
+  /** @internal */
   resolve(path: string | string[]): Node<C, E> | undefined {
     const segments = Array.isArray(path) ? path : path.split('/');
     let head = segments.shift();
