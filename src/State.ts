@@ -15,8 +15,9 @@ export default class State<C, E extends Event> {
    */
   current: Node<C, E>[];
   /**
-   * A list of [[Action]] objects queued by the last `send`. You must call the
-   * `exec` method on these objects for the side effects to actually run.
+   * A list of [[Action]] objects queued by the last [[default.send | send]].
+   * You must call the `exec` method on these objects for the side effects to
+   * actually run.
    */
   actions: Action<E>[];
   /** @internal */
@@ -30,13 +31,15 @@ export default class State<C, E extends Event> {
      */
     current: {[path: string]: Activity<E>[]};
     /**
-     * The list of activities that were queued by the last `send` and thus must
-     * be started by calling their `start` method.
+     * The list of activities that were queued by the last
+     * [[default.send | send]] and thus must be started by calling their
+     * [[Activity.start | start]] method.
      */
     start: Activity<E>[];
     /**
-     * The list of activities that must be stopped by calling their `stop`
-     * method since the state that originally queued them is no longer current.
+     * The list of activities that must be stopped by calling their
+     * [[Activity.stop | stop]] method since the state that originally queued
+     * them is no longer current.
      */
     stop: Activity<E>[];
   };
