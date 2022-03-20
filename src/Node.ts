@@ -147,6 +147,26 @@ export default class Node<C, E extends Event> {
     return this;
   }
 
+  /**
+   * Define an exit handler for this state. The given [[ExitHandler]] can
+   * return an object with the following optional keys to control the behavior
+   * of the statechart:
+   *
+   * * `context`: Update the context
+   * * `actions`: Queue a list of [[Action]] objects to run after the transition
+   *   is complete
+   *
+   * ```typescript
+   * s.state('myState', (s) => {
+   *   s.exit((ctx, evt) => {
+   *     return {
+   *       context: {...ctx, foo: 'bar'},
+   *       actions: [new SomeAction()],
+   *     };
+   *   });
+   * });
+   * ```
+   */
   exit(handler: ExitHandler<C, E>, {type}: {type?: 'pre' | 'post'} = {}): this {
     switch (type) {
       case 'pre':
@@ -161,6 +181,30 @@ export default class Node<C, E extends Event> {
     return this;
   }
 
+  /**
+   * Define an event handler for this state. The given `type` string must match
+   * a `type` from your statechart's [[Event]] type. The given [[EventHandler]]
+   * function can return an object with the following keys to control the
+   * behavior of the statechart:
+   *
+   * * `context`: Update the context
+   * * `actions`: Queue a list of [[Action]] objects to run after the transition
+   *   is complete
+   * * `goto`: Trigger a transition to the given state path. The state path must
+   *   either be a full path starting from the root of the statechart or a
+   *   relative path starting from the current state.
+   *
+   * ```typescript
+   * s.on('SOME_EVENT', (ctx, evt) => {
+   *   // evt type will be narrowed to the event with `{type: 'SOME_EVENT'}`
+   *   return {
+   *     context: {...ctx, foo: 'bar'},
+   *     actions: [new SomeAction()],
+   *     goto: '../some/other/state',
+   *   };
+   * });
+   * ```
+   */
   on<T extends E['type']>(
     type: T,
     handler: EventHandler<C, E, T> | string | string[],
@@ -172,6 +216,22 @@ export default class Node<C, E extends Event> {
     return this;
   }
 
+  /**
+   * Define a condition function for this state. The condition function is
+   * called to determine which child state to enter when not otherwise
+   * specified. It must return the name of a child state.
+   *
+   * ```typescript
+   * s.state('myState', (s) => {
+   *   s.C((ctx, evt) => {
+   *     return ctx.foo ? 'a' : 'b';
+   *   });
+   *
+   *   s.state('a');
+   *   s.state('b');
+   * });
+   * ```
+   */
   C(f: ConditionFn<C, E>): this {
     this.condition = f;
     return this;

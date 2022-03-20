@@ -3,6 +3,11 @@ import Node from './Node';
 import Statechart from './Statechart';
 import State from './State';
 
+/**
+ * Provides a reference `Machine` class for maintaining the current state of a
+ * statechart and executing side effects. It's perfectly valid choose to
+ * implement this logic for yourself if this class doesn't suit your needs.
+ */
 export default class Machine<C, E extends Event> {
   private state: State<C, E>;
 
