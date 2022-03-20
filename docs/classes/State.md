@@ -36,12 +36,13 @@ statechart.
 • **actions**: [`Action`](../README.md#action)<`E`\>[]
 
 A list of [Action](../README.md#action) objects queued by the last [send](default.md#send).
-You must call the `exec` method on these objects for the side effects to
-actually run.
+You must either call these directly if they are [functions](../README.md#actionfn) or
+call their [exec](../interfaces/ActionObj.md#exec) method if they are
+[objects](../interfaces/ActionObj.md) in order for the side effects to actually run.
 
 #### Defined in
 
-[State.ts:22](https://github.com/burrows/statechart/blob/8529b0f/src/State.ts#L22)
+[State.ts:19](https://github.com/burrows/statechart/blob/364aac9/src/State.ts#L19)
 
 ___
 
@@ -61,7 +62,7 @@ The current [Activity](../interfaces/Activity.md) state.
 
 #### Defined in
 
-[State.ts:28](https://github.com/burrows/statechart/blob/8529b0f/src/State.ts#L28)
+[State.ts:23](https://github.com/burrows/statechart/blob/364aac9/src/State.ts#L23)
 
 ___
 
@@ -73,7 +74,7 @@ The current context.
 
 #### Defined in
 
-[State.ts:12](https://github.com/burrows/statechart/blob/8529b0f/src/State.ts#L12)
+[State.ts:10](https://github.com/burrows/statechart/blob/364aac9/src/State.ts#L10)
 
 ___
 
@@ -85,7 +86,7 @@ A list of the current leaf state nodes.
 
 #### Defined in
 
-[State.ts:16](https://github.com/burrows/statechart/blob/8529b0f/src/State.ts#L16)
+[State.ts:12](https://github.com/burrows/statechart/blob/364aac9/src/State.ts#L12)
 
 ## Accessors
 
@@ -101,7 +102,7 @@ Returns the paths of the current states.
 
 #### Defined in
 
-[State.ts:75](https://github.com/burrows/statechart/blob/8529b0f/src/State.ts#L75)
+[State.ts:66](https://github.com/burrows/statechart/blob/364aac9/src/State.ts#L66)
 
 ## Methods
 
@@ -125,4 +126,4 @@ if the given path cannot be resolved.
 
 #### Defined in
 
-[State.ts:84](https://github.com/burrows/statechart/blob/8529b0f/src/State.ts#L84)
+[State.ts:75](https://github.com/burrows/statechart/blob/364aac9/src/State.ts#L75)

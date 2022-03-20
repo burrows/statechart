@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[types.ts:4](https://github.com/burrows/statechart/blob/8529b0f/src/types.ts#L4)
+[types.ts:4](https://github.com/burrows/statechart/blob/364aac9/src/types.ts#L4)
