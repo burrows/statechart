@@ -224,7 +224,10 @@ export default class Node<C, E extends Event> {
   /**
    * Define a condition function for this state. The condition function is
    * called to determine which child state to enter when not otherwise
-   * specified. It must return the name of a child state.
+   * specified. It must either return the name of a child state or `undefined`.
+   * When `undefined` is returned the default child will be entered unless this
+   * is a history state, in which case the most recently exited child will be
+   * entered.
    *
    * ```typescript
    * s.state('myState', (s) => {
@@ -585,7 +588,8 @@ export default class Node<C, E extends Event> {
     }
 
     if (this.condition) {
-      return this.children.get(this.condition(state.context, evt));
+      const child = this.condition(state.context, evt);
+      if (child) return this.children.get(child);
     }
 
     let name = state.history[this.path] || this.defaultChild;

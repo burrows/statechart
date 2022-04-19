@@ -59,4 +59,4 @@ export type EventHandler<
 export type ConditionFn<C, E extends Event> = (
   ctx: C,
   evt: InternalEvent | E,
-) => string;
+) => string | undefined;
