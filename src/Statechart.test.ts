@@ -237,6 +237,28 @@ describe('Statechart#send', () => {
     expect(state.actions).toEqual([]);
   });
 
+  it('enters default child when condition function returns undefined', () => {
+    type Ctx = {};
+    type Evt = {type: 'foo'; child?: string};
+
+    const sc = new Statechart<Ctx, Evt>({}, s => {
+      s.state('a', s => {
+        s.on('foo', '../b');
+      });
+      s.state('b', s => {
+        s.C((_ctx, evt) => ('child' in evt ? evt.child : undefined));
+        s.state('c');
+        s.state('d');
+      });
+    });
+
+    let s = sc.send(sc.initialState, {type: 'foo', child: 'd'});
+    expect(s.matches('/b/d'));
+
+    s = sc.send(sc.initialState, {type: 'foo'});
+    expect(s.matches('/b/c'));
+  });
+
   it('enters all child states of a concurrent state', () => {
     const state = sc2.send(sc2.initialState, {
       type: 'goto',
