@@ -528,11 +528,9 @@ export default class Node<C, E extends Event> {
       );
     }
 
-    let name = from
-      .map(n => n.lineage[this.depth + 1]?.name)
-      .find(name => this.children.has(name));
-
-    return name ? this.children.get(name) : undefined;
+    return from
+      .map(n => n.lineage[this.depth + 1])
+      .find(n => n && n.parent === this);
   }
 
   private exitConcurrent(
