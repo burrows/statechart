@@ -924,6 +924,36 @@ describe('Statechart#send', () => {
       exits: ['a-pre', 'a', 'a-post'],
     });
   });
+
+  it('handles concurrent states with the same child state names', () => {
+    type Ctx = {};
+    type Evt = {type: 'TOGGLE_X'};
+
+    const sc = new Statechart<Ctx, Evt>({}, s => {
+      s.state('main', s => {
+        s.concurrent();
+        s.state('x', s => {
+          s.state('off', s => {
+            s.on('TOGGLE_X', '../on');
+          });
+          s.state('on', s => {
+            s.on('TOGGLE_X', '../off');
+          });
+        });
+        s.state('y', s => {
+          s.state('off');
+          s.state('on');
+        });
+      });
+    });
+
+    let state = sc.initialState;
+    expect(state.paths).toEqual(['/main/x/off', '/main/y/off']);
+    state = sc.send(state, {type: 'TOGGLE_X'});
+    expect(state.paths).toEqual(['/main/y/off', '/main/x/on']);
+    state = sc.send(state, {type: 'TOGGLE_X'});
+    expect(state.paths).toEqual(['/main/y/off', '/main/x/off']);
+  });
 });
 
 describe('Statechart#stop', () => {
