@@ -811,6 +811,12 @@ describe('Statechart#send', () => {
       });
       expect(state.activities.start).toEqual([acta1, actc1, actc2]);
       expect(state.activities.stop).toEqual([actg1, acti1, actb1]);
+
+      state = sc.stop(state);
+      expect(state.paths).toEqual([]);
+      expect(state.activities.current).toEqual({});
+      expect(state.activities.start).toEqual([]);
+      expect(state.activities.stop).toEqual([actc1, actc2, acta1]);
     });
   });
 
