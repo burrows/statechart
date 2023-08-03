@@ -37,7 +37,7 @@ implement this logic for yourself if this class doesn't suit your needs.
 
 ### constructor
 
-• **new Machine**<`C`, `E`\>(`statechart`)
+• **new Machine**<`C`, `E`\>(`statechart`, `__namedParameters?`)
 
 #### Type parameters
 
@@ -51,10 +51,13 @@ implement this logic for yourself if this class doesn't suit your needs.
 | Name | Type |
 | :------ | :------ |
 | `statechart` | [`default`](default.md)<`C`, `E`\> |
+| `__namedParameters` | `Object` |
+| `__namedParameters.trace?` | `boolean` |
+| `__namedParameters.observer?` | (`state`: [`State`](State.md)<`C`, `E`\>) => `void` |
 
 #### Defined in
 
-[Machine.ts:14](https://github.com/burrows/statechart/blob/6bcdb81/src/Machine.ts#L14)
+[Machine.ts:27](https://github.com/burrows/statechart/blob/d9d682c/src/Machine.ts#L27)
 
 ## Accessors
 
@@ -68,7 +71,7 @@ implement this logic for yourself if this class doesn't suit your needs.
 
 #### Defined in
 
-[Machine.ts:57](https://github.com/burrows/statechart/blob/6bcdb81/src/Machine.ts#L57)
+[Machine.ts:83](https://github.com/burrows/statechart/blob/d9d682c/src/Machine.ts#L83)
 
 ___
 
@@ -82,7 +85,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:49](https://github.com/burrows/statechart/blob/6bcdb81/src/Machine.ts#L49)
+[Machine.ts:75](https://github.com/burrows/statechart/blob/d9d682c/src/Machine.ts#L75)
 
 ___
 
@@ -96,7 +99,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:53](https://github.com/burrows/statechart/blob/6bcdb81/src/Machine.ts#L53)
+[Machine.ts:79](https://github.com/burrows/statechart/blob/d9d682c/src/Machine.ts#L79)
 
 ## Methods
 
@@ -116,7 +119,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:33](https://github.com/burrows/statechart/blob/6bcdb81/src/Machine.ts#L33)
+[Machine.ts:59](https://github.com/burrows/statechart/blob/d9d682c/src/Machine.ts#L59)
 
 ___
 
@@ -136,7 +139,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:61](https://github.com/burrows/statechart/blob/6bcdb81/src/Machine.ts#L61)
+[Machine.ts:87](https://github.com/burrows/statechart/blob/d9d682c/src/Machine.ts#L87)
 
 ___
 
@@ -156,7 +159,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:28](https://github.com/burrows/statechart/blob/6bcdb81/src/Machine.ts#L28)
+[Machine.ts:51](https://github.com/burrows/statechart/blob/d9d682c/src/Machine.ts#L51)
 
 ___
 
@@ -170,7 +173,7 @@ ___
 
 #### Defined in
 
-[Machine.ts:18](https://github.com/burrows/statechart/blob/6bcdb81/src/Machine.ts#L18)
+[Machine.ts:39](https://github.com/burrows/statechart/blob/d9d682c/src/Machine.ts#L39)
 
 ___
 
@@ -184,4 +187,4 @@ ___
 
 #### Defined in
 
-[Machine.ts:23](https://github.com/burrows/statechart/blob/6bcdb81/src/Machine.ts#L23)
+[Machine.ts:45](https://github.com/burrows/statechart/blob/d9d682c/src/Machine.ts#L45)

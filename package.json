@@ -1,6 +1,6 @@
 {
   "name": "@corey.burrows/statechart",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Simple Stateless Statechart",
   "main": "build/umd/index.js",
   "module": "build/es/index.js",

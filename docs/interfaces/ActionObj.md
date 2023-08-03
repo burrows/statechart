@@ -32,4 +32,4 @@
 
 #### Defined in
 
-[types.ts:12](https://github.com/burrows/statechart/blob/6bcdb81/src/types.ts#L12)
+[types.ts:12](https://github.com/burrows/statechart/blob/d9d682c/src/types.ts#L12)

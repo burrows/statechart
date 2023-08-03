@@ -24,7 +24,7 @@
 
 #### Defined in
 
-[types.ts:28](https://github.com/burrows/statechart/blob/6bcdb81/src/types.ts#L28)
+[types.ts:28](https://github.com/burrows/statechart/blob/d9d682c/src/types.ts#L28)
 
 ___
 
@@ -34,4 +34,4 @@ ___
 
 #### Defined in
 
-[types.ts:27](https://github.com/burrows/statechart/blob/6bcdb81/src/types.ts#L27)
+[types.ts:27](https://github.com/burrows/statechart/blob/d9d682c/src/types.ts#L27)
