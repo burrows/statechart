@@ -47,6 +47,14 @@ export default class Statechart<C, E extends Event> {
    * `__stop__`.
    */
   stop(state: State<C, E>): State<C, E> {
+    state = state.update({
+      actions: [],
+      activities: {
+        ...state.activities,
+        start: [],
+        stop: [],
+      },
+    });
     return this.root._exit(state, {type: '__stop__'});
   }
 
