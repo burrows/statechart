@@ -188,7 +188,7 @@ export default class Node<C, E extends Event> {
 
   /**
    * Define an event handler for this state. The given `type` string must match
-   * a `type` or `type[]` from your statechart's [[Event]] type(s). The given [[EventHandler]]
+   * a `type`(s) from your statechart's [[Event]] type(s). The given [[EventHandler]]
    * function can return an object with the following keys to control the
    * behavior of the statechart:
    *
@@ -211,16 +211,19 @@ export default class Node<C, E extends Event> {
    * ```
    */
   on<T extends E['type']>(
-    type: T | T[],
-    handler: EventHandler<C, E, T> | string | string[],
+    ...args: [T, ...T[], handler: EventHandler<C, E, T> | string | string[]]
   ): this {
-    const types = Array.isArray(type) ? type : [type];
+    const types = args.slice(0, -1) as T[];
+    const handler = args[args.length - 1] as
+      | EventHandler<C, E, T>
+      | string
+      | string[];
 
     for (const type of types) {
       this.handlers[type] =
-      typeof handler === 'string' || Array.isArray(handler)
-        ? () => ({goto: handler})
-        : handler;
+        typeof handler === 'string' || Array.isArray(handler)
+          ? () => ({ goto: handler })
+          : handler;
     }
     return this;
   }

@@ -937,7 +937,7 @@ describe('Statechart#send', () => {
 
     const sc = new Statechart<Ctx, Evt>({ fromEvt: '' }, s => {
       s.state('a', s => {
-        s.on(['x', 'y'], (ctx, evt) => ({ context: { ...ctx, fromEvt: evt.type }}));
+        s.on('x', 'y', (ctx, evt) => ({ context: { ...ctx, fromEvt: evt.type }}));
       });
     });
 
