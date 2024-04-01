@@ -4,7 +4,7 @@ export interface Event {
   type: string;
 }
 
-export type InternalEvent = {type: '__start__'} | {type: '__stop__'};
+export type InternalEvent = { type: '__start__' } | { type: '__stop__' };
 
 export type SendFn<E> = (event: E) => void;
 
@@ -30,7 +30,7 @@ export interface ExitHandlerResult<C, E extends Event> {
 
 export type ExitHandler<C, E extends Event> = (
   ctx: C,
-  evt: InternalEvent | E,
+  evt: InternalEvent | E
 ) => ExitHandlerResult<C, E> | void;
 
 export interface EnterHandlerResult<C, E extends Event> {
@@ -41,7 +41,7 @@ export interface EnterHandlerResult<C, E extends Event> {
 
 export type EnterHandler<C, E extends Event> = (
   ctx: C,
-  evt: InternalEvent | E,
+  evt: InternalEvent | E
 ) => EnterHandlerResult<C, E> | void;
 
 export type EventHandlerResult<C, E extends Event> = {
@@ -53,10 +53,10 @@ export type EventHandlerResult<C, E extends Event> = {
 export type EventHandler<
   C,
   E extends Event,
-  T extends E['type'] | InternalEvent['type']
-> = (ctx: C, evt: Extract<E, {type: T}>) => EventHandlerResult<C, E> | void;
+  T extends E['type'] | InternalEvent['type'],
+> = (ctx: C, evt: Extract<E, { type: T }>) => EventHandlerResult<C, E> | void;
 
 export type ConditionFn<C, E extends Event> = (
   ctx: C,
-  evt: InternalEvent | E,
+  evt: InternalEvent | E
 ) => string | undefined;

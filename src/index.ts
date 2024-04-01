@@ -4,5 +4,5 @@ import State from './State';
 import Node from './Node';
 
 export * from './types';
-export {Machine, State, Node};
+export { Machine, State, Node };
 export default Statechart;

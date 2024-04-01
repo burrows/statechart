@@ -137,7 +137,7 @@ export default class Node<C, E extends Event> {
    */
   enter(
     handler: EnterHandler<C, E>,
-    {type}: {type?: 'pre' | 'post'} = {},
+    { type }: { type?: 'pre' | 'post' } = {}
   ): this {
     switch (type) {
       case 'pre':
@@ -172,7 +172,10 @@ export default class Node<C, E extends Event> {
    * });
    * ```
    */
-  exit(handler: ExitHandler<C, E>, {type}: {type?: 'pre' | 'post'} = {}): this {
+  exit(
+    handler: ExitHandler<C, E>,
+    { type }: { type?: 'pre' | 'post' } = {}
+  ): this {
     switch (type) {
       case 'pre':
         this.preExitHandlers.push(handler);
@@ -279,7 +282,7 @@ export default class Node<C, E extends Event> {
 
   /** @internal */
   get path(): string {
-    return this.isRoot ? '/' : this.lineage.map(n => n.name).join('/');
+    return this.isRoot ? '/' : this.lineage.map((n) => n.name).join('/');
   }
 
   /** @internal */
@@ -315,8 +318,8 @@ export default class Node<C, E extends Event> {
   inspect({
     prefix = '',
     state,
-  }: {prefix?: string; state?: State<C, E>} = {}): string {
-    const current = state?.current.flatMap(n => n.lineage).includes(this);
+  }: { prefix?: string; state?: State<C, E> } = {}): string {
+    const current = state?.current.flatMap((n) => n.lineage).includes(this);
     const opts =
       this.history !== 'none'
         ? ` (H${this.history === 'deep' ? '*' : ''})`
@@ -342,8 +345,8 @@ export default class Node<C, E extends Event> {
   /** @internal */
   send(
     state: State<C, E>,
-    evt: InternalEvent | E,
-  ): {state: State<C, E>; goto: Node<C, E>[]} | undefined {
+    evt: InternalEvent | E
+  ): { state: State<C, E>; goto: Node<C, E>[] } | undefined {
     const handler = this.handlers[evt.type];
     if (!handler) return undefined;
 
@@ -357,11 +360,11 @@ export default class Node<C, E extends Event> {
 
     return {
       state,
-      goto: (result.goto ? [result.goto] : []).flat().map(p => {
+      goto: (result.goto ? [result.goto] : []).flat().map((p) => {
         const n = this.resolve(p);
         if (!n) {
           throw new Error(
-            `Node#send: could not resolve path ${p} from ${this}`,
+            `Node#send: could not resolve path ${p} from ${this}`
           );
         }
         return n;
@@ -395,7 +398,7 @@ export default class Node<C, E extends Event> {
 
     if (!child) {
       throw new Error(
-        `Node#_pivotExit: could not determine child state to exit`,
+        `Node#_pivotExit: could not determine child state to exit`
       );
     }
 
@@ -406,13 +409,13 @@ export default class Node<C, E extends Event> {
   pivotEnter(
     state: State<C, E>,
     evt: InternalEvent | E,
-    to: Node<C, E>[],
+    to: Node<C, E>[]
   ): State<C, E> {
     const child = this.childToEnter(state, evt, to);
 
     if (!child) {
       throw new Error(
-        `Node#_pivotEnter: could not determine child state to enter`,
+        `Node#_pivotEnter: could not determine child state to enter`
       );
     }
 
@@ -426,7 +429,9 @@ export default class Node<C, E extends Event> {
         this.type === 'concurrent' ? 'exitConcurrent' : 'exitCluster'
       ](state, evt);
     } else {
-      state = state.update({current: state.current.filter(n => n !== this)});
+      state = state.update({
+        current: state.current.filter((n) => n !== this),
+      });
     }
 
     const handlers = [
@@ -448,7 +453,7 @@ export default class Node<C, E extends Event> {
     const activities = state.activities.current[this.path];
 
     if (activities) {
-      const {[this.path]: _v, ...current} = state.activities.current;
+      const { [this.path]: _v, ...current } = state.activities.current;
 
       state.activities = {
         ...state.activities,
@@ -464,7 +469,7 @@ export default class Node<C, E extends Event> {
   _enter(
     state: State<C, E>,
     evt: InternalEvent | E,
-    to: Node<C, E>[],
+    to: Node<C, E>[]
   ): State<C, E> {
     const handlers = [
       ...this.preEnterHandlers,
@@ -492,7 +497,7 @@ export default class Node<C, E extends Event> {
       }
     }
 
-    if (this.isLeaf) return state.update({current: [...state.current, this]});
+    if (this.isLeaf) return state.update({ current: [...state.current, this] });
 
     return this[
       this.type === 'concurrent' ? 'enterConcurrent' : 'enterCluster'
@@ -531,18 +536,18 @@ export default class Node<C, E extends Event> {
   private childToExit(from: Node<C, E>[]): Node<C, E> | undefined {
     if (this.type === 'concurrent') {
       throw new Error(
-        `Node#childToExit: cannot be called on a concurrent state: ${this}`,
+        `Node#childToExit: cannot be called on a concurrent state: ${this}`
       );
     }
 
     return from
-      .map(n => n.lineage[this.depth + 1])
-      .find(n => n && n.parent === this);
+      .map((n) => n.lineage[this.depth + 1])
+      .find((n) => n && n.parent === this);
   }
 
   private exitConcurrent(
     state: State<C, E>,
-    evt: InternalEvent | E,
+    evt: InternalEvent | E
   ): State<C, E> {
     for (const [, child] of this.children) {
       state = child._exit(state, evt);
@@ -556,13 +561,13 @@ export default class Node<C, E extends Event> {
 
     if (!child) {
       throw new Error(
-        `Node#_exitCluster: could not determine child state to exit`,
+        `Node#_exitCluster: could not determine child state to exit`
       );
     }
 
     if (this.isHistory) {
       state = state.update({
-        history: {...state.history, [this.path]: child.name},
+        history: { ...state.history, [this.path]: child.name },
       });
     }
 
@@ -572,21 +577,21 @@ export default class Node<C, E extends Event> {
   private childToEnter(
     state: State<C, E>,
     evt: InternalEvent | E,
-    to: Node<C, E>[],
+    to: Node<C, E>[]
   ): Node<C, E> | undefined {
     if (this.type === 'concurrent') {
       throw new Error(
-        `Node#childToEnter: cannot be called on a concurrent state: ${this}`,
+        `Node#childToEnter: cannot be called on a concurrent state: ${this}`
       );
     }
 
     let names = to
-      .map(n => n.lineage[this.depth + 1]?.name)
-      .filter(name => this.children.has(name));
+      .map((n) => n.lineage[this.depth + 1]?.name)
+      .filter((name) => this.children.has(name));
     if (names.length > 0) {
       if (new Set(names).size > 1) {
         throw new Error(
-          `Node#childToEnter: invalid transition, cannot enter multiple child states of cluster state ${this}`,
+          `Node#childToEnter: invalid transition, cannot enter multiple child states of cluster state ${this}`
         );
       }
       return this.children.get(names[0]);
@@ -604,7 +609,7 @@ export default class Node<C, E extends Event> {
   private enterConcurrent(
     state: State<C, E>,
     evt: InternalEvent | E,
-    to: Node<C, E>[],
+    to: Node<C, E>[]
   ): State<C, E> {
     for (const [, child] of this.children) {
       state = child._enter(state, evt, to);
@@ -616,13 +621,13 @@ export default class Node<C, E extends Event> {
   private enterCluster(
     state: State<C, E>,
     evt: InternalEvent | E,
-    to: Node<C, E>[],
+    to: Node<C, E>[]
   ): State<C, E> {
     const child = this.childToEnter(state, evt, to);
 
     if (!child) {
       throw new Error(
-        `Node#enterCluster: could not determine child state to enter`,
+        `Node#enterCluster: could not determine child state to enter`
       );
     }
 

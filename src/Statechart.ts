@@ -1,4 +1,4 @@
-import {InternalEvent, Event, NodeBody} from './types';
+import { InternalEvent, Event, NodeBody } from './types';
 import State from './State';
 import Node from './Node';
 
@@ -34,9 +34,9 @@ export default class Statechart<C, E extends Event> {
     return (
       this._initialState ||
       (this._initialState = this.root._enter(
-        new State({context: this.initialContext}),
-        {type: '__start__'},
-        [],
+        new State({ context: this.initialContext }),
+        { type: '__start__' },
+        []
       ))
     );
   }
@@ -55,7 +55,7 @@ export default class Statechart<C, E extends Event> {
         stop: [],
       },
     });
-    return this.root._exit(state, {type: '__stop__'});
+    return this.root._exit(state, { type: '__stop__' });
   }
 
   /**
@@ -97,13 +97,13 @@ export default class Statechart<C, E extends Event> {
 
         if (result.goto.length) {
           const pivots = new Set<Node<C, E>>();
-          const self = result.goto.every(n => node.lineage.includes(n));
+          const self = result.goto.every((n) => node.lineage.includes(n));
 
           for (const node of result.goto) {
             const pivot = n.pivot(node);
             if (!pivot) {
               throw new Error(
-                `Statechart#send: could not find pivot between ${n} and ${node}`,
+                `Statechart#send: could not find pivot between ${n} and ${node}`
               );
             }
             pivots.add(pivot);
@@ -111,7 +111,7 @@ export default class Statechart<C, E extends Event> {
 
           if (pivots.size > 1) {
             throw new Error(
-              `Statechart#send: invalid transition, multiple pivot states found between ${n} and ${result.goto}`,
+              `Statechart#send: invalid transition, multiple pivot states found between ${n} and ${result.goto}`
             );
           }
 
@@ -119,18 +119,18 @@ export default class Statechart<C, E extends Event> {
 
           if (pivot.type === 'concurrent') {
             throw new Error(
-              `Statechart#send: invalid transition, ${n} to ${result.goto} crosses a concurrency boundary`,
+              `Statechart#send: invalid transition, ${n} to ${result.goto} crosses a concurrency boundary`
             );
           }
 
-          transitions.push({pivot, to: result.goto, self});
+          transitions.push({ pivot, to: result.goto, self });
         }
 
         break;
       }
     }
 
-    for (const {pivot, to, self} of transitions) {
+    for (const { pivot, to, self } of transitions) {
       state = self ? pivot._exit(state, evt) : pivot.pivotExit(state, evt);
       state = self
         ? pivot._enter(state, evt, to)
@@ -145,6 +145,6 @@ export default class Statechart<C, E extends Event> {
    * passed then the current state(s) will be marked in the output.
    */
   inspect(state?: State<C, E>): string {
-    return this.root.inspect({state});
+    return this.root.inspect({ state });
   }
 }

@@ -25,7 +25,6 @@
     "build/umd/index.js",
     "build/umd/types.js"
   ],
-  "dependencies": {},
   "devDependencies": {
     "@corey.burrows/react-use-statechart": "^0.1.1",
     "@types/jest": "^27.4.0",
@@ -37,6 +36,7 @@
     "jest": "^27.5.0",
     "lodash": "^4.17.21",
     "parcel": "^2.3.2",
+    "prettier": "^3.2.5",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.6",
@@ -55,7 +55,9 @@
     "examples": "npx parcel --dist-dir .parcel examples/index.html",
     "prepare": "npm run clean && npm t && npm run build",
     "postpublish": "git tag v$(npm --loglevel silent run version) && git push --tags",
-    "version": "node -pe \"require('./package.json').version\""
+    "version": "node -pe \"require('./package.json').version\"",
+    "prettier": "prettier --check \"src/*.ts\"",
+    "prettier:write": "prettier --check \"src/*.ts\" --write"
   },
   "keywords": [
     "statechart",

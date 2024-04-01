@@ -1,49 +1,51 @@
-import {NodeBody, SendFn} from './types';
+import { NodeBody, SendFn } from './types';
 import Node from './Node';
 import Statechart from './Statechart';
 
 interface Ctx {
-  ops: {type: 'enter' | 'exit'; path: string}[];
+  ops: { type: 'enter' | 'exit'; path: string }[];
 }
 
-type Evt = {type: 'goto'; from: string; to: string | string[]} | {type: 'noop'};
+type Evt =
+  | { type: 'goto'; from: string; to: string | string[] }
+  | { type: 'noop' };
 
 const trace = (s: Node<Ctx, Evt>): void => {
-  s.enter(ctx => ({
-    context: {...ctx, ops: [...ctx.ops, {type: 'enter', path: s.path}]},
+  s.enter((ctx) => ({
+    context: { ...ctx, ops: [...ctx.ops, { type: 'enter', path: s.path }] },
   }));
 
-  s.exit(ctx => ({
-    context: {...ctx, ops: [...ctx.ops, {type: 'exit', path: s.path}]},
+  s.exit((ctx) => ({
+    context: { ...ctx, ops: [...ctx.ops, { type: 'exit', path: s.path }] },
   }));
 };
 
 const tstate = (s: Node<Ctx, Evt>, name: string, body?: NodeBody<Ctx, Evt>) => {
-  s.state(name, s => {
+  s.state(name, (s) => {
     trace(s);
     s.on('goto', (_ctx, evt) =>
-      s.path === evt.from ? {goto: evt.to} : undefined,
+      s.path === evt.from ? { goto: evt.to } : undefined
     );
 
     if (body) body(s);
   });
 };
 
-const sc1 = new Statechart<Ctx, Evt>({ops: []}, s => {
+const sc1 = new Statechart<Ctx, Evt>({ ops: [] }, (s) => {
   trace(s);
-  tstate(s, 'a', s => {
+  tstate(s, 'a', (s) => {
     tstate(s, 'c');
     tstate(s, 'd');
   });
-  tstate(s, 'b', s => {
+  tstate(s, 'b', (s) => {
     tstate(s, 'e');
-    tstate(s, 'f', s => {
+    tstate(s, 'f', (s) => {
       tstate(s, 'g');
       tstate(s, 'h');
-      tstate(s, 'i', s => {
+      tstate(s, 'i', (s) => {
         s.C(() => 'k');
         tstate(s, 'j');
-        tstate(s, 'k', s => {
+        tstate(s, 'k', (s) => {
           tstate(s, 'l');
           tstate(s, 'm');
         });
@@ -52,43 +54,43 @@ const sc1 = new Statechart<Ctx, Evt>({ops: []}, s => {
   });
 });
 
-const sc2 = new Statechart<Ctx, Evt>({ops: []}, s => {
+const sc2 = new Statechart<Ctx, Evt>({ ops: [] }, (s) => {
   trace(s);
   tstate(s, 'a');
-  tstate(s, 'b', s => {
+  tstate(s, 'b', (s) => {
     s.concurrent();
-    tstate(s, 'b1', s => {
+    tstate(s, 'b1', (s) => {
       tstate(s, 'c');
       tstate(s, 'd');
     });
-    tstate(s, 'b2', s => {
+    tstate(s, 'b2', (s) => {
       tstate(s, 'e');
       tstate(s, 'f');
     });
-    tstate(s, 'b3', s => {
+    tstate(s, 'b3', (s) => {
       tstate(s, 'g');
       tstate(s, 'h');
     });
   });
 });
 
-const sc3 = new Statechart<Ctx, Evt>({ops: []}, s => {
+const sc3 = new Statechart<Ctx, Evt>({ ops: [] }, (s) => {
   trace(s);
   tstate(s, 'a');
-  tstate(s, 'b', s => {
-    tstate(s, 'c', s => {
+  tstate(s, 'b', (s) => {
+    tstate(s, 'c', (s) => {
       s.H();
       tstate(s, 'e');
       tstate(s, 'f');
       tstate(s, 'g');
     });
-    tstate(s, 'd', s => {
+    tstate(s, 'd', (s) => {
       s.H('*');
-      tstate(s, 'h', s => {
+      tstate(s, 'h', (s) => {
         tstate(s, 'j');
         tstate(s, 'k');
       });
-      tstate(s, 'i', s => {
+      tstate(s, 'i', (s) => {
         tstate(s, 'l');
         tstate(s, 'm');
       });
@@ -99,7 +101,7 @@ const sc3 = new Statechart<Ctx, Evt>({ops: []}, s => {
 describe('Statechart constructor', () => {
   it('throws an error when a state does not have a name', () => {
     expect(() => {
-      new Statechart<Ctx, Evt>({ops: []}, s => {
+      new Statechart<Ctx, Evt>({ ops: [] }, (s) => {
         s.state('');
       });
     }).toThrow(new Error('Node#state: state must have a name'));
@@ -112,9 +114,9 @@ describe('Statechart#initialState', () => {
     expect(state.paths).toEqual(['/a/c']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'enter', path: '/a/c'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'enter', path: '/a/c' },
       ],
     });
     expect(state.actions).toEqual([]);
@@ -132,14 +134,14 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/b/f/h']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'enter', path: '/a/c'},
-        {type: 'exit', path: '/a/c'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/f'},
-        {type: 'enter', path: '/b/f/h'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'enter', path: '/a/c' },
+        { type: 'exit', path: '/a/c' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/f' },
+        { type: 'enter', path: '/b/f/h' },
       ],
     });
     expect(state.actions).toEqual([]);
@@ -155,15 +157,15 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/b/f/i/j']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'enter', path: '/a/c'},
-        {type: 'exit', path: '/a/c'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/f'},
-        {type: 'enter', path: '/b/f/i'},
-        {type: 'enter', path: '/b/f/i/j'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'enter', path: '/a/c' },
+        { type: 'exit', path: '/a/c' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/f' },
+        { type: 'enter', path: '/b/f/i' },
+        { type: 'enter', path: '/b/f/i/j' },
       ],
     });
     expect(state.actions).toEqual([]);
@@ -179,11 +181,11 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/a/d']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'enter', path: '/a/c'},
-        {type: 'exit', path: '/a/c'},
-        {type: 'enter', path: '/a/d'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'enter', path: '/a/c' },
+        { type: 'exit', path: '/a/c' },
+        { type: 'enter', path: '/a/d' },
       ],
     });
     expect(state.actions).toEqual([]);
@@ -199,14 +201,14 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/b/f/g']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'enter', path: '/a/c'},
-        {type: 'exit', path: '/a/c'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/f'},
-        {type: 'enter', path: '/b/f/g'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'enter', path: '/a/c' },
+        { type: 'exit', path: '/a/c' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/f' },
+        { type: 'enter', path: '/b/f/g' },
       ],
     });
     expect(state.actions).toEqual([]);
@@ -222,16 +224,16 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/b/f/i/k/l']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'enter', path: '/a/c'},
-        {type: 'exit', path: '/a/c'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/f'},
-        {type: 'enter', path: '/b/f/i'},
-        {type: 'enter', path: '/b/f/i/k'},
-        {type: 'enter', path: '/b/f/i/k/l'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'enter', path: '/a/c' },
+        { type: 'exit', path: '/a/c' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/f' },
+        { type: 'enter', path: '/b/f/i' },
+        { type: 'enter', path: '/b/f/i/k' },
+        { type: 'enter', path: '/b/f/i/k/l' },
       ],
     });
     expect(state.actions).toEqual([]);
@@ -239,23 +241,23 @@ describe('Statechart#send', () => {
 
   it('enters default child when condition function returns undefined', () => {
     type Ctx = {};
-    type Evt = {type: 'foo'; child?: string};
+    type Evt = { type: 'foo'; child?: string };
 
-    const sc = new Statechart<Ctx, Evt>({}, s => {
-      s.state('a', s => {
+    const sc = new Statechart<Ctx, Evt>({}, (s) => {
+      s.state('a', (s) => {
         s.on('foo', '../b');
       });
-      s.state('b', s => {
+      s.state('b', (s) => {
         s.C((_ctx, evt) => ('child' in evt ? evt.child : undefined));
         s.state('c');
         s.state('d');
       });
     });
 
-    let s = sc.send(sc.initialState, {type: 'foo', child: 'd'});
+    let s = sc.send(sc.initialState, { type: 'foo', child: 'd' });
     expect(s.matches('/b/d'));
 
-    s = sc.send(sc.initialState, {type: 'foo'});
+    s = sc.send(sc.initialState, { type: 'foo' });
     expect(s.matches('/b/c'));
   });
 
@@ -269,16 +271,16 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/b/b1/c', '/b/b2/e', '/b/b3/g']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/b1'},
-        {type: 'enter', path: '/b/b1/c'},
-        {type: 'enter', path: '/b/b2'},
-        {type: 'enter', path: '/b/b2/e'},
-        {type: 'enter', path: '/b/b3'},
-        {type: 'enter', path: '/b/b3/g'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/b1' },
+        { type: 'enter', path: '/b/b1/c' },
+        { type: 'enter', path: '/b/b2' },
+        { type: 'enter', path: '/b/b2/e' },
+        { type: 'enter', path: '/b/b3' },
+        { type: 'enter', path: '/b/b3/g' },
       ],
     });
     expect(state.actions).toEqual([]);
@@ -294,16 +296,16 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/b/b1/d', '/b/b2/e', '/b/b3/h']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/b1'},
-        {type: 'enter', path: '/b/b1/d'},
-        {type: 'enter', path: '/b/b2'},
-        {type: 'enter', path: '/b/b2/e'},
-        {type: 'enter', path: '/b/b3'},
-        {type: 'enter', path: '/b/b3/h'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/b1' },
+        { type: 'enter', path: '/b/b1/d' },
+        { type: 'enter', path: '/b/b2' },
+        { type: 'enter', path: '/b/b2/e' },
+        { type: 'enter', path: '/b/b3' },
+        { type: 'enter', path: '/b/b3/h' },
       ],
     });
     expect(state.actions).toEqual([]);
@@ -325,24 +327,24 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/a']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/b1'},
-        {type: 'enter', path: '/b/b1/c'},
-        {type: 'enter', path: '/b/b2'},
-        {type: 'enter', path: '/b/b2/e'},
-        {type: 'enter', path: '/b/b3'},
-        {type: 'enter', path: '/b/b3/g'},
-        {type: 'exit', path: '/b/b1/c'},
-        {type: 'exit', path: '/b/b1'},
-        {type: 'exit', path: '/b/b2/e'},
-        {type: 'exit', path: '/b/b2'},
-        {type: 'exit', path: '/b/b3/g'},
-        {type: 'exit', path: '/b/b3'},
-        {type: 'exit', path: '/b'},
-        {type: 'enter', path: '/a'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/b1' },
+        { type: 'enter', path: '/b/b1/c' },
+        { type: 'enter', path: '/b/b2' },
+        { type: 'enter', path: '/b/b2/e' },
+        { type: 'enter', path: '/b/b3' },
+        { type: 'enter', path: '/b/b3/g' },
+        { type: 'exit', path: '/b/b1/c' },
+        { type: 'exit', path: '/b/b1' },
+        { type: 'exit', path: '/b/b2/e' },
+        { type: 'exit', path: '/b/b2' },
+        { type: 'exit', path: '/b/b3/g' },
+        { type: 'exit', path: '/b/b3' },
+        { type: 'exit', path: '/b' },
+        { type: 'enter', path: '/a' },
       ],
     });
     expect(state.actions).toEqual([]);
@@ -358,27 +360,27 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/a/c']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'enter', path: '/a/c'},
-        {type: 'exit', path: '/a/c'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/a'},
-        {type: 'enter', path: '/a/c'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'enter', path: '/a/c' },
+        { type: 'exit', path: '/a/c' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/a' },
+        { type: 'enter', path: '/a/c' },
       ],
     });
     expect(state.actions).toEqual([]);
   });
 
   it('does nothing on events that are not handled', () => {
-    const state = sc1.send(sc1.initialState, {type: 'noop'});
+    const state = sc1.send(sc1.initialState, { type: 'noop' });
 
     expect(state.paths).toEqual(['/a/c']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'enter', path: '/a/c'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'enter', path: '/a/c' },
       ],
     });
     expect(state.actions).toEqual([]);
@@ -402,18 +404,18 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/b/b1/c', '/b/b2/e', '/b/b3/h']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/b1'},
-        {type: 'enter', path: '/b/b1/c'},
-        {type: 'enter', path: '/b/b2'},
-        {type: 'enter', path: '/b/b2/e'},
-        {type: 'enter', path: '/b/b3'},
-        {type: 'enter', path: '/b/b3/g'},
-        {type: 'exit', path: '/b/b3/g'},
-        {type: 'enter', path: '/b/b3/h'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/b1' },
+        { type: 'enter', path: '/b/b1/c' },
+        { type: 'enter', path: '/b/b2' },
+        { type: 'enter', path: '/b/b2/e' },
+        { type: 'enter', path: '/b/b3' },
+        { type: 'enter', path: '/b/b3/g' },
+        { type: 'exit', path: '/b/b3/g' },
+        { type: 'enter', path: '/b/b3/h' },
       ],
     });
     expect(state.actions).toEqual([]);
@@ -421,23 +423,23 @@ describe('Statechart#send', () => {
 
   it('handles multiple transitions across concurrent states', () => {
     type Ctx = {};
-    type Evt = {type: 'foo'};
+    type Evt = { type: 'foo' };
 
-    const sc = new Statechart<Ctx, Evt>({}, s => {
-      s.state('b', s => {
+    const sc = new Statechart<Ctx, Evt>({}, (s) => {
+      s.state('b', (s) => {
         s.concurrent();
-        s.state('b1', s => {
-          s.state('x', s => {
+        s.state('b1', (s) => {
+          s.state('x', (s) => {
             s.on('foo', '../y');
           });
           s.state('y');
         });
-        s.state('b2', s => {
+        s.state('b2', (s) => {
           s.state('x');
           s.state('y');
         });
-        s.state('b3', s => {
-          s.state('x', s => {
+        s.state('b3', (s) => {
+          s.state('x', (s) => {
             s.on('foo', '../y');
           });
           s.state('y');
@@ -445,7 +447,7 @@ describe('Statechart#send', () => {
       });
     });
 
-    const state = sc.send(sc.initialState, {type: 'foo'});
+    const state = sc.send(sc.initialState, { type: 'foo' });
 
     expect(state.paths).toEqual(['/b/b2/x', '/b/b1/y', '/b/b3/y']);
   });
@@ -460,12 +462,12 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/b/c/f']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/c'},
-        {type: 'enter', path: '/b/c/f'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/c' },
+        { type: 'enter', path: '/b/c/f' },
       ],
     });
 
@@ -478,16 +480,16 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/a']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/c'},
-        {type: 'enter', path: '/b/c/f'},
-        {type: 'exit', path: '/b/c/f'},
-        {type: 'exit', path: '/b/c'},
-        {type: 'exit', path: '/b'},
-        {type: 'enter', path: '/a'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/c' },
+        { type: 'enter', path: '/b/c/f' },
+        { type: 'exit', path: '/b/c/f' },
+        { type: 'exit', path: '/b/c' },
+        { type: 'exit', path: '/b' },
+        { type: 'enter', path: '/a' },
       ],
     });
 
@@ -500,20 +502,20 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/b/c/f']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/c'},
-        {type: 'enter', path: '/b/c/f'},
-        {type: 'exit', path: '/b/c/f'},
-        {type: 'exit', path: '/b/c'},
-        {type: 'exit', path: '/b'},
-        {type: 'enter', path: '/a'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/c'},
-        {type: 'enter', path: '/b/c/f'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/c' },
+        { type: 'enter', path: '/b/c/f' },
+        { type: 'exit', path: '/b/c/f' },
+        { type: 'exit', path: '/b/c' },
+        { type: 'exit', path: '/b' },
+        { type: 'enter', path: '/a' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/c' },
+        { type: 'enter', path: '/b/c/f' },
       ],
     });
   });
@@ -528,13 +530,13 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/b/d/i/m']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/d'},
-        {type: 'enter', path: '/b/d/i'},
-        {type: 'enter', path: '/b/d/i/m'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/d' },
+        { type: 'enter', path: '/b/d/i' },
+        { type: 'enter', path: '/b/d/i/m' },
       ],
     });
 
@@ -547,18 +549,18 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/a']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/d'},
-        {type: 'enter', path: '/b/d/i'},
-        {type: 'enter', path: '/b/d/i/m'},
-        {type: 'exit', path: '/b/d/i/m'},
-        {type: 'exit', path: '/b/d/i'},
-        {type: 'exit', path: '/b/d'},
-        {type: 'exit', path: '/b'},
-        {type: 'enter', path: '/a'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/d' },
+        { type: 'enter', path: '/b/d/i' },
+        { type: 'enter', path: '/b/d/i/m' },
+        { type: 'exit', path: '/b/d/i/m' },
+        { type: 'exit', path: '/b/d/i' },
+        { type: 'exit', path: '/b/d' },
+        { type: 'exit', path: '/b' },
+        { type: 'enter', path: '/a' },
       ],
     });
 
@@ -571,23 +573,23 @@ describe('Statechart#send', () => {
     expect(state.paths).toEqual(['/b/d/i/m']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/d'},
-        {type: 'enter', path: '/b/d/i'},
-        {type: 'enter', path: '/b/d/i/m'},
-        {type: 'exit', path: '/b/d/i/m'},
-        {type: 'exit', path: '/b/d/i'},
-        {type: 'exit', path: '/b/d'},
-        {type: 'exit', path: '/b'},
-        {type: 'enter', path: '/a'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/d'},
-        {type: 'enter', path: '/b/d/i'},
-        {type: 'enter', path: '/b/d/i/m'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/d' },
+        { type: 'enter', path: '/b/d/i' },
+        { type: 'enter', path: '/b/d/i/m' },
+        { type: 'exit', path: '/b/d/i/m' },
+        { type: 'exit', path: '/b/d/i' },
+        { type: 'exit', path: '/b/d' },
+        { type: 'exit', path: '/b' },
+        { type: 'enter', path: '/a' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/d' },
+        { type: 'enter', path: '/b/d/i' },
+        { type: 'enter', path: '/b/d/i/m' },
       ],
     });
   });
@@ -601,8 +603,8 @@ describe('Statechart#send', () => {
       });
     }).toThrow(
       new Error(
-        'Statechart#send: invalid transition, multiple pivot states found between /a/c and /a/d,/b',
-      ),
+        'Statechart#send: invalid transition, multiple pivot states found between /a/c and /a/d,/b'
+      )
     );
   });
 
@@ -623,8 +625,8 @@ describe('Statechart#send', () => {
       });
     }).toThrow(
       new Error(
-        'Statechart#send: invalid transition, /b/b1/c to /b/b2/e crosses a concurrency boundary',
-      ),
+        'Statechart#send: invalid transition, /b/b1/c to /b/b2/e crosses a concurrency boundary'
+      )
     );
   });
 
@@ -637,57 +639,57 @@ describe('Statechart#send', () => {
       });
     }).toThrow(
       new Error(
-        'Node#childToEnter: invalid transition, cannot enter multiple child states of cluster state /b',
-      ),
+        'Node#childToEnter: invalid transition, cannot enter multiple child states of cluster state /b'
+      )
     );
   });
 
   describe('actions', () => {
     interface Ctx {}
-    type Evt = {type: 'x'} | {type: 'y'} | {type: 'z'};
+    type Evt = { type: 'x' } | { type: 'y' } | { type: 'z' };
 
-    const actc1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const actc2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const actc3 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const actc4 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const actd1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const actd2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const actb1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const actg1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const actg2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const acti1 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const acti2 = (): Promise<Evt> => Promise.resolve({type: 'z'});
-    const acti3 = (): Promise<Evt> => Promise.resolve({type: 'z'});
+    const actc1 = (): Promise<Evt> => Promise.resolve({ type: 'z' });
+    const actc2 = (): Promise<Evt> => Promise.resolve({ type: 'z' });
+    const actc3 = (): Promise<Evt> => Promise.resolve({ type: 'z' });
+    const actc4 = (): Promise<Evt> => Promise.resolve({ type: 'z' });
+    const actd1 = (): Promise<Evt> => Promise.resolve({ type: 'z' });
+    const actd2 = (): Promise<Evt> => Promise.resolve({ type: 'z' });
+    const actb1 = (): Promise<Evt> => Promise.resolve({ type: 'z' });
+    const actg1 = (): Promise<Evt> => Promise.resolve({ type: 'z' });
+    const actg2 = (): Promise<Evt> => Promise.resolve({ type: 'z' });
+    const acti1 = (): Promise<Evt> => Promise.resolve({ type: 'z' });
+    const acti2 = (): Promise<Evt> => Promise.resolve({ type: 'z' });
+    const acti3 = (): Promise<Evt> => Promise.resolve({ type: 'z' });
 
-    const sc = new Statechart<Ctx, Evt>({}, s => {
-      s.state('a', s => {
-        s.state('c', s => {
-          s.enter(() => ({actions: [actc1]}));
-          s.exit(() => ({actions: [actc2]}));
+    const sc = new Statechart<Ctx, Evt>({}, (s) => {
+      s.state('a', (s) => {
+        s.state('c', (s) => {
+          s.enter(() => ({ actions: [actc1] }));
+          s.exit(() => ({ actions: [actc2] }));
           s.on('x', '../d');
-          s.on('y', () => ({actions: [actc3]}));
-          s.on('z', () => ({actions: [actc4], goto: '/b'}));
+          s.on('y', () => ({ actions: [actc3] }));
+          s.on('z', () => ({ actions: [actc4], goto: '/b' }));
         });
-        s.state('d', s => {
-          s.enter(() => ({actions: [actd1, actd2]}));
+        s.state('d', (s) => {
+          s.enter(() => ({ actions: [actd1, actd2] }));
           s.on('x', '/b');
         });
       });
-      s.state('b', s => {
+      s.state('b', (s) => {
         s.concurrent();
-        s.enter(() => ({actions: [actb1]}));
+        s.enter(() => ({ actions: [actb1] }));
 
-        s.state('e', s => {
-          s.state('g', s => {
-            s.enter(() => ({actions: [actg1]}));
-            s.exit(() => ({actions: [actg2]}));
+        s.state('e', (s) => {
+          s.state('g', (s) => {
+            s.enter(() => ({ actions: [actg1] }));
+            s.exit(() => ({ actions: [actg2] }));
           });
           s.state('h');
         });
-        s.state('f', s => {
-          s.state('i', s => {
-            s.enter(() => ({actions: [acti1, acti2]}));
-            s.exit(() => ({actions: [acti3]}));
+        s.state('f', (s) => {
+          s.state('i', (s) => {
+            s.enter(() => ({ actions: [acti1, acti2] }));
+            s.exit(() => ({ actions: [acti3] }));
           });
           s.state('j');
         });
@@ -701,15 +703,15 @@ describe('Statechart#send', () => {
       expect(state.paths).toEqual(['/a/c']);
       expect(state.actions).toEqual([actc1]);
 
-      state = sc.send(state, {type: 'x'});
+      state = sc.send(state, { type: 'x' });
       expect(state.paths).toEqual(['/a/d']);
       expect(state.actions).toEqual([actc2, actd1, actd2]);
 
-      state = sc.send(state, {type: 'x'});
+      state = sc.send(state, { type: 'x' });
       expect(state.paths).toEqual(['/b/e/g', '/b/f/i']);
       expect(state.actions).toEqual([actb1, actg1, acti1, acti2]);
 
-      state = sc.send(state, {type: 'x'});
+      state = sc.send(state, { type: 'x' });
       expect(state.paths).toEqual(['/a/c']);
       expect(state.actions).toEqual([actg2, acti3, actc1]);
     });
@@ -718,11 +720,11 @@ describe('Statechart#send', () => {
       let state = sc.initialState;
       expect(state.paths).toEqual(['/a/c']);
 
-      state = sc.send(state, {type: 'y'});
+      state = sc.send(state, { type: 'y' });
       expect(state.paths).toEqual(['/a/c']);
       expect(state.actions).toEqual([actc3]);
 
-      state = sc.send(state, {type: 'z'});
+      state = sc.send(state, { type: 'z' });
       expect(state.paths).toEqual(['/b/e/g', '/b/f/i']);
       expect(state.actions).toEqual([actc4, actc2, actb1, actg1, acti1, acti2]);
     });
@@ -730,42 +732,42 @@ describe('Statechart#send', () => {
 
   describe('activities', () => {
     interface Ctx {}
-    type Evt = {type: 'x'};
+    type Evt = { type: 'x' };
 
-    const acta1 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
-    const actc1 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
-    const actc2 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
-    const actd1 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
-    const actb1 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
-    const actg1 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
-    const acti1 = {start(_send: SendFn<Evt>): void {}, stop(): void {}};
+    const acta1 = { start(_send: SendFn<Evt>): void {}, stop(): void {} };
+    const actc1 = { start(_send: SendFn<Evt>): void {}, stop(): void {} };
+    const actc2 = { start(_send: SendFn<Evt>): void {}, stop(): void {} };
+    const actd1 = { start(_send: SendFn<Evt>): void {}, stop(): void {} };
+    const actb1 = { start(_send: SendFn<Evt>): void {}, stop(): void {} };
+    const actg1 = { start(_send: SendFn<Evt>): void {}, stop(): void {} };
+    const acti1 = { start(_send: SendFn<Evt>): void {}, stop(): void {} };
 
-    const sc = new Statechart<Ctx, Evt>({}, s => {
-      s.state('a', s => {
-        s.enter(() => ({activities: [acta1]}));
+    const sc = new Statechart<Ctx, Evt>({}, (s) => {
+      s.state('a', (s) => {
+        s.enter(() => ({ activities: [acta1] }));
 
-        s.state('c', s => {
-          s.enter(() => ({activities: [actc1, actc2]}));
+        s.state('c', (s) => {
+          s.enter(() => ({ activities: [actc1, actc2] }));
           s.on('x', '../d');
         });
-        s.state('d', s => {
-          s.enter(() => ({activities: [actd1]}));
+        s.state('d', (s) => {
+          s.enter(() => ({ activities: [actd1] }));
           s.on('x', '../../b');
         });
       });
-      s.state('b', s => {
+      s.state('b', (s) => {
         s.concurrent();
-        s.enter(() => ({activities: [actb1]}));
+        s.enter(() => ({ activities: [actb1] }));
 
-        s.state('e', s => {
-          s.state('g', s => {
-            s.enter(() => ({activities: [actg1]}));
+        s.state('e', (s) => {
+          s.state('g', (s) => {
+            s.enter(() => ({ activities: [actg1] }));
           });
           s.state('h');
         });
-        s.state('f', s => {
-          s.state('i', s => {
-            s.enter(() => ({activities: [acti1]}));
+        s.state('f', (s) => {
+          s.state('i', (s) => {
+            s.enter(() => ({ activities: [acti1] }));
           });
           s.state('j');
         });
@@ -784,7 +786,7 @@ describe('Statechart#send', () => {
       expect(state.activities.start).toEqual([acta1, actc1, actc2]);
       expect(state.activities.stop).toEqual([]);
 
-      state = sc.send(state, {type: 'x'});
+      state = sc.send(state, { type: 'x' });
       expect(state.paths).toEqual(['/a/d']);
       expect(state.activities.current).toEqual({
         '/a': [acta1],
@@ -793,7 +795,7 @@ describe('Statechart#send', () => {
       expect(state.activities.start).toEqual([actd1]);
       expect(state.activities.stop).toEqual([actc1, actc2]);
 
-      state = sc.send(state, {type: 'x'});
+      state = sc.send(state, { type: 'x' });
       expect(state.paths).toEqual(['/b/e/g', '/b/f/i']);
       expect(state.activities.current).toEqual({
         '/b': [actb1],
@@ -803,7 +805,7 @@ describe('Statechart#send', () => {
       expect(state.activities.start).toEqual([actb1, actg1, acti1]);
       expect(state.activities.stop).toEqual([actd1, acta1]);
 
-      state = sc.send(state, {type: 'x'});
+      state = sc.send(state, { type: 'x' });
       expect(state.paths).toEqual(['/a/c']);
       expect(state.activities.current).toEqual({
         '/a': [acta1],
@@ -821,16 +823,18 @@ describe('Statechart#send', () => {
   });
 
   it('allows for enter and exit handlers to return void', () => {
-    type Ctx = {enters: string[]; exits: string[]};
-    type Evt = {type: 'x'};
-    const sc = new Statechart<Ctx, Evt>({enters: [], exits: []}, s => {
-      s.state('a', s => {
-        s.enter(ctx => ({context: {...ctx, enters: [...ctx.enters, 'a']}}));
-        s.exit(ctx => ({context: {...ctx, exits: [...ctx.exits, 'a']}}));
+    type Ctx = { enters: string[]; exits: string[] };
+    type Evt = { type: 'x' };
+    const sc = new Statechart<Ctx, Evt>({ enters: [], exits: [] }, (s) => {
+      s.state('a', (s) => {
+        s.enter((ctx) => ({
+          context: { ...ctx, enters: [...ctx.enters, 'a'] },
+        }));
+        s.exit((ctx) => ({ context: { ...ctx, exits: [...ctx.exits, 'a'] } }));
         s.on('x', '../b');
       });
 
-      s.state('b', s => {
+      s.state('b', (s) => {
         s.enter(() => {});
         s.exit(() => {});
         s.on('x', '../a');
@@ -844,13 +848,13 @@ describe('Statechart#send', () => {
       exits: [],
     });
 
-    state = sc.send(state, {type: 'x'});
+    state = sc.send(state, { type: 'x' });
     expect(state.context).toEqual({
       enters: ['a'],
       exits: ['a'],
     });
 
-    state = sc.send(state, {type: 'x'});
+    state = sc.send(state, { type: 'x' });
     expect(state.context).toEqual({
       enters: ['a', 'a'],
       exits: ['a'],
@@ -858,19 +862,25 @@ describe('Statechart#send', () => {
   });
 
   it('allows multiple enter and exit handlers on a node', () => {
-    type Ctx = {enters: string[]; exits: string[]};
-    type Evt = {type: 'x'};
-    const sc = new Statechart<Ctx, Evt>({enters: [], exits: []}, s => {
-      s.state('a', s => {
-        s.enter(ctx => ({context: {...ctx, enters: [...ctx.enters, 'a1']}}));
-        s.enter(ctx => ({context: {...ctx, enters: [...ctx.enters, 'a2']}}));
-        s.enter(ctx => ({context: {...ctx, enters: [...ctx.enters, 'a3']}}));
-        s.exit(ctx => ({context: {...ctx, exits: [...ctx.exits, 'a1']}}));
-        s.exit(ctx => ({context: {...ctx, exits: [...ctx.exits, 'a2']}}));
+    type Ctx = { enters: string[]; exits: string[] };
+    type Evt = { type: 'x' };
+    const sc = new Statechart<Ctx, Evt>({ enters: [], exits: [] }, (s) => {
+      s.state('a', (s) => {
+        s.enter((ctx) => ({
+          context: { ...ctx, enters: [...ctx.enters, 'a1'] },
+        }));
+        s.enter((ctx) => ({
+          context: { ...ctx, enters: [...ctx.enters, 'a2'] },
+        }));
+        s.enter((ctx) => ({
+          context: { ...ctx, enters: [...ctx.enters, 'a3'] },
+        }));
+        s.exit((ctx) => ({ context: { ...ctx, exits: [...ctx.exits, 'a1'] } }));
+        s.exit((ctx) => ({ context: { ...ctx, exits: [...ctx.exits, 'a2'] } }));
         s.on('x', '../b');
       });
 
-      s.state('b', s => {
+      s.state('b', (s) => {
         s.on('x', '../a');
       });
     });
@@ -882,7 +892,7 @@ describe('Statechart#send', () => {
       exits: [],
     });
 
-    state = sc.send(state, {type: 'x'});
+    state = sc.send(state, { type: 'x' });
     expect(state.context).toEqual({
       enters: ['a1', 'a2', 'a3'],
       exits: ['a1', 'a2'],
@@ -890,27 +900,35 @@ describe('Statechart#send', () => {
   });
 
   it('allows pre/post enter/exit handlers on a node', () => {
-    type Ctx = {enters: string[]; exits: string[]};
-    type Evt = {type: 'x'};
-    const sc = new Statechart<Ctx, Evt>({enters: [], exits: []}, s => {
-      s.state('a', s => {
+    type Ctx = { enters: string[]; exits: string[] };
+    type Evt = { type: 'x' };
+    const sc = new Statechart<Ctx, Evt>({ enters: [], exits: [] }, (s) => {
+      s.state('a', (s) => {
         s.enter(
-          ctx => ({context: {...ctx, enters: [...ctx.enters, 'a-post']}}),
-          {type: 'post'},
+          (ctx) => ({ context: { ...ctx, enters: [...ctx.enters, 'a-post'] } }),
+          { type: 'post' }
         );
-        s.enter(ctx => ({context: {...ctx, enters: [...ctx.enters, 'a']}}));
+        s.enter((ctx) => ({
+          context: { ...ctx, enters: [...ctx.enters, 'a'] },
+        }));
         s.enter(
-          ctx => ({context: {...ctx, enters: [...ctx.enters, 'a-pre']}}),
-          {type: 'pre'},
+          (ctx) => ({ context: { ...ctx, enters: [...ctx.enters, 'a-pre'] } }),
+          { type: 'pre' }
         );
 
-        s.exit(ctx => ({context: {...ctx, exits: [...ctx.exits, 'a-post']}}), {
-          type: 'post',
-        });
-        s.exit(ctx => ({context: {...ctx, exits: [...ctx.exits, 'a-pre']}}), {
-          type: 'pre',
-        });
-        s.exit(ctx => ({context: {...ctx, exits: [...ctx.exits, 'a']}}));
+        s.exit(
+          (ctx) => ({ context: { ...ctx, exits: [...ctx.exits, 'a-post'] } }),
+          {
+            type: 'post',
+          }
+        );
+        s.exit(
+          (ctx) => ({ context: { ...ctx, exits: [...ctx.exits, 'a-pre'] } }),
+          {
+            type: 'pre',
+          }
+        );
+        s.exit((ctx) => ({ context: { ...ctx, exits: [...ctx.exits, 'a'] } }));
         s.on('x', '../b');
       });
 
@@ -924,7 +942,7 @@ describe('Statechart#send', () => {
       exits: [],
     });
 
-    state = sc.send(state, {type: 'x'});
+    state = sc.send(state, { type: 'x' });
     expect(state.context).toEqual({
       enters: ['a-pre', 'a', 'a-post'],
       exits: ['a-pre', 'a', 'a-post'],
@@ -933,37 +951,39 @@ describe('Statechart#send', () => {
 
   it('allows multiple events to use the same handler', () => {
     type Ctx = { fromEvt: string };
-    type Evt = {type: 'x'} | { type: 'y'};
+    type Evt = { type: 'x' } | { type: 'y' };
 
-    const sc = new Statechart<Ctx, Evt>({ fromEvt: '' }, s => {
-      s.state('a', s => {
-        s.on('x', 'y', (ctx, evt) => ({ context: { ...ctx, fromEvt: evt.type }}));
+    const sc = new Statechart<Ctx, Evt>({ fromEvt: '' }, (s) => {
+      s.state('a', (s) => {
+        s.on('x', 'y', (ctx, evt) => ({
+          context: { ...ctx, fromEvt: evt.type },
+        }));
       });
     });
 
-    let state = sc.send(sc.initialState, {type: 'x'});
+    let state = sc.send(sc.initialState, { type: 'x' });
     expect(state.context.fromEvt).toEqual('x');
 
-    state = sc.send(state, {type: 'y'});
+    state = sc.send(state, { type: 'y' });
     expect(state.context.fromEvt).toEqual('y');
-  })
+  });
 
   it('handles concurrent states with the same child state names', () => {
     type Ctx = {};
-    type Evt = {type: 'TOGGLE_X'};
+    type Evt = { type: 'TOGGLE_X' };
 
-    const sc = new Statechart<Ctx, Evt>({}, s => {
-      s.state('main', s => {
+    const sc = new Statechart<Ctx, Evt>({}, (s) => {
+      s.state('main', (s) => {
         s.concurrent();
-        s.state('x', s => {
-          s.state('off', s => {
+        s.state('x', (s) => {
+          s.state('off', (s) => {
             s.on('TOGGLE_X', '../on');
           });
-          s.state('on', s => {
+          s.state('on', (s) => {
             s.on('TOGGLE_X', '../off');
           });
         });
-        s.state('y', s => {
+        s.state('y', (s) => {
           s.state('off');
           s.state('on');
         });
@@ -972,9 +992,9 @@ describe('Statechart#send', () => {
 
     let state = sc.initialState;
     expect(state.paths).toEqual(['/main/x/off', '/main/y/off']);
-    state = sc.send(state, {type: 'TOGGLE_X'});
+    state = sc.send(state, { type: 'TOGGLE_X' });
     expect(state.paths).toEqual(['/main/y/off', '/main/x/on']);
-    state = sc.send(state, {type: 'TOGGLE_X'});
+    state = sc.send(state, { type: 'TOGGLE_X' });
     expect(state.paths).toEqual(['/main/y/off', '/main/x/off']);
   });
 });
@@ -990,14 +1010,14 @@ describe('Statechart#stop', () => {
     expect(state.paths).toEqual(['/b/f/h']);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'enter', path: '/a/c'},
-        {type: 'exit', path: '/a/c'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/f'},
-        {type: 'enter', path: '/b/f/h'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'enter', path: '/a/c' },
+        { type: 'exit', path: '/a/c' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/f' },
+        { type: 'enter', path: '/b/f/h' },
       ],
     });
 
@@ -1006,18 +1026,18 @@ describe('Statechart#stop', () => {
     expect(state.current).toEqual([]);
     expect(state.context).toEqual({
       ops: [
-        {type: 'enter', path: '/'},
-        {type: 'enter', path: '/a'},
-        {type: 'enter', path: '/a/c'},
-        {type: 'exit', path: '/a/c'},
-        {type: 'exit', path: '/a'},
-        {type: 'enter', path: '/b'},
-        {type: 'enter', path: '/b/f'},
-        {type: 'enter', path: '/b/f/h'},
-        {type: 'exit', path: '/b/f/h'},
-        {type: 'exit', path: '/b/f'},
-        {type: 'exit', path: '/b'},
-        {type: 'exit', path: '/'},
+        { type: 'enter', path: '/' },
+        { type: 'enter', path: '/a' },
+        { type: 'enter', path: '/a/c' },
+        { type: 'exit', path: '/a/c' },
+        { type: 'exit', path: '/a' },
+        { type: 'enter', path: '/b' },
+        { type: 'enter', path: '/b/f' },
+        { type: 'enter', path: '/b/f/h' },
+        { type: 'exit', path: '/b/f/h' },
+        { type: 'exit', path: '/b/f' },
+        { type: 'exit', path: '/b' },
+        { type: 'exit', path: '/' },
       ],
     });
   });
@@ -1042,7 +1062,7 @@ describe('Statechart#inspect', () => {
                 └── m
 `);
 
-    s1 = sc1.send(s1, {type: 'goto', from: '/a/c', to: '/b/f/i/k/m'});
+    s1 = sc1.send(s1, { type: 'goto', from: '/a/c', to: '/b/f/i/k/m' });
 
     expect(sc1.inspect(s1)).toBe(`/ *
 ├── a
@@ -1074,10 +1094,10 @@ describe('Statechart#inspect', () => {
     └┄┄ b3
         ├── g
         └── h
-`,
+`
     );
 
-    s2 = sc2.send(s2, {type: 'goto', from: '/a', to: '/b'});
+    s2 = sc2.send(s2, { type: 'goto', from: '/a', to: '/b' });
     expect(sc2.inspect(s2)).toEqual(
       `/ *
 ├── a
@@ -1091,7 +1111,7 @@ describe('Statechart#inspect', () => {
     └┄┄ b3 *
         ├── g *
         └── h
-`,
+`
     );
   });
 });

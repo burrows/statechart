@@ -2,8 +2,8 @@ import Node from './Node';
 
 describe('Node#root', () => {
   it('returns the root node', () => {
-    const a = new Node('a', s => {
-      s.state('b', s => {
+    const a = new Node('a', (s) => {
+      s.state('b', (s) => {
         s.state('c');
       });
     });
@@ -18,8 +18,8 @@ describe('Node#root', () => {
 
 describe('Node#lineage', () => {
   it('returns an array of nodes from the root to the receiver', () => {
-    const root = new Node('', s => {
-      s.state('a', s => {
+    const root = new Node('', (s) => {
+      s.state('a', (s) => {
         s.state('c');
       });
       s.state('b');
@@ -37,8 +37,8 @@ describe('Node#lineage', () => {
 
 describe('Node#path', () => {
   it(`returns a string representation of the node's path`, () => {
-    const root = new Node('', s => {
-      s.state('a', s => {
+    const root = new Node('', (s) => {
+      s.state('a', (s) => {
         s.state('c');
       });
       s.state('b');
@@ -55,13 +55,13 @@ describe('Node#path', () => {
 });
 
 describe('Node#resolve', () => {
-  const root = new Node('root', s => {
-    s.state('s', s => {
-      s.state('s1', s => {
+  const root = new Node('root', (s) => {
+    s.state('s', (s) => {
+      s.state('s1', (s) => {
         s.state('s11');
         s.state('s12');
       });
-      s.state('s2', s => {
+      s.state('s2', (s) => {
         s.state('s21');
         s.state('s22');
       });
@@ -106,9 +106,9 @@ describe('Node#resolve', () => {
 });
 
 describe('Node#matches', () => {
-  const root = new Node('', s => {
-    s.state('a', s => {
-      s.state('b', s => {
+  const root = new Node('', (s) => {
+    s.state('a', (s) => {
+      s.state('b', (s) => {
         s.state('c');
         s.state('d');
       });
@@ -144,24 +144,24 @@ describe('Node#matches', () => {
 
 describe('Node#inspect', () => {
   interface Ctx {}
-  type Evt = {type: 'x'};
+  type Evt = { type: 'x' };
 
-  const n1 = new Node<Ctx, Evt>('', s => {
-    s.state('a', s => {
-      s.state('d', s => {
+  const n1 = new Node<Ctx, Evt>('', (s) => {
+    s.state('a', (s) => {
+      s.state('d', (s) => {
         s.H('*');
         s.state('l');
         s.state('m');
       });
       s.state('e');
     });
-    s.state('b', s => {
+    s.state('b', (s) => {
       s.concurrent();
-      s.state('f', s => {
+      s.state('f', (s) => {
         s.state('h');
         s.state('i');
       });
-      s.state('g', s => {
+      s.state('g', (s) => {
         s.H();
         s.state('j');
         s.state('k');
@@ -186,7 +186,7 @@ describe('Node#inspect', () => {
 │       ├── j
 │       └── k
 └── c
-`,
+`
     );
   });
 });

@@ -1,4 +1,4 @@
-import {Event} from './types';
+import { Event } from './types';
 import Node from './Node';
 import Statechart from './Statechart';
 import State from './State';
@@ -6,11 +6,11 @@ import State from './State';
 const trace = (
   event: Event | null,
   from: State<any, any> | null,
-  to: State<any, any>,
+  to: State<any, any>
 ): void => {
   const e = event ? event.type : '__init__';
-  const f = from ? JSON.stringify(from.current.map(n => n.path)) : '(null)';
-  const t = JSON.stringify(to.current.map(n => n.path));
+  const f = from ? JSON.stringify(from.current.map((n) => n.path)) : '(null)';
+  const t = JSON.stringify(to.current.map((n) => n.path));
   console.info(`[${e}]: ${f} -> ${t}`);
 };
 
@@ -29,7 +29,7 @@ export default class Machine<C, E extends Event> {
     {
       observer,
       trace = false,
-    }: {observer?: (state: State<C, E>) => void; trace?: boolean} = {},
+    }: { observer?: (state: State<C, E>) => void; trace?: boolean } = {}
   ) {
     this.state = this.statechart.initialState;
     this.observer = observer;
@@ -59,9 +59,9 @@ export default class Machine<C, E extends Event> {
   exec(state: State<C, E>): this {
     const send = this.send.bind(this);
 
-    state.activities.start.forEach(a => a.start(send));
-    state.activities.stop.forEach(a => a.stop());
-    state.actions.forEach(a => {
+    state.activities.start.forEach((a) => a.start(send));
+    state.activities.stop.forEach((a) => a.stop());
+    state.actions.forEach((a) => {
       if ('exec' in a) {
         a.exec(send);
       } else {

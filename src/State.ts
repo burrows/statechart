@@ -1,4 +1,4 @@
-import {Event, Action, Activity} from './types';
+import { Event, Action, Activity } from './types';
 import Node from './Node';
 
 /**
@@ -18,11 +18,11 @@ export default class State<C, E extends Event> {
    */
   actions: Action<E>[];
   /** @internal */
-  history: {[path: string]: string};
+  history: { [path: string]: string };
   /** The current [[Activity]] state. */
   activities: {
     /** The list of activities that are currently running. */
-    current: {[path: string]: Activity<E>[]};
+    current: { [path: string]: Activity<E>[] };
     /**
      * The list of activities that were queued by the last
      * [[default.send | send]] and thus must be started by calling their
@@ -43,14 +43,14 @@ export default class State<C, E extends Event> {
     current = [],
     actions = [],
     history = {},
-    activities = {current: {}, start: [], stop: []},
+    activities = { current: {}, start: [], stop: [] },
   }: {
     context: C;
     current?: Node<C, E>[];
     actions?: Action<E>[];
-    history?: {[path: string]: string};
+    history?: { [path: string]: string };
     activities?: {
-      current: {[path: string]: Activity<E>[]};
+      current: { [path: string]: Activity<E>[] };
       start: Activity<E>[];
       stop: Activity<E>[];
     };
@@ -64,7 +64,7 @@ export default class State<C, E extends Event> {
 
   /** Returns the paths of the current states. */
   get paths(): string[] {
-    return this.current.map(n => n.path);
+    return this.current.map((n) => n.path);
   }
 
   /**
@@ -73,11 +73,11 @@ export default class State<C, E extends Event> {
    * if the given path cannot be resolved.
    */
   matches(path: string): boolean {
-    return this.current.some(n => n.matches(path));
+    return this.current.some((n) => n.matches(path));
   }
 
   /** @internal */
   update(data: Partial<this>): State<C, E> {
-    return new State({...this, ...data});
+    return new State({ ...this, ...data });
   }
 }
