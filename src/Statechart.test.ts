@@ -931,6 +931,23 @@ describe('Statechart#send', () => {
     });
   });
 
+  it('allows multiple events to use the same handler', () => {
+    type Ctx = { fromEvt: string };
+    type Evt = {type: 'x'} | { type: 'y'};
+
+    const sc = new Statechart<Ctx, Evt>({ fromEvt: '' }, s => {
+      s.state('a', s => {
+        s.on('x', 'y', (ctx, evt) => ({ context: { ...ctx, fromEvt: evt.type }}));
+      });
+    });
+
+    let state = sc.send(sc.initialState, {type: 'x'});
+    expect(state.context.fromEvt).toEqual('x');
+
+    state = sc.send(state, {type: 'y'});
+    expect(state.context.fromEvt).toEqual('y');
+  })
+
   it('handles concurrent states with the same child state names', () => {
     type Ctx = {};
     type Evt = {type: 'TOGGLE_X'};
