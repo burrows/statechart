@@ -69,7 +69,7 @@ state gets an opportunity to handle it and optionally trigger a transition.
 Simply tracking the current state of a system is usually not enough and you'll
 want to maintain some additional data (such as model objects loaded from an API)
 as your statechart moves through different states. This is called the state
-context and is an arbitrary object that can be updated by state enter, exit, and
+context and is an arbitrary object that can optionally be updated by state enter, exit, and
 event handlers. You must specify the type of this object as a generic type
 parameter when instantiating `Statechart`.
 
@@ -116,6 +116,42 @@ s.on('FOO', (ctx, evt) => {
 });
 ```
 
+Updating the context is optional. Omitting it will maintain the context unchanged.
+```typescript
+import Statechart from "@corey.burrows/statechart";
+
+interface Ctx {
+  seen?: Date;
+}
+
+type Evt = { type: "toggle" };
+
+const toggle = new Statechart<Ctx, Evt>({}, (s) => {
+  s.state("on", (s) => {
+    s.on("toggle", "../off");
+  });
+
+  s.state("off", (s) => {
+    s.on("toggle", (ctx, evt) => {
+      if (!ctx.seen) {
+        return { context: { ...ctx, seen: new Date() }, goto: "../on" };
+      }
+      return { goto: "../on" };
+    });
+  });
+});
+
+let state = toggle.initialState;
+console.log(state.paths, state.context); // ['/on'] {}
+state = toggle.send(state, { type: "toggle" });
+console.log(state.paths, state.context); // ['/off'] {}
+state = toggle.send(state, { type: "toggle" });
+console.log(state.paths, state.context); // ['/on'] {seen: Thu May 08 2025 15:55:54 GMT-0400 (Eastern Daylight Time)}
+state = toggle.send(state, { type: "toggle" });
+console.log(state.paths, state.context); // ['/off'] {seen: Thu May 08 2025 15:55:54 GMT-0400 (Eastern Daylight Time)}
+state = toggle.send(state, { type: "toggle" });
+console.log(state.paths, state.context); // ['/on'] {seen: Thu May 08 2025 15:55:54 GMT-0400 (Eastern Daylight Time)}
+```
 ### Clustered States
 
 Clustered states allow you to group together states that share common behavior.
