@@ -142,7 +142,7 @@ ___
 
 ▸ **stop**(`state`): [`State`](State.md)<`C`, `E`\>
 
-Stop the statechart by exiting from the given stte up through the root
+Stop the statechart by exiting from the given state up through the root
 state. Exit handlers will be passed an internal event with the type
 `__stop__`.
 
