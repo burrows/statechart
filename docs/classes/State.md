@@ -42,7 +42,7 @@ call their [exec](../interfaces/ActionObj.md#exec) method if they are
 
 #### Defined in
 
-[State.ts:19](https://github.com/burrows/statechart/blob/d9d682c/src/State.ts#L19)
+[State.ts:19](https://github.com/burrows/statechart/blob/abf3705/src/State.ts#L19)
 
 ___
 
@@ -62,7 +62,7 @@ The current [Activity](../interfaces/Activity.md) state.
 
 #### Defined in
 
-[State.ts:23](https://github.com/burrows/statechart/blob/d9d682c/src/State.ts#L23)
+[State.ts:23](https://github.com/burrows/statechart/blob/abf3705/src/State.ts#L23)
 
 ___
 
@@ -74,7 +74,7 @@ The current context.
 
 #### Defined in
 
-[State.ts:10](https://github.com/burrows/statechart/blob/d9d682c/src/State.ts#L10)
+[State.ts:10](https://github.com/burrows/statechart/blob/abf3705/src/State.ts#L10)
 
 ___
 
@@ -86,7 +86,7 @@ A list of the current leaf state nodes.
 
 #### Defined in
 
-[State.ts:12](https://github.com/burrows/statechart/blob/d9d682c/src/State.ts#L12)
+[State.ts:12](https://github.com/burrows/statechart/blob/abf3705/src/State.ts#L12)
 
 ## Accessors
 
@@ -102,7 +102,7 @@ Returns the paths of the current states.
 
 #### Defined in
 
-[State.ts:66](https://github.com/burrows/statechart/blob/d9d682c/src/State.ts#L66)
+[State.ts:66](https://github.com/burrows/statechart/blob/abf3705/src/State.ts#L66)
 
 ## Methods
 
@@ -126,4 +126,4 @@ if the given path cannot be resolved.
 
 #### Defined in
 
-[State.ts:75](https://github.com/burrows/statechart/blob/d9d682c/src/State.ts#L75)
+[State.ts:75](https://github.com/burrows/statechart/blob/abf3705/src/State.ts#L75)

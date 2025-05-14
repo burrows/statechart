@@ -57,7 +57,7 @@ s.state('myState', (s) => {
 
 #### Defined in
 
-[Node.ts:243](https://github.com/burrows/statechart/blob/d9d682c/src/Node.ts#L243)
+[Node.ts:253](https://github.com/burrows/statechart/blob/abf3705/src/Node.ts#L253)
 
 ___
 
@@ -91,7 +91,7 @@ s.state('myHistoryState', (s) => {
 
 #### Defined in
 
-[Node.ts:85](https://github.com/burrows/statechart/blob/d9d682c/src/Node.ts#L85)
+[Node.ts:85](https://github.com/burrows/statechart/blob/abf3705/src/Node.ts#L85)
 
 ___
 
@@ -118,7 +118,7 @@ s.state('myConcurrentState', (s) => {
 
 #### Defined in
 
-[Node.ts:65](https://github.com/burrows/statechart/blob/d9d682c/src/Node.ts#L65)
+[Node.ts:65](https://github.com/burrows/statechart/blob/abf3705/src/Node.ts#L65)
 
 ___
 
@@ -162,7 +162,7 @@ s.state('myState', (s) => {
 
 #### Defined in
 
-[Node.ts:138](https://github.com/burrows/statechart/blob/d9d682c/src/Node.ts#L138)
+[Node.ts:138](https://github.com/burrows/statechart/blob/abf3705/src/Node.ts#L138)
 
 ___
 
@@ -203,15 +203,15 @@ s.state('myState', (s) => {
 
 #### Defined in
 
-[Node.ts:175](https://github.com/burrows/statechart/blob/d9d682c/src/Node.ts#L175)
+[Node.ts:175](https://github.com/burrows/statechart/blob/abf3705/src/Node.ts#L175)
 
 ___
 
 ### on
 
-▸ **on**<`T`\>(`type`, `handler`): [`Node`](Node.md)<`C`, `E`\>
+▸ **on**<`T`\>(...`args`): [`Node`](Node.md)<`C`, `E`\>
 
-Define an event handler for this state. The given `type` string must match
+Define an event handler for this state. The given `type` string(s) must match
 a `type` from your statechart's [Event](../interfaces/Event.md) type. The given [EventHandler](../README.md#eventhandler)
 function can return an object with the following keys to control the
 behavior of the statechart:
@@ -244,8 +244,7 @@ s.on('SOME_EVENT', (ctx, evt) => {
 
 | Name | Type |
 | :------ | :------ |
-| `type` | `T` |
-| `handler` | `string` \| `string`[] \| [`EventHandler`](../README.md#eventhandler)<`C`, `E`, `T`\> |
+| `...args` | [`T`, ...T[], `string` \| `string`[] \| [`EventHandler`](../README.md#eventhandler)<`C`, `E`, `T`\>] |
 
 #### Returns
 
@@ -253,7 +252,7 @@ s.on('SOME_EVENT', (ctx, evt) => {
 
 #### Defined in
 
-[Node.ts:213](https://github.com/burrows/statechart/blob/d9d682c/src/Node.ts#L213)
+[Node.ts:216](https://github.com/burrows/statechart/blob/abf3705/src/Node.ts#L216)
 
 ___
 
@@ -288,4 +287,4 @@ new Statechart<Ctx, Evt>(initialContext, (s) => {
 
 #### Defined in
 
-[Node.ts:105](https://github.com/burrows/statechart/blob/d9d682c/src/Node.ts#L105)
+[Node.ts:105](https://github.com/burrows/statechart/blob/abf3705/src/Node.ts#L105)
