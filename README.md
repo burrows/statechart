@@ -40,8 +40,8 @@ console.log(state.paths); // ['/on']
 
 * [Overview](OVERVIEW.md)
 * [API Docs](docs/README.md)
-* [Statecharts paper](http://www.wisdom.weizmann.ac.il/~harel/papers/Statecharts.pdf)
-* [Statecharts History paper](http://www.wisdom.weizmann.ac.il/~harel/papers/Statecharts.History.pdf)
+* [Statecharts paper](https://www.weizmann.ac.il/math/harel/sites/math.harel/files/users/user56/Statecharts.pdf)
+* [Statecharts History paper](https://www.weizmann.ac.il/math/harel/sites/math.harel/files/users/user56/Statecharts.History.pdf)
 
 ## Related Projects
 
